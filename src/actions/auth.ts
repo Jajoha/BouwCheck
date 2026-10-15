@@ -5,7 +5,7 @@ import { sql, sqlOne } from "@/lib/db";
 import { env } from "@/lib/env";
 import { hashPassword, verifyPassword, newToken, hashToken } from "@/lib/auth/password";
 import { createSession, destroySession, getCurrentUser } from "@/lib/auth/session";
-import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/lib/db/seed";
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/lib/demo-accounts";
 import { loginSchema, onboardingSchema, parseForm, registerSchema, resetPasswordSchema, resetRequestSchema } from "@/lib/validation";
 import type { ActionResult } from "@/lib/forms/types";
 

@@ -9,12 +9,8 @@
 import type { Database, Queryable } from "./index";
 import { hashPassword } from "@/lib/auth/password";
 
-export const DEMO_PASSWORD = "demo-bouwcheck";
-export const DEMO_ACCOUNTS = {
-  flipper: "flipper@demo.bouwcheck.test",
-  admin: "beheer@demo.bouwcheck.test",
-  contractor: "aannemer@demo.bouwcheck.test",
-} as const;
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/lib/demo-accounts";
+export { DEMO_ACCOUNTS, DEMO_PASSWORD };
 
 // Deterministische pseudo-random generator, zodat de demo reproduceerbaar is.
 function rng(seed: number) {

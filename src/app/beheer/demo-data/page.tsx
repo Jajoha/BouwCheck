@@ -4,7 +4,7 @@ import { ResetDemoButton } from "@/components/admin/admin-widgets";
 import { requireAdmin } from "@/lib/auth/session";
 import { getDb, sqlOne } from "@/lib/db";
 import { env } from "@/lib/env";
-import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/lib/db/seed";
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/lib/demo-accounts";
 
 export const metadata: Metadata = { title: "Beheer — demo-data" };
 

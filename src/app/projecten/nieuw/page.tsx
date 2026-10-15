@@ -6,8 +6,7 @@ import { aiConfig } from "@/lib/ai/config";
 import { getUserUsageThisMonth } from "@/lib/data/ai-usage";
 
 export const metadata: Metadata = { title: "Nieuw renovatieproject" };
-// De AI-analyse kan bij veel foto's langer duren dan de standaardlimiet van een serverfunctie.
-export const maxDuration = 300;
+// maxDuration staat in de root-layout (zie daar waarom niet per pagina).
 
 export default async function NewProjectPage() {
   const user = await requireFlipper("/projecten/nieuw");

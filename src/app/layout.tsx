@@ -24,6 +24,10 @@ export const viewport: Viewport = { themeColor: "#1b1f23" };
 
 // Vrijwel alle pagina's zijn gebruikers- en databaseafhankelijk.
 export const dynamic = "force-dynamic";
+// Eén limiet voor alle routes (nodig voor de AI-analyse). Een afwijkende waarde op één pagina laat
+// Vercel die pagina in een aparte serverfunctie bundelen; zonder database heeft die dan een eigen
+// tijdelijke database en is de gebruiker daar niet ingelogd.
+export const maxDuration = 300;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

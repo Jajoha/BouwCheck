@@ -4,10 +4,24 @@ import { redirect, notFound } from "next/navigation";
 import { sql, sqlOne } from "@/lib/db";
 import { env } from "@/lib/env";
 import { hashToken, newToken } from "./password";
+import { DEMO_EMAILS } from "@/lib/demo-accounts";
 import type { UserRole } from "@/lib/domain/constants";
 
 const COOKIE = "bc_session";
 const SESSION_DAYS = 30;
+
+/**
+ * Demo zonder database op serverless hosting (Vercel): elke serverinstantie heeft een eigen
+ * tijdelijke database, dus een sessie die op instantie A is aangemaakt bestaat niet op B.
+ * Voor de vaste demo-accounts onthouden we daarom ook welk demo-account is ingelogd, zodat
+ * elke instantie dat account herkent. Alleen actief in demo-modus met tijdelijke opslag;
+ * de demo-accounts zijn dan sowieso voor iedereen bereikbaar via de demo-knoppen.
+ */
+const DEMO_COOKIE = "bc_demo_account";
+const demoFallbackActive = () => env.demoMode && env.ephemeralStorage;
+
+const USER_COLUMNS = `u.id, u.email, u.name, u.role, u.company_name, u.region, u.project_types,
+            u.onboarded_at::text as onboarded_at, u.is_demo`;
 
 export type SessionUser = {
   id: string;
@@ -26,13 +40,13 @@ export async function createSession(userId: string) {
   const expires = new Date(Date.now() + SESSION_DAYS * 86_400_000);
   await sql("insert into sessions (id, user_id, expires_at) values ($1, $2, $3)", [hashToken(token), userId, expires]);
   const jar = await cookies();
-  jar.set(COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: env.isProduction && env.appUrl.startsWith("https"),
-    path: "/",
-    expires,
-  });
+  const options = { httpOnly: true, sameSite: "lax" as const, secure: env.isProduction && env.appUrl.startsWith("https"), path: "/", expires };
+  jar.set(COOKIE, token, options);
+  const demo = demoFallbackActive()
+    ? await sqlOne<{ email: string }>("select email from users where id = $1 and is_demo", [userId])
+    : null;
+  if (demo && DEMO_EMAILS.includes(demo.email)) jar.set(DEMO_COOKIE, demo.email, options);
+  else jar.delete(DEMO_COOKIE);
 }
 
 export async function destroySession() {
@@ -40,6 +54,7 @@ export async function destroySession() {
   const token = jar.get(COOKIE)?.value;
   if (token) await sql("delete from sessions where id = $1", [hashToken(token)]);
   jar.delete(COOKIE);
+  jar.delete(DEMO_COOKIE);
 }
 
 /**
@@ -51,13 +66,15 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
   const user = await sqlOne<SessionUser>(
-    `select u.id, u.email, u.name, u.role, u.company_name, u.region, u.project_types,
-            u.onboarded_at::text as onboarded_at, u.is_demo
+    `select ${USER_COLUMNS}
        from sessions s join users u on u.id = s.user_id
       where s.id = $1 and s.expires_at > now() and u.is_active`,
     [hashToken(token)],
   );
-  return user;
+  if (user || !demoFallbackActive()) return user;
+  const demoEmail = jar.get(DEMO_COOKIE)?.value;
+  if (!demoEmail || !DEMO_EMAILS.includes(demoEmail)) return null;
+  return sqlOne<SessionUser>(`select ${USER_COLUMNS} from users u where u.email = $1 and u.is_demo and u.is_active`, [demoEmail]);
 }
 
 /** Vereist een ingelogde gebruiker; stuurt anders door naar inloggen. */
