@@ -79,7 +79,32 @@ async function main() {
   }
 }
 
+/** Vertaalt veelvoorkomende database-fouten naar een concrete oplossing (zichtbaar in het Vercel-buildlog). */
+function hintFor(err: unknown): string | null {
+  const code = (err as { code?: string })?.code;
+  switch (code) {
+    case "42P07":
+    case "42710":
+      return "De database bevat al tabellen die niet van BouwCheck zijn (waarschijnlijk van een ander project, zoals een gedeelde Neon-database). Koppel een eigen, lege Neon-database aan BouwCheck: Vercel → Storage → Create Database → Neon.";
+    case "28P01":
+    case "28000":
+      return "Inloggen bij de database is geweigerd. Controleer DATABASE_URL / DATABASE_URL_UNPOOLED, of koppel de Neon-database opnieuw aan dit project zodat Vercel de variabelen ververst.";
+    case "3D000":
+      return "De database in DATABASE_URL bestaat niet (meer). Koppel de Neon-database opnieuw aan dit project.";
+    case "ENOTFOUND":
+    case "ECONNREFUSED":
+    case "ETIMEDOUT":
+    case "CONNECT_TIMEOUT":
+      return "De databaseserver is niet bereikbaar. Controleer of de Neon-database bestaat en aan dit project gekoppeld is, en of DATABASE_URL klopt.";
+    default:
+      return null;
+  }
+}
+
 main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
+  const code = (err as { code?: string })?.code;
+  console.error(`[db] MISLUKT: ${err instanceof Error ? err.message : String(err)}${code ? ` (code ${code})` : ""}`);
+  const hint = hintFor(err);
+  if (hint) console.error(`[db] Oplossing: ${hint}`);
   process.exit(1);
 });
