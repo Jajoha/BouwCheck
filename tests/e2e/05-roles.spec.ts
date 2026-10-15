@@ -52,6 +52,12 @@ test.describe("Rollen, beheer en aannemersportaal", () => {
     await page.locator("tr", { hasText: "Isolatiebedrijf Warmwand" }).getByRole("button", { name: "Activeren" }).click();
     await expect(page.locator("tr", { hasText: "Isolatiebedrijf Warmwand" })).toContainText("Actief");
 
+    // AI-gebruik per account (analyse uit de intake-test)
+    await page.goto("/beheer/ai-gebruik");
+    await expect(page.getByRole("heading", { name: "AI-gebruik per account" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: /E2E Flipper/ }).first()).toBeVisible();
+    await expect(page.getByText(/Actief · claude-opus-5-5/)).toBeVisible();
+
     // beheerlog bevat de acties
     await page.goto("/beheer");
     await expect(page.locator("table")).toContainText("verificatie goedgekeurd");

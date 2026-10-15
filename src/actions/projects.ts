@@ -2,11 +2,10 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { sql, sqlOne, transaction } from "@/lib/db";
-import { env } from "@/lib/env";
+import { getDb, sql, sqlOne, transaction } from "@/lib/db";
+import { ALLOWED_UPLOADS, hasValidSignature, storeProjectFile, uploadRoot } from "@/lib/uploads";
 import { assertUser, AuthError, FLIPPER_ROLES } from "@/lib/auth/session";
 import { addProjectEvent, getProjectForUser } from "@/lib/data/projects";
 import { attachmentKindSchema, parseForm, projectNotesSchema, projectSchema } from "@/lib/validation";
@@ -25,32 +24,6 @@ function handle(err: unknown): ActionResult<never> {
   throw err;
 }
 
-export async function createProjectAction(fd: FormData): Promise<ActionResult> {
-  let projectId: string;
-  try {
-    const user = await assertUser(FLIPPER_ROLES);
-    const parsed = parseForm(projectSchema, fd);
-    if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors, message: "Controleer de gemarkeerde velden." };
-    const d = parsed.data;
-    projectId = await transaction(async (tx) => {
-      const [row] = await tx.query<{ id: string }>(
-        `insert into projects (user_id, name, location, province, property_type, renovation_type, area_m2, budget_amount, budget_vat_included,
-           desired_start_date, desired_completion_date, status, description, material_preferences, extra_requirements)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'orienteren',$12,$13,$14) returning id`,
-        [user.id, d.name, d.location, d.province ?? null, d.property_type, d.renovation_type, d.area_m2 ?? null, d.budget_amount ?? null, d.budget_vat_included,
-          d.desired_start_date ?? null, d.desired_completion_date ?? null, d.description, d.material_preferences ?? null, d.extra_requirements ?? null],
-      );
-      for (const s of d.specialty_ids) await tx.query("insert into project_specialties (project_id, specialty_id) values ($1,$2)", [row.id, s]);
-      await addProjectEvent(tx, row.id, user.id, "aangemaakt", "Project aangemaakt");
-      return row.id;
-    });
-  } catch (err) {
-    return handle(err);
-  }
-  revalidatePath("/dashboard");
-  redirect(`/projecten/${projectId}?melding=project-aangemaakt`);
-}
-
 export async function updateProjectAction(projectId: string, fd: FormData): Promise<ActionResult> {
   try {
     const { user } = await ownedProject(projectId);
@@ -66,8 +39,6 @@ export async function updateProjectAction(projectId: string, fd: FormData): Prom
           d.budget_vat_included, d.desired_start_date ?? null, d.desired_completion_date ?? null, d.description, d.material_preferences ?? null,
           d.extra_requirements ?? null, d.status ?? null],
       );
-      await tx.query("delete from project_specialties where project_id = $1", [projectId]);
-      for (const s of d.specialty_ids) await tx.query("insert into project_specialties (project_id, specialty_id) values ($1,$2)", [projectId, s]);
       await addProjectEvent(tx, projectId, user.id, "bewerkt", "Projectgegevens bijgewerkt");
     });
   } catch (err) {
@@ -179,16 +150,6 @@ export async function removeFromShortlistAction(projectId: string, contractorId:
 
 // ── Bijlagen ────────────────────────────────────────────────
 const MAX_BYTES = 10 * 1024 * 1024;
-const ALLOWED = new Map([
-  ["image/jpeg", ".jpg"],
-  ["image/png", ".png"],
-  ["image/webp", ".webp"],
-  ["application/pdf", ".pdf"],
-]);
-
-function uploadRoot() {
-  return path.resolve(process.cwd(), env.dataDir, "uploads");
-}
 
 export async function uploadAttachmentAction(projectId: string, fd: FormData): Promise<ActionResult> {
   try {
@@ -198,26 +159,12 @@ export async function uploadAttachmentAction(projectId: string, fd: FormData): P
     if (!kind.success) return { ok: false, fieldErrors: { kind: ["Kies een type bijlage."] } };
     if (!(file instanceof File) || file.size === 0) return { ok: false, fieldErrors: { file: ["Kies een bestand."] } };
     if (file.size > MAX_BYTES) return { ok: false, fieldErrors: { file: ["Het bestand is groter dan 10 MB."] } };
-    const ext = ALLOWED.get(file.type);
-    if (!ext) return { ok: false, fieldErrors: { file: ["Alleen JPG, PNG, WebP of PDF zijn toegestaan."] } };
+    if (!ALLOWED_UPLOADS.has(file.type)) return { ok: false, fieldErrors: { file: ["Alleen JPG, PNG, WebP of PDF zijn toegestaan."] } };
     const buffer = Buffer.from(await file.arrayBuffer());
-    // Controleer de bestandssignatuur, niet alleen het opgegeven MIME-type.
-    const sig = buffer.subarray(0, 4).toString("hex");
-    const okSig =
-      (file.type === "application/pdf" && buffer.subarray(0, 4).toString() === "%PDF") ||
-      (file.type === "image/png" && sig === "89504e47") ||
-      (file.type === "image/jpeg" && sig.startsWith("ffd8ff")) ||
-      (file.type === "image/webp" && buffer.subarray(8, 12).toString() === "WEBP");
-    if (!okSig) return { ok: false, fieldErrors: { file: ["De inhoud van het bestand komt niet overeen met het bestandstype."] } };
-    const storagePath = path.join(projectId, `${randomUUID()}${ext}`);
-    await fs.mkdir(path.join(uploadRoot(), projectId), { recursive: true });
-    await fs.writeFile(path.join(uploadRoot(), storagePath), buffer);
-    const safeName = file.name.replace(/[^\w.\- ()À-ÿ]/g, "_").slice(0, 150) || `bijlage${ext}`;
-    await sql(
-      "insert into project_attachments (project_id, user_id, kind, file_name, mime_type, size_bytes, storage_path) values ($1,$2,$3,$4,$5,$6,$7)",
-      [projectId, user.id, kind.data, safeName, file.type, file.size, storagePath],
-    );
-    await addProjectEvent(null, projectId, user.id, "bijlage", `Bijlage toegevoegd: ${safeName}`);
+    if (!hasValidSignature(file.type, buffer)) return { ok: false, fieldErrors: { file: ["De inhoud van het bestand komt niet overeen met het bestandstype."] } };
+    const db = await getDb();
+    const name = await storeProjectFile(db, { projectId, userId: user.id, kind: kind.data, fileName: file.name, type: file.type, buffer });
+    await addProjectEvent(null, projectId, user.id, "bijlage", `Bijlage toegevoegd: ${name}`);
   } catch (err) {
     return handle(err);
   }

@@ -134,35 +134,6 @@ export async function listFavoriteContractorIds(userId: string) {
   return rows.map((r) => r.contractor_id);
 }
 
-// ── Vergelijkingen ──────────────────────────────────────────
-export type SavedComparison = {
-  id: string;
-  name: string;
-  notes: string | null;
-  project_id: string | null;
-  project_name: string | null;
-  created_at: string;
-  updated_at: string;
-  contractor_ids: string[];
-  contractor_names: string[];
-};
-
-export async function listComparisons(userId: string, limit = 100) {
-  return sql<SavedComparison>(
-    `select cmp.id, cmp.name, cmp.notes, cmp.project_id, p.name as project_name, cmp.created_at::text as created_at, cmp.updated_at::text as updated_at,
-            coalesce(array_agg(ci.contractor_id order by ci.position) filter (where ci.contractor_id is not null), '{}') as contractor_ids,
-            coalesce(array_agg(c.company_name order by ci.position) filter (where c.company_name is not null), '{}') as contractor_names
-       from comparisons cmp
-       left join projects p on p.id = cmp.project_id
-       left join comparison_items ci on ci.comparison_id = cmp.id
-       left join contractors c on c.id = ci.contractor_id
-      where cmp.user_id = $1
-      group by cmp.id, p.name
-      order by cmp.updated_at desc limit $2`,
-    [userId, limit],
-  );
-}
-
 // ── Projectresultaten ───────────────────────────────────────
 export async function getOutcomesForProject(projectId: string) {
   return sql<{

@@ -4,8 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { site } from "@/config/site";
-import { CompareProvider } from "@/components/compare/compare-provider";
-import { CompareTray } from "@/components/compare/compare-tray";
 import { FlashToast } from "@/components/layout/flash-toast";
 import { DemoBanner } from "@/components/layout/demo-banner";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -34,15 +32,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#inhoud" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-ink-900 focus:px-3 focus:py-2 focus:text-white">
           Naar de inhoud
         </a>
-        <CompareProvider>
-          <DemoBanner />
-          <SiteHeader />
-          <main id="inhoud" className="flex-1">
-            {children}
-          </main>
-          <SiteFooter />
-          <CompareTray />
-        </CompareProvider>
+        <DemoBanner />
+        <SiteHeader />
+        <main id="inhoud" className="flex-1">
+          {children}
+        </main>
+        <SiteFooter />
         <Suspense>
           <FlashToast />
         </Suspense>

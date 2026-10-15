@@ -33,7 +33,6 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
             budget_vat_included: p.budget_vat_included,
             desired_start_date: p.desired_start_date ?? "",
             desired_completion_date: p.desired_completion_date ?? "",
-            specialty_ids: p.specialty_ids,
             description: p.description,
             material_preferences: p.material_preferences ?? "",
             extra_requirements: p.extra_requirements ?? "",

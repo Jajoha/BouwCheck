@@ -42,7 +42,7 @@ export function MobileMenu({ items, loggedIn }: { items: { href: string; label: 
                   <Link href="/inloggen">Inloggen</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/aannemers">Start met vergelijken</Link>
+                  <Link href="/projecten/nieuw">Start je project</Link>
                 </Button>
               </>
             )}

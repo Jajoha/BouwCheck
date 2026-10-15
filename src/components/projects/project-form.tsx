@@ -4,11 +4,11 @@ import * as React from "react";
 import Link from "next/link";
 import { Check, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Fieldset, Input, Select, Textarea } from "@/components/ui/form-controls";
+import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/form-controls";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Notice } from "@/components/ui/misc";
 import { useServerForm } from "@/lib/forms/use-server-form";
-import { PROJECT_STATUS, PROPERTY_TYPES, PROVINCES, RENOVATION_TYPES, SPECIALTIES } from "@/lib/domain/constants";
+import { PROJECT_STATUS, PROPERTY_TYPES, PROVINCES, RENOVATION_TYPES } from "@/lib/domain/constants";
 import type { ActionResult } from "@/lib/forms/types";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,6 @@ export type ProjectFormValues = {
   budget_vat_included: boolean;
   desired_start_date: string;
   desired_completion_date: string;
-  specialty_ids: string[];
   description: string;
   material_preferences: string;
   extra_requirements: string;
@@ -33,7 +32,7 @@ export type ProjectFormValues = {
 const STEPS = [
   { title: "Project", fields: ["name", "location", "province", "property_type", "renovation_type", "area_m2"] },
   { title: "Planning & budget", fields: ["desired_start_date", "desired_completion_date", "budget_amount", "budget_vat_included"] },
-  { title: "Werkzaamheden", fields: ["specialty_ids", "description"] },
+  { title: "Omschrijving", fields: ["description"] },
   { title: "Aanvullend", fields: ["material_preferences", "extra_requirements", "status"] },
 ];
 
@@ -83,7 +82,6 @@ export function ProjectForm({
       if (s && c && c < s) e.desired_completion_date = ["De opleverdatum moet na de startdatum liggen."];
     }
     if (i === 2) {
-      if (fd.getAll("specialty_ids[]").length === 0) e.specialty_ids = ["Kies minimaal één vakgebied."];
       if (String(fd.get("description") ?? "").trim().length < 10) e.description = ["Omschrijving moet minimaal 10 tekens bevatten."];
     }
     setClientErrors(e);
@@ -192,13 +190,6 @@ export function ProjectForm({
 
       {/* Stap 3 */}
       <section className={cn("flex flex-col gap-4", step !== 2 && "hidden")} aria-label="Werkzaamheden">
-        <Fieldset legend="Benodigde vakgebieden" description="Meerdere werkzaamheden per project zijn mogelijk." error={errors("specialty_ids")}>
-          <div className="grid gap-2 sm:grid-cols-3">
-            {SPECIALTIES.map((s) => (
-              <Checkbox key={s.id} name="specialty_ids[]" value={s.id} label={s.name} defaultChecked={initial.specialty_ids.includes(s.id)} />
-            ))}
-          </div>
-        </Fieldset>
         <Field label="Omschrijving van de werkzaamheden" htmlFor="description" required error={errors("description")} hint="Wat moet er gebeuren? Hoe specifieker, hoe beter offertes vergelijkbaar worden.">
           <Textarea id="description" name="description" rows={6} defaultValue={initial.description} aria-invalid={Boolean(errors("description"))} />
         </Field>
@@ -223,7 +214,7 @@ export function ProjectForm({
             </Select>
           </Field>
         ) : null}
-        <Notice tone="info">Foto&apos;s, plattegronden en bestaande offertes kun je na het opslaan als bijlage toevoegen op de projectpagina.</Notice>
+        <Notice tone="info">De werkzaamheden (scope) pas je aan via ‘Werkzaamheden → Aanpassen’ op de projectpagina.</Notice>
       </section>
 
       <div className="flex flex-col-reverse gap-2 border-t border-ink-100 pt-5 sm:flex-row sm:items-center sm:justify-between">

@@ -44,7 +44,7 @@ export default async function QuoteRequestsPage({ searchParams }: { searchParams
         })}
       </nav>
       {list.length === 0 ? (
-        <EmptyState className="mt-6" icon={FileText} title="Geen offerteaanvragen" description="Bereid een aanvraag voor vanuit een project, een vergelijking of een aannemersprofiel." />
+        <EmptyState className="mt-6" icon={FileText} title="Geen offerteaanvragen" description="Kies een teamvoorstel in je project; de offerteaanvraag wordt dan voor je voorbereid." />
       ) : (
         <TableWrap className="mt-6">
           <table className="w-full min-w-[720px]">

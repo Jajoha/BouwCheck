@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { outcomeSchema, parseForm, projectSchema, quoteSchema, registerSchema } from "@/lib/validation";
+import { outcomeSchema, parseForm, projectSchema, quoteSchema, registerSchema, scopeListSchema, intakeProjectSchema } from "@/lib/validation";
 import { summarizeVerification } from "@/lib/domain/verification";
 
 const uuid = "00000000-0000-4000-8000-000000000001";
@@ -10,7 +10,6 @@ describe("projectSchema", () => {
     location: "Utrecht",
     property_type: "Tussenwoning",
     renovation_type: "Complete renovatie",
-    specialty_ids: ["elektricien", "schilder"],
     description: "Complete renovatie van de woning.",
     budget_amount: "85.000",
   };
@@ -20,20 +19,22 @@ describe("projectSchema", () => {
     if (r.ok) expect(r.data.budget_amount).toBe(85000);
   });
   it("weigert ontbrekende verplichte velden met Nederlandse meldingen", () => {
-    const r = parseForm(projectSchema, { ...valid, name: "", specialty_ids: [] });
+    const r = parseForm(projectSchema, { ...valid, name: "" });
     expect(r.ok).toBe(false);
-    if (!r.ok) {
-      expect(r.fieldErrors.name[0]).toMatch(/verplicht|minimaal/);
-      expect(r.fieldErrors.specialty_ids[0]).toMatch(/minimaal één vakgebied/);
-    }
+    if (!r.ok) expect(r.fieldErrors.name[0]).toBe("Projectnaam is verplicht.");
   });
   it("weigert een opleverdatum vóór de startdatum", () => {
     const r = parseForm(projectSchema, { ...valid, desired_start_date: "2027-02-01", desired_completion_date: "2027-01-01" });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.fieldErrors.desired_completion_date).toBeDefined();
   });
-  it("weigert onbekende vakgebieden", () => {
-    expect(parseForm(projectSchema, { ...valid, specialty_ids: ["astronaut"] }).ok).toBe(false);
+  it("intake vereist provincie en een omschrijving van minimaal 20 tekens", () => {
+    const r = parseForm(intakeProjectSchema, { location: "Utrecht", property_type: "Tussenwoning", renovation_type: "Complete renovatie", description: "kort" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.fieldErrors.province[0]).toMatch(/provincie/);
+      expect(r.fieldErrors.description[0]).toMatch(/minimaal 20/);
+    }
   });
 });
 
@@ -90,4 +91,15 @@ describe("parseDutchNumber", () => {
     ["1.250.000", 1250000],
   ])("%s → %d", (input, expected) => expect(parseDutchNumber(input)).toBe(expected));
   it("ongeldige invoer geeft NaN", () => expect(parseDutchNumber("abc")).toBeNaN());
+});
+
+describe("scopeListSchema", () => {
+  const item = { specialty_id: "schilder", description: "Binnenschilderwerk", quantity: 100, unit: "m2", confidence: null, source: "gebruiker" };
+  it("accepteert een geldige scope", () => expect(scopeListSchema.safeParse([item]).success).toBe(true));
+  it("vereist minimaal één regel", () => expect(scopeListSchema.safeParse([]).success).toBe(false));
+  it("weigert onbekende vakgebieden", () => expect(scopeListSchema.safeParse([{ ...item, specialty_id: "astronaut" }]).success).toBe(false));
+  it("hoeveelheid en eenheid horen bij elkaar", () => {
+    expect(scopeListSchema.safeParse([{ ...item, unit: null }]).success).toBe(false);
+    expect(scopeListSchema.safeParse([{ ...item, quantity: null, unit: null }]).success).toBe(true);
+  });
 });

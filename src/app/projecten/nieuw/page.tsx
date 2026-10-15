@@ -1,37 +1,29 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/misc";
-import { ProjectForm } from "@/components/projects/project-form";
-import { createProjectAction } from "@/actions/projects";
+import { IntakeWizard } from "@/components/intake/intake-wizard";
 import { requireFlipper } from "@/lib/auth/session";
+import { aiConfig } from "@/lib/ai/config";
+import { getUserUsageThisMonth } from "@/lib/data/ai-usage";
 
 export const metadata: Metadata = { title: "Nieuw renovatieproject" };
+// De AI-analyse kan bij veel foto's langer duren dan de standaardlimiet van een serverfunctie.
+export const maxDuration = 300;
 
 export default async function NewProjectPage() {
   const user = await requireFlipper("/projecten/nieuw");
+  const usage = await getUserUsageThisMonth(user.id);
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 pb-28 sm:px-6">
-      <PageHeader title="Nieuw renovatieproject" description="Vier korte stappen. Velden met een * zijn verplicht; de rest kun je later aanvullen." />
+      <PageHeader
+        title="Nieuw renovatieproject"
+        description="Beschrijf wat er moet gebeuren en voeg foto's toe. BouwCheck bepaalt de werkzaamheden en stelt teams van aannemers voor, geordend op budget, kwaliteit en snelheid."
+      />
       <div className="mt-6 rounded-[var(--radius-card)] border border-ink-200 bg-white p-5 sm:p-8">
-        <ProjectForm
-          mode="create"
-          action={createProjectAction}
-          cancelHref="/projecten"
-          initial={{
-            name: "",
-            location: "",
-            province: user.region ?? "",
-            property_type: "",
-            renovation_type: "",
-            area_m2: "",
-            budget_amount: "",
-            budget_vat_included: false,
-            desired_start_date: "",
-            desired_completion_date: "",
-            specialty_ids: [],
-            description: "",
-            material_preferences: "",
-            extra_requirements: "",
-          }}
+        <IntakeWizard
+          aiEnabled={aiConfig.configured}
+          maxPhotos={aiConfig.maxPhotos}
+          defaultProvince={user.region ?? ""}
+          usage={{ costUsd: usage.costUsd, limitUsd: aiConfig.monthlyLimitUsd }}
         />
       </div>
     </div>

@@ -6,7 +6,7 @@ export const site = {
   name: "BouwCheck",
   tagline: "De juiste aannemer. Zonder verrassingen.",
   description:
-    "Vergelijk aannemers op prijs, betrouwbaarheid, snelheid en kwaliteit, zodat je meer grip krijgt op renovatiekosten en rendement.",
+    "Beschrijf je renovatieproject en ontvang een onderbouwde samenstelling van aannemers en onderaannemers, geordend op budget, kwaliteit of snelheid.",
   contactEmail: "contact@bouwcheck.test",
   locale: "nl-NL",
   currency: "EUR",
@@ -14,13 +14,11 @@ export const site = {
   minSampleSize: 3,
   /** Gegevens ouder dan dit aantal maanden worden als verouderd gemarkeerd. */
   staleAfterMonths: 24,
-  /** Maximaal aantal aannemers in één vergelijking. */
-  maxCompare: 4,
   hero: {
     title: "De juiste aannemer maakt het verschil tussen winst en verlies.",
     subtitle:
-      "Vergelijk aannemers op prijs, betrouwbaarheid, snelheid en kwaliteit. Krijg meer grip op je renovatiebudget en bescherm je rendement.",
-    primaryCta: "Vind een aannemer",
+      "Beschrijf je project en voeg foto's toe. BouwCheck bepaalt de werkzaamheden en stelt teams van aannemers samen — geordend op budget, kwaliteit of snelheid, onderbouwd met projectresultaten.",
+    primaryCta: "Start je project",
     secondaryCta: "Bekijk hoe het werkt",
   },
   demoLabel: "Demo-data — niet geverifieerd",
@@ -47,8 +45,8 @@ export const pricingPlans: PricingPlan[] = [
     description:
       "Voor vastgoedflippers die voor één specifiek project een shortlist van passende aannemers willen ontvangen.",
     features: [
-      "Shortlist voor één vakgebied",
-      "Vergelijking op prijs, planning en projectdata",
+      "Teamvoorstel voor één vakgebied",
+      "Geordend op budget, kwaliteit of snelheid",
       "Overzicht van ontbrekende gegevens per aannemer",
       "Offerteaanvragen voorbereid vanuit BouwCheck",
     ],
@@ -60,11 +58,11 @@ export const pricingPlans: PricingPlan[] = [
     price: "€ 499 – € 999",
     priceNote: "per project, excl. btw",
     description:
-      "Voor een uitgebreidere selectie en vergelijking van aannemers voor meerdere onderdelen van een renovatie.",
+      "Voor een complete renovatie: een team van aannemers en onderaannemers voor alle onderdelen, op basis van een AI-intake met foto's.",
     features: [
-      "Selectie voor meerdere vakgebieden",
-      "Vergelijking van offertes op gelijke scope",
-      "Signalering van budget- en planningsrisico's",
+      "AI-intake met foto's: werkzaamheden en risico's in kaart",
+      "Teams van aannemers en onderaannemers voor alle vakgebieden",
+      "Offerteaanvragen op één gestandaardiseerde scope",
       "Vastlegging van je selectiebeslissing",
     ],
     cta: "Project aanmelden",
@@ -76,9 +74,9 @@ export const pricingPlans: PricingPlan[] = [
     price: "€ 99",
     priceNote: "per maand, excl. btw",
     description:
-      "Voor actieve vastgoedflippers die regelmatig aannemers vergelijken en meerdere projecten beheren.",
+      "Voor actieve vastgoedflippers met meerdere renovatieprojecten per jaar.",
     features: [
-      "Onbeperkt projecten en vergelijkingen",
+      "Onbeperkt projecten en teamvoorstellen",
       "Projectresultaten en ervaringen vastleggen",
       "Favoriete vakmensen per regio",
       "Offerteaanvragen beheren per project",

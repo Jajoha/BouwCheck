@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-export function NavLink({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) {
+export function NavLink({ href, children, className, exclude = [] }: { href: string; children: React.ReactNode; className?: string; exclude?: string[] }) {
   const pathname = usePathname();
-  const active = !href.includes("#") && (pathname === href || (href !== "/" && pathname.startsWith(`${href}/`)));
+  const active =
+    !href.includes("#") && !exclude.some((e) => pathname === e || pathname.startsWith(`${e}/`)) && (pathname === href || (href !== "/" && pathname.startsWith(`${href}/`)));
   return (
     <Link
       href={href}

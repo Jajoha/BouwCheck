@@ -62,7 +62,7 @@ export function ContractorStatusControl({ id, status, name }: { id: string; stat
             </Button>
           }
           title={`${name} deactiveren?`}
-          description="Het profiel verdwijnt uit de openbare database en vergelijkingen. Gegevens blijven bewaard en het profiel kan later opnieuw worden geactiveerd."
+          description="Het profiel verdwijnt uit de openbare profielen en uit nieuwe teamvoorstellen. Gegevens blijven bewaard en het profiel kan later opnieuw worden geactiveerd."
           confirmLabel="Deactiveren"
           onConfirm={async () => run(() => setContractorStatusAction(id, "gedeactiveerd"))}
         />

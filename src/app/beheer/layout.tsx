@@ -11,6 +11,7 @@ const NAV = [
   { href: "/beheer/projecten", label: "Projecten" },
   { href: "/beheer/offerteaanvragen", label: "Offerteaanvragen" },
   { href: "/beheer/gebruikers", label: "Gebruikers" },
+  { href: "/beheer/ai-gebruik", label: "AI-gebruik" },
   { href: "/beheer/demo-data", label: "Demo-data" },
 ];
 
@@ -19,7 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await requireAdmin("/beheer");
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 pb-28 sm:px-6">
-      <div className="mb-6 overflow-x-auto border-b border-ink-100 pb-3">
+      <div className="relative mb-6 overflow-x-auto border-b border-ink-100 pb-3">
         <nav aria-label="Beheernavigatie" className="flex min-w-max gap-0.5">
           {NAV.map((n) => (
             <NavLink key={n.href} href={n.href} className="text-[13px]">

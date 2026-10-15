@@ -8,7 +8,7 @@ import { QuoteRequestForm } from "@/components/quotes/quote-request-form";
 import { requireFlipper } from "@/lib/auth/session";
 import { getProjectAttachments, getProjectForUser, getShortlist, listProjects } from "@/lib/data/projects";
 import { getContractorsByIds } from "@/lib/data/contractors";
-import { parseCompareIds } from "@/lib/domain/comparison";
+import { parseIdList } from "@/lib/ids";
 
 export const metadata: Metadata = { title: "Offerteaanvraag voorbereiden" };
 
@@ -16,7 +16,7 @@ export default async function NewQuoteRequestPage({ searchParams }: { searchPara
   const sp = await searchParams;
   const self = `/offerteaanvragen/nieuw?${new URLSearchParams(Object.entries(sp).filter(([, v]) => v) as [string, string][])}`;
   const user = await requireFlipper(self);
-  const preselected = parseCompareIds([sp.aannemer, sp.aannemers].filter(Boolean).join(","), 10);
+  const preselected = parseIdList([sp.aannemer, sp.aannemers].filter(Boolean).join(","), 10);
   const project = sp.project ? await getProjectForUser(sp.project, user) : null;
 
   if (!project) {

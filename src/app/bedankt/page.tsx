@@ -22,7 +22,7 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
           <Link href="/">Naar home</Link>
         </Button>
         <Button asChild>
-          <Link href="/aannemers">Aannemers vergelijken</Link>
+          <Link href="/projecten/nieuw">Start je project</Link>
         </Button>
       </div>
     </div>

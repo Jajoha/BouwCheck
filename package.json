@@ -17,6 +17,7 @@
     "smoke": "node scripts/crawl.mjs \"[\\\"/\\\",\\\"/aannemers\\\",\\\"/aannemers/lindewaard\\\",\\\"/vergelijken\\\",\\\"/prijzen\\\",\\\"/inloggen\\\"]\""
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.134.0",
     "@electric-sql/pglite": "^0.5.10",
     "@radix-ui/react-alert-dialog": "^1.2.1",
     "@radix-ui/react-dialog": "^1.3.1",

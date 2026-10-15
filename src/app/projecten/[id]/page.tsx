@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Columns3, FileText, Paperclip, ClipboardCheck, History, Users, Search } from "lucide-react";
+import { ArrowLeft, Pencil, FileText, Paperclip, ClipboardCheck, History, Users, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,7 +14,6 @@ import {
   DeleteAttachmentButton,
   DeleteProjectButton,
   DeleteQuoteButton,
-  MatchPicker,
   NotesForm,
   ProjectStatusSelect,
   RemoveFromShortlistButton,
@@ -22,8 +21,10 @@ import {
 } from "@/components/projects/project-widgets";
 import { requireFlipper } from "@/lib/auth/session";
 import { getProjectAttachments, getProjectEvents, getProjectForUser, getShortlist } from "@/lib/data/projects";
-import { getOutcomesForProject, getQuotesForProject, listComparisons, listQuoteRequestsForUser } from "@/lib/data/records";
-import { getContractorsByIds, listContractors } from "@/lib/data/contractors";
+import { getOutcomesForProject, getQuotesForProject, listQuoteRequestsForUser } from "@/lib/data/records";
+import { getContractorsByIds } from "@/lib/data/contractors";
+import { getScope, type AiSummary } from "@/lib/data/scope";
+import { AiFindings } from "@/components/intake/ai-findings";
 import { ATTACHMENT_KINDS, MODERATION_STATUS, OUTCOME_VERIFICATION, PRICE_TYPES, QUOTE_REQUEST_STATUS, specialtyName, type OutcomeVerification } from "@/lib/domain/constants";
 import { budgetDeviationPct } from "@/lib/domain/metrics";
 import { formatDate, formatDateTime, formatDays, formatMoney, formatNumber, formatPercent } from "@/lib/format";
@@ -36,34 +37,17 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   const p = await getProjectForUser(id, user);
   if (!p) notFound();
 
-  const [shortlist, quotes, requests, outcomes, events, attachments, comparisons, regional] = await Promise.all([
+  const [shortlist, quotes, requests, outcomes, events, attachments, scope] = await Promise.all([
     getShortlist(p.id),
     getQuotesForProject(p.id),
     listQuoteRequestsForUser(user.id, { projectId: p.id }),
     getOutcomesForProject(p.id),
     getProjectEvents(p.id),
     getProjectAttachments(p.id),
-    listComparisons(user.id),
-    listContractors({ province: p.province ?? undefined, pageSize: 500 }),
+    getScope(p.id),
   ]);
   const shortlistIds = shortlist.map((s) => s.contractor_id);
   const shortlistDetails = await getContractorsByIds(shortlistIds);
-  const projectComparisons = comparisons.filter((c) => c.project_id === p.id);
-
-  // Passende aannemers: overlap in vakgebied (of hoofdaannemer), in de regio van het project
-  const candidates = regional.items
-    .filter((c) => !shortlistIds.includes(c.id))
-    .map((c) => {
-      const ids = c.specialties.map((s) => s.id);
-      const general = ids.includes("hoofdaannemer");
-      const matched = p.specialty_ids.filter((s) => ids.includes(s));
-      return { c, matched, general };
-    })
-    .filter((x) => x.matched.length > 0 || x.general)
-    .sort((a, b) => b.matched.length - a.matched.length || b.c.completeness - a.c.completeness)
-    .slice(0, 8);
-
-  const compareIds = shortlistIds.slice(0, 4);
   const outcomeContractors = new Set(outcomes.map((o) => o.contractor_id));
 
   return (
@@ -82,6 +66,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ProjectStatusSelect projectId={p.id} status={p.status} />
+          <Button asChild>
+            <Link href={`/projecten/${p.id}/voorstellen`}>
+              <Users aria-hidden /> Teamvoorstellen
+            </Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href={`/projecten/${p.id}/bewerken`}>
               <Pencil aria-hidden /> Bewerken
@@ -91,41 +80,41 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
         <div className="flex min-w-0 flex-col gap-6">
           {/* Shortlist */}
           <Card>
             <CardHeader className="flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="size-4" aria-hidden /> Geselecteerde aannemers
+                  <Users className="size-4" aria-hidden /> Gekozen aannemers
                 </CardTitle>
-                <CardDescription>Shortlist voor dit project ({shortlist.length}).</CardDescription>
+                <CardDescription>Aannemers uit een gekozen teamvoorstel ({shortlist.length}).</CardDescription>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {compareIds.length >= 2 ? (
-                  <Button asChild size="sm" variant="dark">
-                    <Link href={`/vergelijken?ids=${compareIds.join(",")}&project=${p.id}`}>
-                      <Columns3 aria-hidden /> Vergelijk shortlist{shortlistIds.length > 4 ? " (eerste 4)" : ""}
-                    </Link>
-                  </Button>
-                ) : null}
-                {shortlist.length ? (
-                  <Button asChild size="sm">
-                    <Link href={`/offerteaanvragen/nieuw?project=${p.id}&aannemers=${shortlistIds.join(",")}`}>
-                      <FileText aria-hidden /> Offerteaanvraag
-                    </Link>
-                  </Button>
-                ) : null}
-              </div>
+              {shortlist.length ? (
+                <Button asChild size="sm">
+                  <Link href={`/offerteaanvragen/nieuw?project=${p.id}&aannemers=${shortlistIds.join(",")}`}>
+                    <FileText aria-hidden /> Offerteaanvraag
+                  </Link>
+                </Button>
+              ) : null}
             </CardHeader>
             <CardContent className="p-0">
               {shortlist.length === 0 ? (
                 <div className="p-5">
-                  <EmptyState icon={Users} title="Nog geen aannemers geselecteerd" description="Kies hieronder uit passende aannemers, of zoek in de database." />
+                  <EmptyState
+                    icon={Users}
+                    title="Nog geen team gekozen"
+                    description="Bekijk de teamvoorstellen op budget, kwaliteit en snelheid en kies er één."
+                    action={
+                      <Button asChild size="sm">
+                        <Link href={`/projecten/${p.id}/voorstellen`}>Naar teamvoorstellen</Link>
+                      </Button>
+                    }
+                  />
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="relative overflow-x-auto">
                   <table className="w-full min-w-[640px]">
                     <thead>
                       <tr>
@@ -175,63 +164,49 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             </CardContent>
           </Card>
 
-          {/* Passende aannemers */}
+          {/* Werkzaamheden */}
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle>Passende aannemers</CardTitle>
-                <CardDescription>
-                  Actief in {p.province ?? "alle regio's"} met een of meer gevraagde vakgebieden. Overeenkomsten en ontbrekende gegevens per aannemer.
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <ListChecks className="size-4" aria-hidden /> Werkzaamheden
+                </CardTitle>
+                <CardDescription>De bevestigde scope waarop teams worden samengesteld en offertes worden aangevraagd.</CardDescription>
               </div>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/aannemers${p.province ? `?provincie=${encodeURIComponent(p.province)}` : ""}`}>
-                  <Search aria-hidden /> Zoeken
+                <Link href={`/projecten/${p.id}/werkzaamheden`}>
+                  <Pencil aria-hidden /> Aanpassen
                 </Link>
               </Button>
             </CardHeader>
-            <CardContent>
-              {candidates.length === 0 ? (
-                <EmptyState title="Geen (nieuwe) passende aannemers gevonden" description="Probeer de database met andere filters, of pas de provincie of vakgebieden van je project aan." />
+            <CardContent className="flex flex-col gap-4">
+              {scope.length === 0 ? (
+                <EmptyState title="Nog geen werkzaamheden vastgelegd" description="Leg de werkzaamheden vast om teamvoorstellen te krijgen." />
               ) : (
-                <div className="flex flex-col gap-4">
-                  <ul className="divide-y divide-ink-100">
-                    {candidates.map(({ c, matched, general }) => {
-                      const missing = [
-                        c.metrics.onTime.status !== "ok" && "op-tijdpercentage",
-                        c.metrics.budgetDeviation.status !== "ok" && "budgetafwijking",
-                        c.rateCount === 0 && "tarieven",
-                        c.availability_status === "onbekend" && "beschikbaarheid",
-                        !c.verification.businessVerified && "gecontroleerde bedrijfsgegevens",
-                      ].filter(Boolean);
-                      return (
-                        <li key={c.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <Link href={`/aannemers/${c.slug}`} className="font-medium text-ink-950 hover:underline">
-                              {c.company_name}
-                            </Link>
-                            <p className="text-xs text-ink-600">
-                              <span className="text-brand-800">Komt overeen:</span>{" "}
-                              {general ? "hoofdaannemer (alle vakgebieden, evt. via onderaannemers)" : matched.map(specialtyName).join(", ")}
-                            </p>
-                            {missing.length ? (
-                              <p className="text-xs text-ink-500">
-                                <span className="text-warn-700">Ontbreekt:</span> {missing.join(", ")}
-                              </p>
-                            ) : (
-                              <p className="text-xs text-ink-500">Geen ontbrekende kerngegevens</p>
-                            )}
-                          </div>
-                          <div className="text-xs text-ink-600 sm:text-right">
-                            {c.metrics.registeredProjects} projecten · {c.metrics.verifiedProjects} gecontroleerd
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <MatchPicker projectId={p.id} candidates={candidates.map((x) => ({ id: x.c.id, name: x.c.company_name }))} />
-                </div>
+                <TableWrap>
+                  <table className="w-full min-w-[520px]">
+                    <thead>
+                      <tr>
+                        <th className={th}>Vakgebied</th>
+                        <th className={th}>Werkzaamheid</th>
+                        <th className={`${th} text-right`}>Hoeveelheid</th>
+                        <th className={th}>Bron</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scope.map((s) => (
+                        <tr key={s.id}>
+                          <td className={td}>{specialtyName(s.specialty_id)}</td>
+                          <td className={td}>{s.description}</td>
+                          <td className={`${td} tabular text-right`}>{s.quantity !== null ? `${formatNumber(s.quantity, 1)} ${s.unit === "m2" ? "m²" : s.unit}` : "Onbekend"}</td>
+                          <td className={`${td} text-xs`}>{s.source === "ai" ? `AI · zekerheid ${s.confidence ?? "onbekend"}` : "Eigen invoer"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </TableWrap>
               )}
+              {p.ai_summary ? <AiFindings findings={p.ai_summary as AiSummary} /> : null}
             </CardContent>
           </Card>
 
@@ -239,7 +214,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
           <Card>
             <CardHeader>
               <CardTitle>Offertes en prijsopgaven</CardTitle>
-              <CardDescription>Leg bedragen vast om ze in de vergelijking te gebruiken. Indicatieve prijs, offerte en overeengekomen prijs worden apart getoond.</CardDescription>
+              <CardDescription>Leg ontvangen bedragen vast. Indicatieve prijs, offerte en overeengekomen prijs worden apart getoond.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
               {quotes.length ? (
@@ -415,28 +390,6 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 <p className="text-sm text-ink-500">Nog geen bijlagen.</p>
               )}
               <AttachmentUpload projectId={p.id} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Vergelijkingen</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {projectComparisons.length === 0 ? (
-                <p className="text-sm text-ink-500">Nog geen vergelijkingen voor dit project opgeslagen.</p>
-              ) : (
-                <ul className="space-y-2 text-sm">
-                  {projectComparisons.map((c) => (
-                    <li key={c.id}>
-                      <Link href={`/vergelijken?ids=${c.contractor_ids.join(",")}&project=${p.id}`} className="font-medium text-brand-700 hover:underline">
-                        {c.name}
-                      </Link>
-                      <span className="block text-xs text-ink-500">{c.contractor_names.join(" · ")}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </CardContent>
           </Card>
 

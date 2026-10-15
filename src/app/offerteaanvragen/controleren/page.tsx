@@ -10,7 +10,7 @@ import { DeliveryNote } from "@/components/quotes/delivery-note";
 import { SendRequestsButton } from "@/components/quotes/quote-request-actions";
 import { requireFlipper } from "@/lib/auth/session";
 import { getQuoteRequest, getQuoteRequestAttachments, type QuoteRequest } from "@/lib/data/records";
-import { parseCompareIds } from "@/lib/domain/comparison";
+import { parseIdList } from "@/lib/ids";
 import { QUOTE_REQUEST_STATUS } from "@/lib/domain/constants";
 import { env } from "@/lib/env";
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: "Offerteaanvraag controleren" };
 export default async function ReviewRequestsPage({ searchParams }: { searchParams: Promise<{ ids?: string }> }) {
   const { ids: raw } = await searchParams;
   const user = await requireFlipper("/offerteaanvragen");
-  const ids = parseCompareIds(raw, 10);
+  const ids = parseIdList(raw, 10);
   const requests = (await Promise.all(ids.map((id) => getQuoteRequest(id)))).filter((r): r is QuoteRequest => Boolean(r && r.user_id === user.id));
   const attachments = await Promise.all(requests.map((r) => getQuoteRequestAttachments(r.id)));
   const sendable = requests.filter((r) => ["concept", "klaar"].includes(r.status));

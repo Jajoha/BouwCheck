@@ -16,7 +16,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <AuthCard
       title="Inloggen bij BouwCheck"
-      description="Beheer je renovatieprojecten, vergelijkingen en offerteaanvragen."
+      description="Beheer je renovatieprojecten, teamvoorstellen en offerteaanvragen."
       footer={
         <>
           Nog geen account?{" "}

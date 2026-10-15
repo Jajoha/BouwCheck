@@ -370,7 +370,7 @@ export async function getRatesForContractors(ids: string[]) {
   );
 }
 
-/** Lichte lijst voor keuzelijsten (bijv. beheer, vergelijking). */
+/** Lichte lijst voor keuzelijsten (bijv. beheer). */
 export async function listContractorOptions() {
   return sql<{ id: string; company_name: string; is_demo: boolean }>(
     "select id, company_name, is_demo from contractors where status = 'actief' order by company_name",

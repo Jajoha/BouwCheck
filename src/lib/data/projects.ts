@@ -25,11 +25,12 @@ export type Project = {
   created_at: string;
   updated_at: string;
   specialty_ids: string[];
+  ai_summary: Record<string, unknown> | null;
 };
 
 const COLUMNS = `p.id, p.user_id, p.name, p.location, p.province, p.property_type, p.renovation_type, p.area_m2, p.budget_amount,
   p.budget_vat_included, p.desired_start_date, p.desired_completion_date, p.status, p.description, p.material_preferences,
-  p.extra_requirements, p.notes, p.is_demo, p.created_at::text as created_at, p.updated_at::text as updated_at,
+  p.extra_requirements, p.notes, p.ai_summary, p.is_demo, p.created_at::text as created_at, p.updated_at::text as updated_at,
   coalesce((select array_agg(ps.specialty_id order by ps.specialty_id) from project_specialties ps where ps.project_id = p.id), '{}') as specialty_ids`;
 
 export async function listProjects(userId: string) {

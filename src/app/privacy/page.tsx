@@ -17,10 +17,16 @@ export default function PrivacyPage() {
       </ul>
       <h2>Waarvoor</h2>
       <ul>
-        <li>Het leveren van de dienst: projecten beheren, aannemers vergelijken en aanvragen voorbereiden.</li>
+        <li>Het leveren van de dienst: projecten beheren, teams van aannemers samenstellen en aanvragen voorbereiden.</li>
         <li>Het berekenen van geanonimiseerde prestatiestatistieken van aannemers op basis van goedgekeurde projectresultaten.</li>
         <li>Moderatie en het afhandelen van meldingen en bezwaren.</li>
       </ul>
+      <h2>AI-analyse door een externe dienst</h2>
+      <p>
+        Als je kiest voor ‘Analyseer met AI’, worden je projectbeschrijving, locatie, woningtype en de foto&apos;s die je toevoegt naar Anthropic (Claude) gestuurd om de
+        werkzaamheden in te schatten. Plaats daarom geen persoonsgegevens of herkenbare personen op foto&apos;s. Een verwerkersovereenkomst en de bewaartermijnen bij de
+        AI-dienst worden vóór commercieel gebruik vastgelegd. Per account registreren wij het aantal analyses, tokens en de kosten.
+      </p>
       <h2>Wie kan wat zien</h2>
       <ul>
         <li>Je projecten, notities en bijlagen zijn alleen voor jou zichtbaar, en voor beheer voor zover nodig voor moderatie.</li>

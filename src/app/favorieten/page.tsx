@@ -21,10 +21,10 @@ export default async function FavoritesPage() {
           className="mt-6"
           icon={Bookmark}
           title="Nog geen aannemers opgeslagen"
-          description="Gebruik ‘Opslaan’ op een aannemerskaart of profiel."
+          description="Gebruik ‘Opslaan’ op het profiel van een aannemer uit een teamvoorstel."
           action={
             <Button asChild variant="outline">
-              <Link href="/aannemers">Naar aannemers</Link>
+              <Link href="/projecten">Naar je projecten</Link>
             </Button>
           }
         />

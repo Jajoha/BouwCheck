@@ -157,7 +157,6 @@ export const projectSchema = z
     budget_vat_included: checkbox,
     desired_start_date: optionalDate,
     desired_completion_date: optionalDate,
-    specialty_ids: enumArray(SPECIALTY_IDS).refine((v) => v.length > 0, "Kies minimaal één vakgebied."),
     description: text(10, 5000, "Omschrijving"),
     material_preferences: optionalText(2000),
     extra_requirements: optionalText(2000),
@@ -308,11 +307,62 @@ export const flagSchema = z.object({
   details: text(10, 2000, "Toelichting"),
 });
 
-export const comparisonSaveSchema = z.object({
-  name: text(2, 120, "Naam"),
-  project_id: z.preprocess((v) => empty(v), uuid.optional()),
-  contractor_ids: stringArray.pipe(z.array(uuid).min(2, "Een vergelijking bevat minimaal 2 aannemers.").max(4, "Maximaal 4 aannemers.")),
-  notes: optionalText(2000),
-});
-
 export const attachmentKindSchema = z.enum(keys(ATTACHMENT_KINDS));
+
+// ── Intake & scope ──────────────────────────────────────────
+export const intakeProjectSchema = z
+  .object({
+    name: optionalText(120),
+    location: text(2, 120, "Locatie"),
+    province: z.enum(PROVINCE_VALUES, { error: "Kies de provincie; die bepaalt welke aannemers in aanmerking komen." }),
+    property_type: z.enum(PROPERTY_VALUES, { error: "Kies het type woning." }),
+    renovation_type: z.enum(RENOVATION_VALUES, { error: "Kies het type renovatie." }),
+    area_m2: optionalNumber({ min: 1, max: 100000, label: "Woonoppervlak" }),
+    budget_amount: optionalNumber({ min: 0, max: 100_000_000, label: "Budget" }),
+    budget_vat_included: checkbox,
+    desired_start_date: optionalDate,
+    desired_completion_date: optionalDate,
+    description: text(20, 5000, "Projectomschrijving"),
+  })
+  .refine((d) => !d.desired_start_date || !d.desired_completion_date || d.desired_completion_date >= d.desired_start_date, {
+    path: ["desired_completion_date"],
+    message: "De opleverdatum moet na de startdatum liggen.",
+  });
+
+export const SCOPE_UNITS = ["m2", "uur", "stuk", "meter", "project"] as const;
+
+export const scopeItemSchema = z
+  .object({
+    specialty_id: z.enum(SPECIALTY_IDS, { error: "Kies een vakgebied." }),
+    description: z.string().trim().min(3, "Omschrijf de werkzaamheid.").max(300),
+    quantity: z.number().positive("Hoeveelheid moet groter dan 0 zijn.").max(1_000_000).nullable(),
+    unit: z.enum(SCOPE_UNITS).nullable(),
+    confidence: z.enum(["hoog", "middel", "laag"]).nullable(),
+    source: z.enum(["ai", "gebruiker"]),
+  })
+  .refine((d) => (d.quantity === null) === (d.unit === null), { message: "Vul hoeveelheid én eenheid in, of laat beide leeg.", path: ["quantity"] });
+
+export const scopeListSchema = z.array(scopeItemSchema).min(1, "Voeg minimaal één werkzaamheid toe.").max(40, "Maximaal 40 werkzaamheden.");
+
+export const aiSummarySchema = z
+  .object({
+    summary: z.string().max(2000).optional(),
+    property_condition: z.string().max(2000).optional(),
+    risks: z.array(z.string().max(500)).max(20).optional(),
+    open_questions: z.array(z.string().max(500)).max(20).optional(),
+    assumptions: z.array(z.string().max(500)).max(20).optional(),
+    model: z.string().max(60).optional(),
+    analyzed_at: z.string().max(40).optional(),
+  })
+  .nullable();
+
+/** Leest een JSON-veld uit FormData en valideert het. */
+export function parseJsonField<T extends z.ZodType>(schema: T, raw: FormDataEntryValue | null): { ok: true; data: z.infer<T> } | { ok: false; error: string } {
+  try {
+    const parsed = schema.safeParse(raw === null || raw === "" ? null : JSON.parse(String(raw)));
+    if (parsed.success) return { ok: true, data: parsed.data };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
+  } catch {
+    return { ok: false, error: "Ongeldige invoer." };
+  }
+}

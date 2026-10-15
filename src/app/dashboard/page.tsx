@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus, FolderKanban, Bookmark, Columns3, FileText, Activity, Lightbulb, ArrowRight } from "lucide-react";
+import { Plus, FolderKanban, Bookmark, CheckCircle2, FileText, Activity, Lightbulb, ArrowRight, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState, PageHeader } from "@/components/ui/misc";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DemoBadge, projectTone, quoteRequestTone } from "@/components/domain/badges";
 import { requireFlipper } from "@/lib/auth/session";
 import { getActivityForUser, listProjects } from "@/lib/data/projects";
-import { listComparisons, listFavoriteContractorIds, listQuoteRequestsForUser } from "@/lib/data/records";
+import { listFavoriteContractorIds, listQuoteRequestsForUser } from "@/lib/data/records";
 import { getContractorsByIds } from "@/lib/data/contractors";
 import { PROJECT_STATUS, QUOTE_REQUEST_STATUS } from "@/lib/domain/constants";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
@@ -31,10 +31,9 @@ function greeting() {
 
 export default async function DashboardPage() {
   const user = await requireFlipper("/dashboard");
-  const [projects, requests, comparisons, favoriteIds, activity] = await Promise.all([
+  const [projects, requests, favoriteIds, activity] = await Promise.all([
     listProjects(user.id),
     listQuoteRequestsForUser(user.id, { limit: 50 }),
-    listComparisons(user.id, 5),
     listFavoriteContractorIds(user.id),
     getActivityForUser(user.id, 8),
   ]);
@@ -47,12 +46,9 @@ export default async function DashboardPage() {
       <PageHeader
         eyebrow={user.company_name ?? undefined}
         title={`${greeting()}, ${user.name.split(" ")[0]}`}
-        description="Overzicht van je renovatieprojecten, vergelijkingen en offerteaanvragen."
+        description="Overzicht van je renovatieprojecten, teamvoorstellen en offerteaanvragen."
         actions={
           <>
-            <Button asChild variant="outline">
-              <Link href="/aannemers">Aannemers zoeken</Link>
-            </Button>
             <Button asChild>
               <Link href="/projecten/nieuw">
                 <Plus aria-hidden /> Nieuw renovatieproject
@@ -66,7 +62,7 @@ export default async function DashboardPage() {
         {[
           { label: "Actieve projecten", value: active.length, href: "/projecten", icon: FolderKanban },
           { label: "Open offerteaanvragen", value: openRequests.length, href: "/offerteaanvragen", icon: FileText },
-          { label: "Opgeslagen vergelijkingen", value: comparisons.length, href: "/vergelijkingen", icon: Columns3 },
+          { label: "Afgeronde projecten", value: projects.filter((p) => p.status === "opgeleverd").length, href: "/projecten", icon: CheckCircle2 },
           { label: "Opgeslagen aannemers", value: favoriteIds.length, href: "/favorieten", icon: Bookmark },
         ].map((s) => (
           <Link key={s.label} href={s.href} className="rounded-[var(--radius-card)] border border-ink-200 bg-white p-4 transition-colors hover:border-ink-300">
@@ -92,7 +88,7 @@ export default async function DashboardPage() {
                 <EmptyState
                   icon={FolderKanban}
                   title="Nog geen actieve projecten"
-                  description="Beschrijf je eerste renovatieproject. Daarna zie je welke aannemers passen en wat er nog ontbreekt."
+                  description="Beschrijf je eerste renovatieproject en voeg foto's toe. Je krijgt teamvoorstellen op budget, kwaliteit en snelheid."
                   action={
                     <Button asChild>
                       <Link href="/projecten/nieuw">Project aanmaken</Link>
@@ -111,7 +107,12 @@ export default async function DashboardPage() {
                           {p.location} · {p.renovation_type} · budget {formatMoney(p.budget_amount, p.budget_vat_included)} · start {formatDate(p.desired_start_date)}
                         </p>
                       </div>
-                      <div className="flex shrink-0 items-center gap-2">
+                      <div className="flex shrink-0 flex-wrap items-center gap-2">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/projecten/${p.id}/voorstellen`}>
+                            <Users aria-hidden /> Teamvoorstellen
+                          </Link>
+                        </Button>
                         {p.is_demo ? <DemoBadge compact /> : null}
                         <span className="text-xs text-ink-500">
                           {p.shortlist_count} aannemers · {p.quote_count} offertes
@@ -156,33 +157,6 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Recente vergelijkingen</CardTitle>
-              <Link href="/vergelijken" className="text-sm text-brand-700 hover:underline">
-                Nieuwe vergelijking
-              </Link>
-            </CardHeader>
-            <CardContent>
-              {comparisons.length === 0 ? (
-                <EmptyState icon={Columns3} title="Nog geen vergelijkingen opgeslagen" description="Selecteer 2 tot 4 aannemers in de database en sla de vergelijking op." />
-              ) : (
-                <ul className="divide-y divide-ink-100">
-                  {comparisons.map((c) => (
-                    <li key={c.id} className="flex items-center justify-between gap-3 py-3">
-                      <div className="min-w-0">
-                        <Link href={`/vergelijken?ids=${c.contractor_ids.join(",")}${c.project_id ? `&project=${c.project_id}` : ""}`} className="font-medium text-ink-950 hover:underline">
-                          {c.name}
-                        </Link>
-                        <p className="truncate text-xs text-ink-500">{c.contractor_names.join(" · ")}</p>
-                      </div>
-                      <span className="shrink-0 text-xs text-ink-500">{formatDate(c.updated_at)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -195,7 +169,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               {favorites.length === 0 ? (
-                <EmptyState icon={Bookmark} title="Nog niets opgeslagen" description="Gebruik ‘Opslaan’ bij een aannemer." />
+                <EmptyState icon={Bookmark} title="Nog niets opgeslagen" description="Gebruik ‘Opslaan’ op het profiel van een aannemer uit een teamvoorstel." />
               ) : (
                 <ul className="divide-y divide-ink-100">
                   {favorites.map((c) => (

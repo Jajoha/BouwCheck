@@ -319,7 +319,7 @@ export async function resetDemoDataAction(): Promise<ActionResult> {
       return { ok: false, message: "Demo-data kan alleen in de lokale demo-modus worden teruggezet." };
     }
     await db.exec(`truncate table admin_actions, flags, verification_events, reviews, project_outcomes, quotes, quote_request_attachments,
-      quote_requests, project_attachments, project_events, project_contractors, project_specialties, projects, comparison_items, comparisons,
+      quote_requests, project_attachments, project_events, project_contractors, project_specialties, projects, project_scope_items, ai_usage,
       favorites, contractor_references, contractor_rates, contractor_service_areas, contractor_specialties, contractor_private, contractors,
       interest_leads, password_reset_tokens, sessions, users restart identity cascade`);
     fs.rmSync(path.resolve(process.cwd(), env.dataDir, "uploads"), { recursive: true, force: true });

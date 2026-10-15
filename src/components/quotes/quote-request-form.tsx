@@ -32,7 +32,7 @@ export function QuoteRequestForm({ d }: { d: QuoteRequestDefaults }) {
       <Fieldset legend="Aan welke aannemers?" description="Er wordt per aannemer een aparte aanvraag aangemaakt met dezelfde scope." error={errors("contractor_ids")}>
         {d.contractors.length === 0 ? (
           <p className="text-sm text-ink-500">
-            Er staan nog geen aannemers op de shortlist van dit project. <Link href="/aannemers" className="text-brand-700 underline">Zoek aannemers</Link>.
+            Er is nog geen team gekozen voor dit project. <Link href={`/projecten/${d.projectId}/voorstellen`} className="text-brand-700 underline">Bekijk de teamvoorstellen</Link>.
           </p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">

@@ -13,7 +13,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
       description={
         rol === "aannemer"
           ? "Maak eerst een account aan. Daarna kies je de rol ‘Aannemer’ en vul je je bedrijfsprofiel in."
-          : "Registreer je om projecten, vergelijkingen en offerteaanvragen op te slaan."
+          : "Registreer je om je project te beschrijven en teamvoorstellen te ontvangen."
       }
       footer={
         <>

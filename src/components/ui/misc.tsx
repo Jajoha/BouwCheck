@@ -126,7 +126,7 @@ export function Avatar({ name, className }: { name: string; className?: string }
 }
 
 export function TableWrap({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("overflow-x-auto rounded-[var(--radius-card)] border border-ink-200 bg-white", className)}>{children}</div>;
+  return <div className={cn("relative overflow-x-auto rounded-[var(--radius-card)] border border-ink-200 bg-white", className)}>{children}</div>;
 }
 
 export const th = "px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-ink-500 bg-ink-50 border-b border-ink-200 whitespace-nowrap";

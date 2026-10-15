@@ -17,8 +17,45 @@ const METRICS = [
 export default function TransparencyPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 pb-28 sm:px-6">
-      <PageHeader title="Hoe wij gegevens beoordelen" description="Betrouwbaarheid gaat boven een mooie score. Zo komen de cijfers op BouwCheck tot stand." />
+      <PageHeader title="Hoe wij selecteren en beoordelen" description="Betrouwbaarheid gaat boven een mooie score. Zo komen teamvoorstellen en cijfers op BouwCheck tot stand." />
       <div className="mt-8 space-y-10 text-[15px] leading-relaxed text-ink-800">
+        <section>
+          <h2 className="text-lg font-semibold text-ink-950">Van projectomschrijving naar teamvoorstel</h2>
+          <ol className="mt-3 list-decimal space-y-2 pl-5">
+            <li>
+              <strong>Intake.</strong> Je beschrijft het project en voegt eventueel foto&apos;s toe. Een AI-model (Claude van Anthropic) stelt daaruit een lijst
+              werkzaamheden voor met vakgebied, hoeveelheid en zekerheid, plus risico&apos;s en open vragen. De AI noemt geen prijzen en kiest geen aannemers. Jij bevestigt
+              of corrigeert de werkzaamheden; zonder AI vul je ze zelf in.
+            </li>
+            <li>
+              <strong>Kandidaten.</strong> Alleen actieve aannemers die in de provincie van je project werken en het betreffende vakgebied uitvoeren.
+            </li>
+            <li>
+              <strong>Teams.</strong> Een hoofdaannemer die alles aanneemt, of een team van losse vakspecialisten (per vakgebied één). Bij een team van specialisten ligt
+              de coördinatie bij jou; dat staat bij het voorstel.
+            </li>
+            <li>
+              <strong>Ordening per prioriteit</strong> — telkens één criterium, geen samengestelde score:
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                <li>
+                  <em>Budget:</em> laagste middenwaarde van de kostenbandbreedte = som van (hoeveelheid × minimum- en maximumtarief) uit de door aannemers opgegeven
+                  tarieven, of het all-in m²-tarief van een hoofdaannemer.
+                </li>
+                <li>
+                  <em>Kwaliteit:</em> de beoordeling van de zwakste schakel in het team (alleen aannemers met minimaal {site.minSampleSize} gepubliceerde beoordelingen);
+                  bij gelijke stand minder herstelwerk, daarna meer gecontroleerde projecten.
+                </li>
+                <li>
+                  <em>Snelheid:</em> de vroegste datum waarop het hele team beschikbaar is, volgens de opgegeven beschikbaarheid.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>Onvoldoende gegevens</strong> (geen passend tarief, te weinig beoordelingen, onbekende beschikbaarheid of een vakgebied zonder aanbieder in de regio)?
+              Dan wordt een team niet tussen de anderen gerangschikt maar apart getoond, met de reden.
+            </li>
+          </ol>
+        </section>
         <section>
           <h2 className="text-lg font-semibold text-ink-950">Vier soorten informatie</h2>
           <ul className="mt-3 space-y-2">

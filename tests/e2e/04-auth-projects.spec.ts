@@ -45,7 +45,6 @@ test.describe.serial("Registratie, onboarding, projecten en offerteaanvragen", (
     await expect(page).toHaveURL(/\/dashboard/);
     await expect(page.getByText("Nog geen actieve projecten")).toBeVisible();
     await expect(page.getByText("Geen openstaande aanvragen")).toBeVisible();
-    await expect(page.getByText("Nog geen vergelijkingen opgeslagen")).toBeVisible();
   });
 
   test("onjuist wachtwoord geeft foutmelding; daarna inloggen", async ({ page }) => {
@@ -59,54 +58,66 @@ test.describe.serial("Registratie, onboarding, projecten en offerteaanvragen", (
     await expect(page).toHaveURL(/\/dashboard/);
   });
 
-  test("project aanmaken via wizard, bewerken, shortlist en offerte vastleggen", async ({ page }) => {
+  test("AI-intake met foto, werkzaamheden controleren, teamvoorstellen en team kiezen", async ({ page }) => {
     await login(page);
     await page.goto("/projecten/nieuw");
 
-    // stap 1 met validatie
-    await page.getByRole("button", { name: "Volgende" }).click();
-    await expect(page.getByText("Projectnaam is verplicht.")).toBeVisible();
-    await page.getByLabel("Projectnaam").fill("E2E Hoekwoning Utrecht");
+    // validatie in stap 1
+    await page.getByRole("button", { name: "Analyseer met AI" }).click();
+    await expect(page.getByText("Locatie is verplicht.")).toBeVisible();
+    await expect(page.getByText("Beschrijf het project in minimaal 20 tekens.")).toBeVisible();
+
+    await page.getByLabel("Wat wil je laten doen?").fill("Jaren-60 hoekwoning, alles opnieuw stucen en schilderen, nieuwe groepenkast. Verder complete opknapbeurt.");
     await page.getByLabel("Locatie (plaats of postcode)").fill("Utrecht");
     await page.getByLabel("Provincie").selectOption("Utrecht");
-    await page.getByLabel("Type vastgoed").selectOption("Hoekwoning");
+    await page.getByLabel("Type woning").selectOption("Hoekwoning");
     await page.getByLabel("Type renovatie").selectOption("Complete renovatie");
-    await page.getByLabel("Geschat oppervlak (m²)").fill("120");
-    await page.getByRole("button", { name: "Volgende" }).click();
-    // stap 2
-    await page.getByLabel("Gewenste startdatum").fill("2027-03-01");
-    await page.getByLabel("Gewenste opleverdatum").fill("2027-02-01");
-    await page.getByRole("button", { name: "Volgende" }).click();
+    await page.getByLabel("Woonoppervlak (m²)").fill("110");
+    await page.getByLabel("Renovatiebudget (€)").fill("90.000");
+    await page.getByLabel("Gewenste start").fill("2027-03-01");
+    await page.getByLabel("Gewenste oplevering").fill("2027-02-01");
+    await page.getByLabel(/^Projectnaam/).fill("E2E Hoekwoning Utrecht");
+    await page.getByRole("button", { name: "Analyseer met AI" }).click();
     await expect(page.getByText("De opleverdatum moet na de startdatum liggen.")).toBeVisible();
-    await page.getByLabel("Gewenste opleverdatum").fill("2027-05-01");
-    await page.getByLabel("Beschikbaar renovatiebudget (€)").fill("90.000");
-    await page.getByRole("button", { name: "Volgende" }).click();
-    // stap 3
-    await page.getByLabel("Hoofdaannemer").check();
-    await page.getByLabel("Elektricien").check();
-    await page.getByLabel("Omschrijving van de werkzaamheden").fill("Volledige renovatie inclusief nieuwe elektra en afwerking.");
-    await page.getByRole("button", { name: "Volgende" }).click();
-    // stap 4
-    await page.getByRole("button", { name: "Project opslaan" }).click();
+    await page.getByLabel("Gewenste oplevering").fill("2027-05-01");
 
-    await expect(page).toHaveURL(/\/projecten\/[0-9a-f-]{36}/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("E2E Hoekwoning Utrecht");
-    await expect(page.getByText("€ 90.000 excl. btw")).toBeVisible();
-    await expect(page.getByText("Project aangemaakt").first()).toBeVisible();
+    // foto toevoegen (wordt in de browser verkleind naar JPEG)
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAYklEQVR4nGNgENGwCUip6Fmw5cSdDywSOg4hGTUTluw4wyBn5BaV1zRt1b5Lz37xKZl5xRW1zVp36NorBqzKH3zhYMCq/J+QGgNW5TIGLgxYlVv5JTFgVR6R08CAVXlZ1zwAORNgQXwkZZMAAAAASUVORK5CYII=", "base64");
+    await page.getByLabel("Foto's toevoegen").setInputFiles({ name: "badkamer.png", mimeType: "image/png", buffer: png });
+    await expect(page.getByRole("img", { name: /badkamer/ })).toBeVisible();
 
-    // passende aannemers → shortlist
-    await expect(page.getByText("Komt overeen:").first()).toBeVisible();
-    await page.getByRole("checkbox", { name: "Bouwgroep Lindewaard" }).check();
-    await page.getByRole("checkbox", { name: "Renovatiebedrijf Snelbouw Oost" }).check();
-    await page.getByRole("button", { name: /2 toevoegen aan shortlist/ }).click();
-    await expect(page.getByText("2 aannemers toegevoegd aan de shortlist.")).toBeVisible();
-    await expect(page.getByRole("link", { name: /Vergelijk shortlist/ })).toBeVisible();
+    await page.getByRole("button", { name: "Analyseer met AI" }).click();
+    await expect(page.getByText("Voorstel van de AI — controleer en corrigeer")).toBeVisible();
+    await expect(page.getByText(/kosten deze analyse: \$ 0,|kosten deze analyse: \$ 0\./)).toBeVisible();
+    await expect(page.getByText("Mogelijk asbest bij bouwjaar vóór 1994")).toBeVisible();
+    await expect(page.getByLabel("Omschrijving onderdeel 4")).toHaveValue("Nieuwe groepenkast");
+    // corrigeren: een AI-regel aanpassen wordt eigen invoer
+    await page.getByLabel("Hoeveelheid onderdeel 3").fill("200");
+    await page.getByRole("button", { name: "Opslaan en teamvoorstellen bekijken" }).click();
 
-    // offerte vastleggen
+    await expect(page).toHaveURL(/\/projecten\/[0-9a-f-]{36}\/voorstellen/);
+    await expect(page.getByRole("heading", { name: "Teamvoorstellen" })).toBeVisible();
+    for (const t of ["Budgetoptie", "Kwalitatieve optie", "Snelste optie"]) await expect(page.getByRole("heading", { name: t })).toBeVisible();
+    await expect(page.getByText("Aanbevolen voor budget")).toBeVisible();
+
+    // team kiezen → offerteaanvraag met voorgeselecteerde aannemers
+    await page.locator("#kwaliteit").getByRole("button", { name: /Kies dit team/ }).first().click();
+    await expect(page).toHaveURL(/\/offerteaanvragen\/nieuw\?project=.*aannemers=/);
+    await expect(page.getByRole("checkbox").first()).toBeChecked();
+
+    // projectpagina: werkzaamheden, AI-bevindingen, foto en tijdlijn
+    await page.goto("/projecten");
+    await page.getByRole("link", { name: /E2E Hoekwoning Utrecht/ }).click();
+    await expect(page.getByRole("cell", { name: "Nieuwe groepenkast" })).toBeVisible();
+    await expect(page.getByText("Mogelijk asbest bij bouwjaar vóór 1994")).toBeVisible();
+    await expect(page.getByRole("link", { name: /badkamer/ })).toBeVisible();
+    await expect(page.getByText(/Teamvoorstel gekozen/)).toBeVisible();
+
+    // offerte vastleggen voor een teamlid
     await page.getByText("Offerte of prijsopgave vastleggen").click();
-    await page.locator("#q-contractor").selectOption({ label: "Bouwgroep Lindewaard" });
+    await page.locator("#q-contractor").selectOption({ index: 1 });
     await page.getByLabel("Bedrag (€)").fill("82.500");
-    await page.getByLabel("Omschrijving scope").fill("Complete renovatie volgens omschrijving");
+    await page.getByLabel("Omschrijving scope").fill("Complete renovatie volgens werkzaamheden");
     await page.getByRole("button", { name: "Bedrag vastleggen" }).click();
     await expect(page.getByText("€ 82.500 excl. btw")).toBeVisible();
 
@@ -115,31 +126,34 @@ test.describe.serial("Registratie, onboarding, projecten en offerteaanvragen", (
     await page.getByLabel("Projectnaam").fill("E2E Hoekwoning Utrecht (bewerkt)");
     await page.getByRole("button", { name: "Wijzigingen opslaan" }).click();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("E2E Hoekwoning Utrecht (bewerkt)");
-    await expect(page.getByText("Projectgegevens bijgewerkt")).toBeVisible();
+
+    // AI-verbruik zichtbaar op profiel
+    await page.goto("/profiel");
+    await expect(page.getByText(/1 analyse · \$ 0\.\d\d van \$ 5\.00/)).toBeVisible();
   });
 
   test("offerteaanvraag voorbereiden, controleren en (demo-)verzenden", async ({ page }) => {
     await login(page);
     await page.goto("/projecten");
     await page.getByRole("link", { name: /E2E Hoekwoning Utrecht/ }).click();
-    await page.getByRole("link", { name: "Offerteaanvraag" }).click();
+    await page.getByRole("link", { name: "Offerteaanvraag", exact: true }).click();
 
     await expect(page.getByText("BouwCheck verstuurt (nog) geen e-mail")).toBeVisible();
-    await expect(page.getByLabel("Gewenste werkzaamheden")).toHaveValue(/Volledige renovatie/);
+    await expect(page.getByLabel("Gewenste werkzaamheden")).toHaveValue(/groepenkast/);
     await page.getByRole("button", { name: "Opslaan en controleren" }).click();
 
     await expect(page).toHaveURL(/\/offerteaanvragen\/controleren/);
     await expect(page.getByRole("heading", { name: "Controleer je offerteaanvraag" })).toBeVisible();
     await expect(page.getByText(/wordt dit een demo-verzending/).first()).toBeVisible();
-    await page.getByRole("button", { name: /2 aanvragen verzenden/ }).click();
+    await page.getByRole("button", { name: /aanvra(ag|gen) verzenden/ }).click();
     await page.getByRole("button", { name: "Ja, verzenden" }).click();
-    await expect(page.getByText(/2 als demo-verzending opgeslagen \(niet echt verstuurd\)/).first()).toBeVisible();
+    await expect(page.getByText(/als demo-verzending opgeslagen \(niet echt verstuurd\)/).first()).toBeVisible();
     await expect(page.getByText("Deze aanvragen zijn afgehandeld")).toBeVisible();
     await expect(page.getByText("Demo-verzending — niet daadwerkelijk verstuurd").first()).toBeVisible();
 
     await page.goto("/offerteaanvragen");
     await expect(page.getByText("Demo — niet echt verzonden").first()).toBeVisible();
-    await page.getByRole("link", { name: "Bouwgroep Lindewaard" }).first().click();
+    await page.locator("table").getByRole("link").first().click();
     await expect(page.getByText("Demo-verzending — niet daadwerkelijk verstuurd")).toBeVisible();
     await page.getByRole("button", { name: "Reactie ontvangen" }).click();
     await expect(page.getByText("Status bijgewerkt.")).toBeVisible();

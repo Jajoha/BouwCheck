@@ -16,6 +16,7 @@ const MESSAGES: Record<string, string> = {
   "wachtwoord-gewijzigd": "Je wachtwoord is gewijzigd. Log opnieuw in.",
   "demo-hersteld": "De demo-data is teruggezet. Log opnieuw in.",
   opgeslagen: "Opgeslagen.",
+  "scope-opgeslagen": "Werkzaamheden opgeslagen. De teamvoorstellen zijn opnieuw berekend.",
 };
 
 /** Toont een bevestiging na een redirect (?melding=...) en verwijdert de parameter weer. */

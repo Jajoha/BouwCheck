@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/misc";
 import { AvailabilityBadge, DemoBadge, PriceLevelLabel, VerificationBadge } from "./badges";
 import { MetricValue } from "./metric";
-import { CompareToggle } from "@/components/compare/compare-toggle";
 import { FavoriteButton } from "./favorite-button";
 import type { ContractorSummary } from "@/lib/data/contractors";
 
@@ -72,7 +71,6 @@ export function ContractorCard({ c, favorite, loggedIn }: { c: ContractorSummary
             Profiel <ArrowRight aria-hidden />
           </Link>
         </Button>
-        <CompareToggle id={c.id} name={c.company_name} />
         <FavoriteButton contractorId={c.id} name={c.company_name} initial={favorite} loggedIn={loggedIn} />
         <Button asChild size="sm" variant="ghost" className="ml-auto">
           <Link href={loggedIn ? `/offerteaanvragen/nieuw?aannemer=${c.id}` : `/inloggen?next=${encodeURIComponent(`/offerteaanvragen/nieuw?aannemer=${c.id}`)}`}>

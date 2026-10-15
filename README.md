@@ -2,7 +2,7 @@
 
 **De juiste aannemer. Zonder verrassingen.**
 
-BouwCheck is een bèta van een onafhankelijk vergelijkingsplatform voor Nederlandse vastgoedflippers en -investeerders. Gebruikers vergelijken aannemers op prijs, beschikbaarheid, doorlooptijd en aantoonbare projectresultaten, stellen een renovatieproject op, bereiden offerteaanvragen voor en leggen projectresultaten vast.
+BouwCheck is een bèta van een onafhankelijk platform voor Nederlandse vastgoedflippers en -investeerders. De flipper beschrijft het project (en voegt eventueel foto's toe); AI zet dat om in een lijst werkzaamheden met hoeveelheden; BouwCheck stelt daarna **teams van aannemers en vakspecialisten** samen, geordend per prioriteit: **Budget**, **Kwaliteit** en **Snelheid**. Handmatig aannemers vergelijken is bewust geen onderdeel van het product: BouwCheck levert wie wat kan doen, met uitleg waarom.
 
 > **Demo-data.** Alle aannemers, KvK-nummers, contactgegevens, tarieven, projectresultaten, beoordelingen en verificatiestatussen in de seed zijn fictief. Ze zijn gemarkeerd met `is_demo = true` en worden in de interface getoond als **“Demo-data — niet geverifieerd”**.
 
@@ -12,6 +12,7 @@ BouwCheck is een bèta van een onafhankelijk vergelijkingsplatform voor Nederlan
 
 - [Snel starten](#snel-starten)
 - [Wat zit erin](#wat-zit-erin)
+- [AI-intake en teamvoorstellen](#ai-intake-en-teamvoorstellen)
 - [Technologie en architectuur](#technologie-en-architectuur)
 - [Configuratie](#configuratie)
 - [Database, migraties en seed](#database-migraties-en-seed)
@@ -27,7 +28,7 @@ BouwCheck is een bèta van een onafhankelijk vergelijkingsplatform voor Nederlan
 
 ## Snel starten
 
-Vereisten: **Node.js 20.9+** (getest met Node 22) en npm. Geen database of externe accounts nodig.
+Vereisten: **Node.js 20.9+** (getest met Node 22) en npm. Geen database of externe accounts nodig. Zonder `ANTHROPIC_API_KEY` werkt alles behalve de AI-analyse; de werkzaamheden vul je dan zelf in.
 
 ```bash
 npm install
@@ -55,14 +56,15 @@ Demo terugzetten naar de beginsituatie: **Beheer → Demo-data → Demo-data ter
 
 ### Suggestie voor een demonstratie (± 10 minuten)
 
-1. **Home** → productpreview met echte demo-data, “Er is niet één beste aannemer”.
-2. **Aannemers** → filter *Hoofdaannemer* + *Utrecht*, sorteer op *Tijdige oplevering* (aannemers met te weinig data staan onderaan met uitleg).
-3. **Profiel Bouwgroep Lindewaard** → bronlabels per sectie, statistieken met *n*, demo-verificatie gemarkeerd als *fictief*. Vergelijk met **Klusbedrijf De Nieuwe Hoek** (“Onvoldoende gegevens”).
-4. Log in als **vastgoedflipper** → Dashboard → **Vergelijkingen → Amersfoort — hoofdaannemer**:
-   - goedkoopste (De Nieuwe Hoek) heeft kleinere scope → waarschuwing, géén “laagste bedrag”-label;
-   - Lindewaard: duurder, meeste gecontroleerde projecten;
-   - Snelbouw Oost: kortste doorlooptijd, maar volgeboekt tot februari.
-5. **Nieuw renovatieproject** (wizard) → passende aannemers met overeenkomsten/ontbrekende gegevens → shortlist → offerteaanvraag → controleren → verzenden (duidelijk als *demo-verzending* gemarkeerd).
+1. **Home** → voorbeeld van teamvoorstellen, berekend op een demoproject met echte demo-data.
+2. Log in als **vastgoedflipper** → **Projecten → Tussenwoning Amersfoort → Teamvoorstellen**:
+   - *Budget*: laagste kostenindicatie (tarieven × hoeveelheden), met budgetcheck;
+   - *Kwaliteit*: hoogste beoordeling van de zwakste schakel in het team (min. 3 beoordelingen per aannemer);
+   - *Snelheid*: vroegste datum waarop het hele team beschikbaar is;
+   - teams die op een prioriteit niet te rangschikken zijn, staan apart met de reden (bijv. geen elektricien in de provincie).
+3. **Nieuw project** → beschrijving + foto's → *Analyseer met AI* (vereist `ANTHROPIC_API_KEY`) of *Werkzaamheden zelf invullen* → werkzaamheden controleren → teamvoorstellen → **Kies dit team** → offerteaanvraag met het team voorgeselecteerd → controleren → verzenden (duidelijk als *demo-verzending* gemarkeerd).
+4. **Aannemersprofiel** (link vanuit een teamvoorstel) → bronlabels per sectie, statistieken met *n*, demo-verificatie gemarkeerd als *fictief*.
+5. **Beheer → AI-gebruik** → verbruik en kosten per account; ook zichtbaar op het eigen profiel.
 6. **Projectresultaat registreren** → staat “in behandeling”. Log in als **beheerder** → *Resultaten & reviews* → goedkeuren; beheerlog.
 7. Log in als **aannemer** → portaal: ontvangen aanvraag (echt via het platform verzonden) beantwoorden, verificatie aanvragen.
 
@@ -72,13 +74,14 @@ Demo terugzetten naar de beginsituatie: **Beheer → Demo-data → Demo-data ter
 
 | Onderdeel | Route(s) | Status |
 | --- | --- | --- |
-| Landingspagina (hero met live preview, probleem, hoe het werkt, voordelen, transparantie, aannemers-CTA, FAQ, footer) | `/` | Werkt |
-| Aannemersdatabase: zoeken, 11 filters, 7 sorteringen, paginering | `/aannemers` | Werkt |
+| Landingspagina (hero met voorbeeld-teamvoorstellen, hoe het werkt, voordelen, transparantie, aannemers-CTA, FAQ, footer) | `/` | Werkt |
 | Aannemersprofiel met bronscheiding (zelf opgegeven / administratief gecontroleerd / projectdata / ervaringen) | `/aannemers/[slug]` | Werkt |
-| Vergelijking van 2–4 aannemers, met/zonder project, kolomsortering, opslaan | `/vergelijken`, `/vergelijkingen` | Werkt |
+| AI-intake: beschrijving + foto's → werkzaamheden met hoeveelheden, risico's, open vragen; altijd te corrigeren | `/projecten/nieuw`, `/projecten/[id]/werkzaamheden` | Werkt (vereist `ANTHROPIC_API_KEY`; zonder sleutel handmatig invullen) |
+| Teamvoorstellen per prioriteit (Budget / Kwaliteit / Snelheid), team kiezen → offerteaanvraag | `/projecten/[id]/voorstellen` | Werkt |
+| AI-verbruik per account (tokens, kosten in USD, limieten per maand en per uur) | `/beheer/ai-gebruik`, `/profiel` | Werkt |
 | Registratie, inloggen, uitloggen, wachtwoordherstel, onboarding | `/registreren`, `/inloggen`, `/wachtwoord-vergeten`, `/onboarding` | Werkt (herstelmail: zie beperkingen) |
-| Dashboard (projecten, aanvragen, vergelijkingen, favorieten, activiteit, aandachtspunten) | `/dashboard` | Werkt |
-| Renovatieprojecten: wizard, bewerken, status, shortlist, passende aannemers, offertes vastleggen, bijlagen, notities, tijdlijn | `/projecten/...` | Werkt |
+| Dashboard (projecten, aanvragen, favorieten, activiteit, aandachtspunten) | `/dashboard` | Werkt |
+| Renovatieprojecten: bewerken, status, gekozen aannemers, offertes vastleggen, bijlagen, notities, tijdlijn | `/projecten/...` | Werkt |
 | Offerteaanvragen: voorbereiden → controleren → verzenden, statusbeheer | `/offerteaanvragen/...` | Werkt (zie verzending) |
 | Projectresultaten + reviews (één per aannemer per project, moderatie) | `/projecten/[id]/resultaat` | Werkt |
 | Favorieten / opgeslagen aannemers | `/favorieten` | Werkt |
@@ -87,7 +90,29 @@ Demo terugzetten naar de beginsituatie: **Beheer → Demo-data → Demo-data ter
 | Prijspagina met testprijzen + interesseformulier | `/prijzen` | Werkt (geen betalingen) |
 | Contact, privacy, voorwaarden, disclaimer (concept), “Hoe wij gegevens beoordelen” | `/contact`, `/privacy`, `/voorwaarden`, `/disclaimer`, `/transparantie` | Concepttekst |
 
+De oude aannemerszoekpagina `/aannemers` stuurt door naar `/projecten/nieuw`; `/vergelijken` en `/vergelijkingen` bestaan niet meer.
+
 Merknaam, tagline, hero-teksten, drempelwaarden en testprijzen staan centraal in [`src/config/site.ts`](src/config/site.ts).
+
+---
+
+## AI-intake en teamvoorstellen
+
+**1. Intake.** De flipper beschrijft het project, de locatie en optioneel tot 8 foto's. Foto's worden in de browser verkleind (max. 1568 px, JPEG) zodat het verzoek onder de ~4,5 MB-limiet van Vercel blijft. De server stuurt beschrijving en foto's naar Claude (`src/lib/ai/intake.ts`) met een vast JSON-schema als output. De AI levert werkzaamheden per vakgebied met hoeveelheid en eenheid (alleen als die af te leiden is), plus risico's, open vragen en aannames. **De AI noemt geen prijzen en kiest geen aannemers.** De gebruiker controleert en corrigeert de lijst; aangepaste regels krijgen de bron *gebruiker*.
+
+**2. Teamvoorstellen.** `src/lib/domain/teams.ts` is volledig deterministisch (geen AI, geen samengestelde score):
+
+| Prioriteit | Rangschikking | Niet gerangschikt als |
+| --- | --- | --- |
+| Budget | laagste middenwaarde van de kostenindicatie (opgegeven tarieven × hoeveelheden) | een onderdeel niet te begroten is |
+| Kwaliteit | beoordeling van de zwakste schakel; dan minder herstelwerk; dan meer gecontroleerde projecten | een teamlid < 3 beoordelingen heeft |
+| Snelheid | laatste startdatum binnen het team (uit opgegeven beschikbaarheid) | beschikbaarheid onbekend is |
+
+Kandidaten zijn actieve aannemers die in de provincie werken. Er worden twee soorten teams gemaakt: één hoofdaannemer (bij brede renovaties) of een combinatie van vakspecialisten (beste en op-één-na-beste per vakgebied voor die prioriteit). Teams met ontbrekende vakgebieden of te weinig data komen apart te staan, met de reden.
+
+**3. Verbruik per account.** Elke AI-aanroep (ook mislukte) wordt vastgelegd in `ai_usage`: account, project, model, status, input-/output-/cache-tokens, aantal foto's en kosten in USD. De kosten worden berekend uit de werkelijke `usage` van de API-respons (`src/lib/ai/pricing.ts`). Een analyse wordt geweigerd als het account de maandlimiet (`AI_MONTHLY_LIMIT_USD`) of uurlimiet (`AI_HOURLY_LIMIT`) heeft bereikt. Overzicht: **Beheer → AI-gebruik** (per account en laatste aanroepen) en op het eigen **profiel**.
+
+**API-sleutel.** Alleen via de omgevingsvariabele `ANTHROPIC_API_KEY` (server-side; nooit in de browser). Op Vercel: *Settings → Environment Variables* → `ANTHROPIC_API_KEY` → opnieuw deployen. De intakepagina heeft `maxDuration = 300`; een analyse duurt doorgaans tientallen seconden.
 
 ---
 
@@ -99,6 +124,7 @@ Merknaam, tagline, hero-teksten, drempelwaarden en testprijzen staan centraal in
   - zonder `DATABASE_URL`: **PGlite** (Postgres in WebAssembly, in-process) — geen installatie nodig;
   - met `DATABASE_URL`: **postgres.js** naar elke PostgreSQL-server, bijv. **Supabase**.
   Beide gebruiken exact dezelfde migraties en queries.
+- **Anthropic SDK** (`@anthropic-ai/sdk`) voor de AI-intake, met gestructureerde JSON-output
 - **Zod** voor validatie van alle invoer (server-side; formulieren tonen dezelfde meldingen)
 - **Vitest** (unit) en **Playwright** (end-to-end)
 
@@ -106,13 +132,14 @@ Merknaam, tagline, hero-teksten, drempelwaarden en testprijzen staan centraal in
 src/
   app/                 routes (pagina's, layouts, API-route voor bijlagen)
   actions/             server actions (auth, projecten, offertes, resultaten, portaal, beheer) — autorisatie per actie
-  components/          ui/ (basiscomponenten), domain/, compare/, projects/, quotes/, portal/, admin/, layout/
+  components/          ui/ (basiscomponenten), domain/, intake/, teams/, projects/, quotes/, portal/, admin/, layout/
   config/site.ts       merk, teksten, drempels, testprijzen
   lib/
+    ai/                Claude-aanroep (intake), modelconfiguratie, prijstabel
     auth/              wachtwoord-hashing (scrypt), sessies, rolcontroles
     data/              data-access (queries)
     db/                driver, migratierunner, demo-seed
-    domain/            pure bedrijfslogica: metrics, vergelijkbaarheid, verificatieniveaus, constanten
+    domain/            pure bedrijfslogica: metrics, teamsamenstelling, verificatieniveaus, constanten
     validation/        Zod-schema's
 supabase/migrations/   SQL-migraties (schema, constraints, indexen, RLS, referentiedata)
 scripts/               db-beheer (migrate/seed/reset/create-admin), smoke-crawl
@@ -121,7 +148,7 @@ tests/unit, tests/e2e
 
 ### Datamodel (kern)
 
-`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects`, `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites`, `comparisons`, `comparison_items` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
+`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects` (incl. `ai_summary`), `project_scope_items` (werkzaamheden), `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites` · `ai_usage` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
 
 - Bedragen: `numeric(12,2)` + expliciete valuta (`EUR`) + btw-status per bedrag. Datums als `date`, doorlooptijden in kalenderdagen.
 - Prijs-typen gescheiden: `indicatief` / `offerte` / `overeengekomen`; indicatieve tarieven staan apart in `contractor_rates` (bron altijd *zelf opgegeven*).
@@ -142,8 +169,14 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `BOUWCHECK_DATA_DIR` | Map voor PGlite en uploads (standaard `.data`; op Vercel/serverless automatisch `/tmp/bouwcheck`). |
 | `APP_URL` | Publieke URL; bij `https://` krijgen sessiecookies de `Secure`-vlag. Op Vercel standaard `https://$VERCEL_URL`. |
 | `ADMIN_PASSWORD` | Alleen voor `npm run db:create-admin`. |
+| `ANTHROPIC_API_KEY` | Sleutel voor de AI-intake. Leeg = AI uit (handmatige invoer blijft werken). |
+| `ANTHROPIC_MODEL` | Model, standaard `claude-opus-5-5`. |
+| `AI_EFFORT` | `low` / `medium` / `high` / `xhigh` / `max`, standaard `medium`. |
+| `AI_MONTHLY_LIMIT_USD` | Max. AI-kosten per account per kalendermaand, standaard 5. |
+| `AI_HOURLY_LIMIT` | Max. analyses per account per uur, standaard 10. |
+| `AI_MAX_PHOTOS` | Max. foto's per analyse, standaard 8. |
 
-Er staan geen geheimen in de client-code; de databaseverbinding wordt uitsluitend server-side gebruikt.
+Er staan geen geheimen in de client-code; databaseverbinding en API-sleutel worden uitsluitend server-side gebruikt.
 
 ---
 
@@ -189,6 +222,7 @@ Op Vercel is de projectmap (`/var/task`) read-only; alleen `/tmp` is schrijfbaar
 | --- | --- |
 | `DATABASE_URL` | Supabase-connection string (transaction pooler, poort 6543) |
 | `DEMO_MODE` | `true` voor een demo-omgeving met demo-inlogknoppen, anders `false` |
+| `ANTHROPIC_API_KEY` | Je Anthropic-API-sleutel (voor de AI-intake) |
 
 Draai daarna éénmalig vanaf je eigen computer (met dezelfde `DATABASE_URL` in `.env.local`):
 
@@ -197,9 +231,9 @@ npm run db:migrate
 npm run db:seed        # alleen voor een demo-omgeving
 ```
 
-en deploy opnieuw. Accounts, projecten en vergelijkingen blijven dan bewaard en zijn op elke serverinstantie gelijk.
+en deploy opnieuw. Accounts, projecten en AI-verbruik blijven dan bewaard en zijn op elke serverinstantie gelijk.
 
-**Zonder `DATABASE_URL` (alleen voor een snelle kennismaking)** start BouwCheck automatisch een tijdelijke demo-database in `/tmp`. Er verschijnt dan een banner *“Tijdelijke opslag”*. Beperkingen: elke serverinstantie heeft een eigen database, de eerste request na een koude start duurt enkele seconden (database aanmaken en demo-data laden), en accounts, projecten en uploads kunnen verdwijnen of tussen requests ‘wisselen’ wanneer Vercel een nieuwe instantie start. Gebruik dit niet voor een demo waarin je gegevens invoert die bewaard moeten blijven.
+**Zonder `DATABASE_URL` (alleen voor een snelle kennismaking)** start BouwCheck automatisch een tijdelijke demo-database in `/tmp`. Er verschijnt dan een banner *“Tijdelijke opslag”*. Beperkingen: elke serverinstantie heeft een eigen database, de eerste request na een koude start duurt enkele seconden (database aanmaken en demo-data laden), en accounts, projecten, uploads en de registratie van AI-verbruik kunnen verdwijnen of tussen requests ‘wisselen’ wanneer Vercel een nieuwe instantie start. Gebruik dit niet voor een demo waarin je gegevens invoert die bewaard moeten blijven.
 
 Uploads (bijlagen) staan in beide gevallen in tijdelijke opslag; zie *Bekende beperkingen*.
 
@@ -224,14 +258,15 @@ Aanvragen aan een aannemer **mét** account (in de demo: Schildersbedrijf Kwaste
 ```bash
 npm run lint         # ESLint
 npm run typecheck    # TypeScript
-npm test             # Vitest-unittests (metrics, vergelijkbaarheid, validatie, verificatie)
+npm test             # Vitest-unittests (metrics, teamsamenstelling, AI-kosten, validatie, verificatie)
 npm run test:e2e     # Playwright: bouwt de app en start hem op poort 3100 met een verse .data-e2e-database
+                     # en een nep-Anthropic-server op 3199 (tests/e2e/mock-anthropic.mjs) — er wordt geen echte API aangeroepen
 npm run smoke        # snelle crawl tegen een draaiende server op :3000 (BASE_URL overschrijfbaar)
 ```
 
 Gebruik je een andere Chromium dan Playwright meelevert, zet dan `PLAYWRIGHT_CHROMIUM_PATH`.
 
-De e2e-suite (23 tests) dekt: homepage en navigatie, merknaam (geen oude productnaam), juridische pagina's en testprijzen, interesseformulier met validatie, mobiele layout zonder horizontale scroll en mobiel menu, zoeken/filteren/sorteren/pagineren, lege staten, profielen met bron- en demolabels, verborgen inactieve profielen, vergelijken (toevoegen, verwijderen, limiet 4, scopewaarschuwing, geen misleidende markering, kolomsortering, opslaan, mobiel), afgeschermde routes, registratie met validatie en behoud van invoer, onboarding, inloggen met fout wachtwoord, project-wizard met stapvalidatie, bewerken, shortlist, offerte vastleggen, offerteaanvraag voorbereiden/controleren/demo-verzenden/status, projectresultaat met validatie en moderatiestatus, wachtwoordherstel, server-side afscherming van beheer en bijlagen, verificatie (bewijsreferentie verplicht), moderatie, (de)activeren, beheerlog, aannemersportaal en nieuwe aannemersaanmelding.
+Unittests: 45. De e2e-suite (22 tests) dekt: homepage en navigatie, merknaam (geen oude productnaam), juridische pagina's en testprijzen, interesseformulier met validatie, mobiele layout zonder horizontale scroll en mobiel menu, doorverwijzing van de oude zoek- en vergelijkpagina's, profielen met bron- en demolabels, verborgen inactieve profielen, afgeschermde routes, registratie met validatie, onboarding, inloggen met fout wachtwoord, AI-intake met foto (validatie, AI-voorstel, risico's, corrigeren), handmatige intake met controle van de berekende kostenindicatie, teamvoorstellen per prioriteit, team kiezen → offerteaanvraag, offerte vastleggen, bewerken, AI-verbruik op profiel en in beheer, offerteaanvraag voorbereiden/controleren/demo-verzenden/status, projectresultaat met validatie en moderatiestatus, wachtwoordherstel, server-side afscherming van beheer en bijlagen, verificatie, moderatie, (de)activeren, beheerlog, aannemersportaal en nieuwe aannemersaanmelding.
 
 ---
 
@@ -248,7 +283,7 @@ Zie ook `/transparantie` en `src/lib/domain/metrics.ts`.
 - **Beoordelingen** = gemiddelde van gepubliceerde, aan een project gekoppelde reviews.
 - Gegevens ouder dan **24 maanden** worden als verouderd gemarkeerd.
 - Er is **geen samengestelde betrouwbaarheidsscore**. De sortering “meest complete projectdata” gebruikt alleen het aandeel beschikbare gegevens (gedocumenteerd in `dataCompleteness`) en zegt niets over kwaliteit.
-- Bij vergelijkingen wordt “laagste bedrag” alleen gemarkeerd als alle bedragen hetzelfde prijstype, dezelfde btw-status, dezelfde materiaal-aanname en dezelfde scope hebben; anders volgt een uitleg waarom ze niet vergelijkbaar zijn.
+- Teamvoorstellen gebruiken deze statistieken met dezelfde drempel; zie [AI-intake en teamvoorstellen](#ai-intake-en-teamvoorstellen). Kostenindicaties zijn opgegeven tarieven × hoeveelheden, geen offertes.
 
 ---
 
@@ -257,6 +292,7 @@ Zie ook `/transparantie` en `src/lib/domain/metrics.ts`.
 - Wachtwoorden: scrypt met salt; sessietokens alleen gehasht opgeslagen; `httpOnly`/`SameSite=Lax`-cookies; eenvoudige rem op inlogpogingen per e-mailadres.
 - Autorisatie server-side in iedere server action en pagina (`requireUser`, `requireFlipper`, `requireRole`, `requireAdmin`); beheerpagina's controleren de rol zowel in de layout als per pagina. Server actions hebben de ingebouwde origin-controle van Next.js (CSRF).
 - Projecten, notities, bijlagen en aanvragen zijn alleen zichtbaar voor de eigenaar (en beheer). Aannemers zien alleen aanvragen die via het platform naar hen zijn verzonden, en alleen de daarbij gekozen bijlagen.
+- AI: de sleutel staat alleen in de serveromgeving; beschrijving en foto's worden alleen naar Anthropic gestuurd als de gebruiker op *Analyseer met AI* klikt (vermeld in de privacyverklaring). Gebruikersinvoer wordt in de prompt als data behandeld, de output wordt tegen een schema gevalideerd.
 - Uploads: alleen JPG/PNG/WebP/PDF, max. 10 MB, bestandssignatuur gecontroleerd, opgeslagen onder een willekeurige naam, geserveerd met `nosniff` en `no-store`.
 - Openbare profielen bevatten geen velden uit `contractor_private`; reviews worden zonder naam van de opdrachtgever getoond.
 - Alle beheeracties worden gelogd in `admin_actions`.
@@ -277,5 +313,7 @@ Zie ook `/transparantie` en `src/lib/domain/metrics.ts`.
 | Data | Alleen fictieve demo-data | Echte aannemers met toestemming en gecontroleerde gegevens |
 | Schaal | Filters op afgeleide statistieken draaien in de applicatielaag (prima tot enkele duizenden aannemers) | Gematerialiseerde statistieken in SQL bij grotere schaal |
 | Juridisch | Concepttekst | Juridische review |
+| AI-intake | Hoeveelheden zijn schattingen uit tekst en foto's; altijd door de gebruiker te controleren | Evaluatieset met echte projecten om de kwaliteit te meten |
+| Teamvoorstellen | Gebaseerd op zelf opgegeven tarieven en beschikbaarheid (demo-data) | Echte, actuele tarieven en beschikbaarheid van aannemers |
 
 Afgeschermde of niet-bestaande pagina's (bijv. `/beheer` voor een niet-beheerder, een inactief aannemersprofiel of andermans project) geven in productiemodus HTTP 404 met de pagina “Pagina niet gevonden”.

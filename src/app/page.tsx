@@ -6,11 +6,11 @@ import {
   CalendarX2,
   Handshake,
   Scale,
+  Sparkles,
+  Users,
   ClipboardList,
-  Columns3,
   CheckCircle2,
   Receipt,
-  HardHat,
   CalendarRange,
   ShieldAlert,
   FileText,
@@ -22,28 +22,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { site } from "@/config/site";
-import { sql } from "@/lib/db";
-import { getContractorsByIds, type ContractorSummary } from "@/lib/data/contractors";
-import { MetricValue } from "@/components/domain/metric";
-import { AvailabilityBadge, DemoBadge, PriceLevelLabel } from "@/components/domain/badges";
-import { formatMoney } from "@/lib/format";
+import { sqlOne } from "@/lib/db";
+import { getScope } from "@/lib/data/scope";
+import { proposalsFor } from "@/lib/data/teams";
+import { DemoBadge } from "@/components/domain/badges";
+import { formatDate, formatEuro, formatNumber } from "@/lib/format";
+import type { Priority, TeamOption } from "@/lib/domain/teams";
 
-async function getPreview(): Promise<{ contractors: ContractorSummary[]; quotes: Map<string, { amount: number; days: number | null; scope: number }> }> {
-  const preferred = await sql<{ id: string }>(
-    "select id from contractors where slug in ('lindewaard','snelbouw-oost','nieuwe-hoek') and status = 'actief' order by array_position(array['lindewaard','snelbouw-oost','nieuwe-hoek'], slug)",
+/** Live voorbeeld: teamvoorstellen voor het demoproject, berekend met dezelfde motor als in de app. */
+async function getPreview(): Promise<{ project: { name: string; is_demo: boolean } | null; best: { priority: Priority; option: TeamOption | null }[] }> {
+  const project = await sqlOne<{ id: string; name: string; is_demo: boolean; province: string | null; area_m2: number | null; budget_amount: number | null; desired_start_date: string | null }>(
+    `select p.id, p.name, p.is_demo, p.province, p.area_m2, p.budget_amount, p.desired_start_date from projects p
+      where p.is_demo and exists (select 1 from project_scope_items s where s.project_id = p.id)
+      order by (select count(*) from project_scope_items s where s.project_id = p.id) desc, p.created_at limit 1`,
   );
-  const ids = preferred.length >= 2 ? preferred.map((r) => r.id) : (await sql<{ id: string }>("select id from contractors where status = 'actief' order by company_name limit 3")).map((r) => r.id);
-  const contractors = await getContractorsByIds(ids);
-  const quotes = new Map<string, { amount: number; days: number | null; scope: number }>();
-  if (ids.length) {
-    const rows = await sql<{ contractor_id: string; amount: number; estimated_duration_days: number | null; scope: number }>(
-      `select distinct on (q.contractor_id) q.contractor_id, q.amount, q.estimated_duration_days, cardinality(q.scope_specialty_ids) as scope
-         from quotes q where q.contractor_id = any($1::uuid[]) and q.price_type = 'offerte' and q.is_demo order by q.contractor_id, q.created_at desc`,
-      [ids],
-    );
-    for (const r of rows) quotes.set(r.contractor_id, { amount: r.amount, days: r.estimated_duration_days, scope: r.scope });
-  }
-  return { contractors, quotes };
+  if (!project) return { project: null, best: [] };
+  const scope = await getScope(project.id);
+  const proposals = await proposalsFor(
+    scope.map((s) => ({ specialty_id: s.specialty_id, description: s.description, quantity: s.quantity, unit: s.unit })),
+    { province: project.province, area_m2: project.area_m2, budget_amount: project.budget_amount, desired_start_date: project.desired_start_date },
+  );
+  return { project, best: proposals.map((p) => ({ priority: p.priority, option: p.ranked[0] ?? null })) };
 }
 
 const PROBLEMS = [
@@ -55,17 +54,17 @@ const PROBLEMS = [
 ];
 
 const STEPS = [
-  { icon: ClipboardList, title: "Beschrijf je renovatieproject", text: "Locatie, type woning, budget, planning en de benodigde vakgebieden. Zo weet BouwCheck welke aannemers relevant zijn." },
-  { icon: Columns3, title: "Vergelijk passende aannemers", text: "Zet twee tot vier aannemers naast elkaar: prijs, beschikbaarheid, doorlooptijd, projectresultaten en verificatiestatus." },
-  { icon: CheckCircle2, title: "Kies onderbouwd", text: "Zie per gegeven hoeveel projecten erachter zitten en wat ontbreekt. Leg je keuze en offertes vast in je project." },
+  { icon: ClipboardList, title: "Beschrijf je project en voeg foto's toe", text: "In je eigen woorden: wat moet eruit, wat moet er nieuw, hoe is de staat van de woning. Foto's van badkamer, meterkast of dak helpen." },
+  { icon: Sparkles, title: "AI zet het om in werkzaamheden", text: "Per vakgebied, met hoeveelheden, risico's en open vragen. Jij controleert en corrigeert; de AI noemt geen prijzen en kiest geen aannemers." },
+  { icon: CheckCircle2, title: "Ontvang teams op budget, kwaliteit en snelheid", text: "BouwCheck stelt teams samen uit aannemers in jouw regio en ordent ze per prioriteit — met de onderbouwing en wat er nog ontbreekt." },
 ];
 
 const BENEFITS = [
-  { icon: Receipt, title: "Prijzen en offertes vergelijken", text: "Indicatieve tarieven, concrete offertes en definitieve bedragen worden apart getoond — met waarschuwingen als de scope verschilt." },
-  { icon: HardHat, title: "Inzicht in projectervaring", text: "Aantallen geregistreerde en gecontroleerde projecten per aannemer, per type renovatie." },
-  { icon: CalendarRange, title: "Beschikbaarheid beoordelen", text: "Zie wanneer een aannemer kan starten en wanneer die informatie voor het laatst is bijgewerkt." },
-  { icon: ShieldAlert, title: "Budget- en tijdsrisico's herkennen", text: "Op-tijdpercentage en gemiddelde budgetafwijking — alleen getoond als er genoeg onderliggende projecten zijn." },
-  { icon: FileText, title: "Beslissingen documenteren", text: "Shortlist, offertes, aanvragen, notities en een tijdlijn per project. Handig richting financier of partner." },
+  { icon: Users, title: "Wie wat kan doen, al samengesteld", text: "Een hoofdaannemer of een team van vakspecialisten dat samen alle werkzaamheden dekt — je hoeft zelf niet te zoeken of te vergelijken." },
+  { icon: Receipt, title: "Kostenindicatie per onderdeel", text: "Bandbreedtes op basis van opgegeven tarieven × hoeveelheden, getoetst aan je budget. Indicatie, geen offerte — dat staat er altijd bij." },
+  { icon: CalendarRange, title: "Wanneer het team kan starten", text: "De datum waarop het hele team beschikbaar is, naast je gewenste start." },
+  { icon: ShieldAlert, title: "Risico's vóór je offertes opvraagt", text: "De intake signaleert risico's en open vragen (asbest, draagconstructie, onduidelijke scope), zodat offertes vergelijkbaar worden." },
+  { icon: FileText, title: "Van keuze naar offerteaanvraag", text: "Kies een team; de offerteaanvraag op één gestandaardiseerde scope staat klaar. Shortlist, offertes en tijdlijn per project." },
 ];
 
 const LEVELS = [
@@ -77,33 +76,33 @@ const LEVELS = [
 
 const FAQ = [
   {
+    q: "Wat doet de AI precies?",
+    a: "De AI leest je beschrijving en foto's en stelt een lijst werkzaamheden voor met hoeveelheden, risico's en open vragen. Jij controleert die. De AI noemt geen prijzen en kiest geen aannemers: het samenstellen en ordenen van teams gebeurt met vaste, controleerbare regels.",
+  },
+  {
+    q: "Hoe worden de teams geordend?",
+    a: `Per prioriteit op één criterium. Budget: laagste kostenindicatie uit opgegeven tarieven. Kwaliteit: de beoordeling van de zwakste schakel in het team (min. ${site.minSampleSize} beoordelingen per aannemer). Snelheid: de datum waarop het hele team beschikbaar is.`,
+  },
+  {
+    q: "Waarom staat een team soms bij ‘niet gerangschikt’?",
+    a: "Omdat er voor dat criterium te weinig gegevens zijn: geen passend tarief, te weinig beoordelingen of onbekende beschikbaarheid. Liever eerlijk ‘onbekend’ dan een misleidende plek in de ranglijst.",
+  },
+  {
     q: "Waar komen de gegevens over aannemers vandaan?",
-    a: "Uit drie bronnen: wat het bedrijf zelf opgeeft, administratieve controles door BouwCheck en projectresultaten die opdrachtgevers registreren. Bij ieder gegeven tonen we de bron en verificatiestatus. In deze bèta zijn alle aannemersprofielen fictieve demo-data.",
+    a: "Uit wat het bedrijf zelf opgeeft (tarieven, werkgebied, beschikbaarheid), administratieve controles door BouwCheck en projectresultaten die opdrachtgevers registreren. In deze bèta zijn alle aannemersprofielen fictieve demo-data.",
   },
   {
-    q: "Waarom zie ik soms 'Nog onvoldoende gegevens'?",
-    a: `Een percentage op basis van één of twee projecten is misleidend. Daarom tonen we statistieken pas vanaf ${site.minSampleSize} geldige waarnemingen, en altijd met het aantal projecten erbij.`,
-  },
-  {
-    q: "Heeft BouwCheck een totaalscore per aannemer?",
-    a: "Nee. Een samengestelde score verbergt onzekerheid en weegt dingen die voor jouw project misschien niet belangrijk zijn. De beste keuze hangt af van je project: budget, planning en risicobereidheid.",
-  },
-  {
-    q: "Kunnen aannemers betalen voor een hogere positie?",
-    a: "Nee. Sortering gebeurt uitsluitend op de criteria die je zelf kiest. Verificatiestatussen en beoordelingen zijn niet te koop.",
+    q: "Kunnen aannemers betalen voor een plek in een voorstel?",
+    a: "Nee. Teams worden uitsluitend samengesteld op vakgebied, werkgebied en het gekozen criterium. Verificatiestatussen en beoordelingen zijn niet te koop.",
   },
   {
     q: "Worden offerteaanvragen echt verstuurd?",
-    a: "Alleen naar aannemers die zelf een account op BouwCheck hebben; die zien de aanvraag in hun portaal. E-mailverzending is in deze bèta nog niet actief. Waar een aanvraag niet echt is verstuurd, staat dat er duidelijk bij.",
-  },
-  {
-    q: "Wat kost BouwCheck?",
-    a: "We testen in deze bèta verschillende modellen. Zie de prijspagina voor de voorlopige testprijzen; er worden nu geen betalingen verwerkt.",
+    a: "Alleen naar aannemers met een eigen BouwCheck-account; die zien de aanvraag in hun portaal. E-mailverzending is in deze bèta nog niet actief. Waar een aanvraag niet echt is verstuurd, staat dat er duidelijk bij.",
   },
 ];
 
 export default async function HomePage() {
-  const { contractors, quotes } = await getPreview();
+  const preview = await getPreview();
   return (
     <>
       {/* Hero */}
@@ -117,7 +116,7 @@ export default async function HomePage() {
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-600">{site.hero.subtitle}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/aannemers">
+                <Link href="/projecten/nieuw">
                   {site.hero.primaryCta} <ArrowRight aria-hidden />
                 </Link>
               </Button>
@@ -125,9 +124,9 @@ export default async function HomePage() {
                 <Link href="#hoe-het-werkt">{site.hero.secondaryCta}</Link>
               </Button>
             </div>
-            <p className="mt-6 text-sm text-ink-500">Geen totaalscores. Altijd zichtbaar hoeveel projecten achter een cijfer zitten.</p>
+            <p className="mt-6 text-sm text-ink-500">Geen zoekwerk, geen totaalscores. Altijd zichtbaar waarop een voorstel is gebaseerd.</p>
           </div>
-          <HeroPreview contractors={contractors} quotes={quotes} />
+          <HeroPreview {...preview} />
         </div>
       </section>
 
@@ -152,7 +151,7 @@ export default async function HomePage() {
       <section id="hoe-het-werkt" className="scroll-mt-20 border-y border-ink-100 bg-ink-950 text-white">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
           <h2 className="text-3xl font-semibold tracking-tight">Hoe het werkt</h2>
-          <p className="mt-3 max-w-2xl text-ink-300">Van projectomschrijving naar een onderbouwde keuze, in drie stappen.</p>
+          <p className="mt-3 max-w-2xl text-ink-300">Van projectomschrijving naar een samengesteld team, in drie stappen.</p>
           <ol className="mt-12 grid gap-8 md:grid-cols-3">
             {STEPS.map((s, i) => (
               <li key={s.title} className="relative rounded-xl border border-white/10 bg-white/[0.03] p-6">
@@ -168,7 +167,7 @@ export default async function HomePage() {
           <div className="mt-10">
             <Button asChild size="lg">
               <Link href="/projecten/nieuw">
-                Beschrijf je renovatieproject <ArrowRight aria-hidden />
+                Start je project <ArrowRight aria-hidden />
               </Link>
             </Button>
           </div>
@@ -181,7 +180,7 @@ export default async function HomePage() {
           <div>
             <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Gebouwd voor vastgoedflippers</h2>
             <p className="mt-3 text-ink-600">
-              Minder zoekwerk, betere vergelijkbaarheid en meer grip op renovatierisico&apos;s. Geen bedrijvengids, maar een vergelijkingsinstrument op projectgegevens.
+              Je vertelt wat er moet gebeuren; BouwCheck levert wie het kan doen, geordend op wat voor jou het zwaarst weegt. Geen bedrijvengids, geen zelf vergelijken.
             </p>
           </div>
           <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
@@ -281,14 +280,14 @@ export default async function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-semibold tracking-tight">Probeer de bèta met je volgende project</h2>
-            <p className="mt-2 text-brand-100">Start een renovatieproject of vergelijk direct de demo-aannemers.</p>
+            <p className="mt-2 text-brand-100">Beschrijf je project en zie binnen enkele minuten welke teams het kunnen uitvoeren.</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="bg-white text-brand-900 hover:bg-brand-50">
               <Link href="/projecten/nieuw">Start een renovatieproject</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-white/40 bg-transparent text-white hover:bg-white/10">
-              <Link href="/aannemers">Bekijk aannemers</Link>
+              <Link href="/transparantie">Hoe wij selecteren</Link>
             </Button>
           </div>
         </div>
@@ -297,93 +296,50 @@ export default async function HomePage() {
   );
 }
 
-function HeroPreview({ contractors, quotes }: { contractors: ContractorSummary[]; quotes: Map<string, { amount: number; days: number | null; scope: number }> }) {
-  if (contractors.length < 2) {
+const PREVIEW_LABEL: Record<Priority, string> = { budget: "Budget", kwaliteit: "Kwaliteit", snelheid: "Snelheid" };
+
+function HeroPreview({ project, best }: Awaited<ReturnType<typeof getPreview>>) {
+  if (!project) {
     return (
       <div className="rounded-2xl border border-ink-200 bg-white p-8 text-sm text-ink-500 shadow-[var(--shadow-raised)]">
-        Nog geen aannemers beschikbaar om te vergelijken.
+        Nog geen voorbeeldproject beschikbaar.
       </div>
     );
   }
-  const maxScope = Math.max(...[...quotes.values()].map((q) => q.scope), 0);
   return (
-    <figure className="overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[var(--shadow-raised)]" aria-label="Voorbeeld van een vergelijking">
-      <div className="flex items-center justify-between border-b border-ink-100 bg-ink-50 px-4 py-2.5">
-        <span className="text-xs font-medium text-ink-600">Vergelijking · Tussenwoning Amersfoort</span>
-        {contractors.some((c) => c.is_demo) ? <DemoBadge compact /> : null}
+    <figure className="overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[var(--shadow-raised)]" aria-label="Voorbeeld van teamvoorstellen">
+      <div className="flex items-center justify-between gap-2 border-b border-ink-100 bg-ink-50 px-4 py-2.5">
+        <span className="truncate text-xs font-medium text-ink-600">Teamvoorstellen · {project.name}</span>
+        {project.is_demo ? <DemoBadge compact /> : null}
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
-          <thead>
-            <tr>
-              <th className="w-36 px-4 py-3 text-left text-xs font-medium text-ink-500" scope="col">
-                <span className="sr-only">Kenmerk</span>
-              </th>
-              {contractors.map((c) => (
-                <th key={c.id} scope="col" className="px-3 py-3 text-left align-bottom text-[13px] font-semibold leading-tight text-ink-950">
-                  {c.company_name}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="[&_td]:border-t [&_td]:border-ink-100 [&_td]:px-3 [&_td]:py-2.5 [&_th]:border-t [&_th]:border-ink-100 [&_th]:px-4 [&_th]:py-2.5 [&_th]:text-left [&_th]:text-xs [&_th]:font-medium [&_th]:text-ink-500">
-            <tr>
-              <th scope="row">Offerte</th>
-              {contractors.map((c) => {
-                const q = quotes.get(c.id);
-                return (
-                  <td key={c.id} className="tabular">
-                    {q ? <span className="font-semibold text-ink-950">{formatMoney(q.amount, false)}</span> : <span className="text-ink-400">—</span>}
-                    {q && q.scope < maxScope ? <span className="mt-0.5 block text-[11px] font-medium text-warn-700">Kleinere scope</span> : null}
-                  </td>
-                );
-              })}
-            </tr>
-            <tr>
-              <th scope="row">Prijsniveau</th>
-              {contractors.map((c) => (
-                <td key={c.id}>
-                  <PriceLevelLabel level={c.price_level} />
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">Beschikbaar</th>
-              {contractors.map((c) => (
-                <td key={c.id}>
-                  <AvailabilityBadge status={c.availability_status} />
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">Op tijd opgeleverd</th>
-              {contractors.map((c) => (
-                <td key={c.id}>
-                  <MetricValue metric={c.metrics.onTime} kind="percent" compact />
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">Budgetafwijking</th>
-              {contractors.map((c) => (
-                <td key={c.id}>
-                  <MetricValue metric={c.metrics.budgetDeviation} kind="signedPercent" compact />
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <th scope="row">Gecontroleerde projecten</th>
-              {contractors.map((c) => (
-                <td key={c.id} className="tabular font-medium text-ink-900">
-                  {c.metrics.verifiedProjects} <span className="font-normal text-ink-500">van {c.metrics.registeredProjects}</span>
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <ul className="divide-y divide-ink-100">
+        {best.map(({ priority, option }) => (
+          <li key={priority} className="grid grid-cols-[88px_1fr] gap-3 px-4 py-3.5 sm:grid-cols-[100px_1fr_auto]">
+            <span className="text-xs font-semibold uppercase tracking-wide text-brand-700">{PREVIEW_LABEL[priority]}</span>
+            {option ? (
+              <>
+                <span className="text-sm font-medium text-ink-950">
+                  {option.members.map((m) => m.contractor.company_name).join(" + ")}
+                  <span className="block text-xs font-normal text-ink-500">
+                    {option.structure === "hoofdaannemer" ? "Hoofdaannemer" : `${option.members.length} vakspecialisten`}
+                  </span>
+                </span>
+                <span className="col-span-2 flex gap-4 text-xs text-ink-600 sm:col-span-1 sm:flex-col sm:gap-0.5 sm:text-right">
+                  <span className="tabular font-semibold text-ink-900">
+                    {formatEuro(option.cost.min)} – {formatEuro(option.cost.max)}
+                  </span>
+                  <span>vanaf {option.start ? formatDate(option.start) : "onbekend"}</span>
+                  <span>{option.qualitySufficient && option.weakest ? `zwakste ${formatNumber(option.weakest.quality.rating, 1)}/5` : "kwaliteit: te weinig data"}</span>
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-ink-500">Onvoldoende gegevens voor dit criterium</span>
+            )}
+          </li>
+        ))}
+      </ul>
       <figcaption className="border-t border-ink-100 px-4 py-2.5 text-xs text-ink-500">
-        Live uit de demo-database. Geen &lsquo;beste&rsquo; aannemer: de keuze hangt af van budget, planning en risico.
+        Live berekend uit de demo-database. Bedragen excl. btw, indicatief op basis van opgegeven tarieven. Per prioriteit het best passende team.
       </figcaption>
     </figure>
   );

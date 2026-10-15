@@ -19,11 +19,25 @@ export default defineConfig({
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : undefined,
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
-    command: `rm -rf .data-e2e && next build && next start -p ${PORT}`,
-    url: `http://localhost:${PORT}`,
-    timeout: 240_000,
-    reuseExistingServer: false,
-    env: { BOUWCHECK_DATA_DIR: ".data-e2e", DEMO_MODE: "true" },
-  },
+  webServer: [
+    {
+      // Nep-Anthropic-API: de echte SDK-aanroep wordt getest zonder echte sleutel of kosten
+      command: "node tests/e2e/mock-anthropic.mjs",
+      url: "http://127.0.0.1:3199",
+      reuseExistingServer: false,
+    },
+    {
+      command: `rm -rf .data-e2e && next build && next start -p ${PORT}`,
+      url: `http://localhost:${PORT}`,
+      timeout: 240_000,
+      reuseExistingServer: false,
+      env: {
+        BOUWCHECK_DATA_DIR: ".data-e2e",
+        DEMO_MODE: "true",
+        ANTHROPIC_API_KEY: "test-sleutel-alleen-voor-mock",
+        ANTHROPIC_BASE_URL: "http://127.0.0.1:3199",
+        ANTHROPIC_MODEL: "claude-opus-5-5",
+      },
+    },
+  ],
 });

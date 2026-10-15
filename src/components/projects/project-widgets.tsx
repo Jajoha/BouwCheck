@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, Upload, ListPlus } from "lucide-react";
+import { Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Fieldset, Input, Select, Textarea } from "@/components/ui/form-controls";
@@ -10,7 +10,6 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useServerForm } from "@/lib/forms/use-server-form";
 import {
-  addToShortlistAction,
   deleteAttachmentAction,
   deleteProjectAction,
   removeFromShortlistAction,
@@ -115,37 +114,6 @@ export function RemoveFromShortlistButton({ projectId, contractorId, name }: { p
         } else toast.error(res.message);
       }}
     />
-  );
-}
-
-export function MatchPicker({ projectId, candidates }: { projectId: string; candidates: { id: string; name: string }[] }) {
-  const [selected, setSelected] = React.useState<string[]>([]);
-  const { pending, run } = useRun();
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2">
-        {candidates.map((c) => (
-          <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-md border border-ink-200 px-2.5 py-1.5 text-sm has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50">
-            <input
-              type="checkbox"
-              className="size-4 accent-brand-600"
-              checked={selected.includes(c.id)}
-              onChange={(e) => setSelected((s) => (e.target.checked ? [...s, c.id] : s.filter((x) => x !== c.id)))}
-            />
-            {c.name}
-          </label>
-        ))}
-      </div>
-      <div>
-        <Button type="button" size="sm" disabled={pending || selected.length === 0} onClick={() => run(async () => {
-          const r = await addToShortlistAction(projectId, selected);
-          if (r.ok) setSelected([]);
-          return r;
-        })}>
-          <ListPlus aria-hidden /> {selected.length ? `${selected.length} toevoegen aan shortlist` : "Selecteer aannemers"}
-        </Button>
-      </div>
-    </div>
   );
 }
 

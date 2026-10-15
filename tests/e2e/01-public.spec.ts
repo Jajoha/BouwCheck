@@ -10,16 +10,17 @@ test.describe("Publieke site", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("De juiste aannemer maakt het verschil tussen winst en verlies.");
     await expect(page.getByText("Demo-modus:")).toBeVisible();
     // productpreview met echte demo-data
-    await expect(page.getByRole("figure", { name: "Voorbeeld van een vergelijking" })).toContainText("Bouwgroep Lindewaard");
+    const preview = page.getByRole("figure", { name: "Voorbeeld van teamvoorstellen" });
+    for (const label of ["Budget", "Kwaliteit", "Snelheid"]) await expect(preview).toContainText(label);
     await page.getByRole("link", { name: "Bekijk hoe het werkt" }).click();
     await expect(page.getByRole("heading", { name: "Hoe het werkt" })).toBeInViewport();
-    await page.getByRole("link", { name: "Vind een aannemer" }).click();
-    await expect(page).toHaveURL(/\/aannemers$/);
+    await page.getByRole("link", { name: "Start je project" }).first().click();
+    await expect(page).toHaveURL(/\/inloggen\?next=%2Fprojecten%2Fnieuw/);
     expect(errors).toEqual([]);
   });
 
   test("geen oude productnaam in de interface", async ({ page }) => {
-    for (const path of ["/", "/aannemers", "/prijzen", "/inloggen", "/transparantie"]) {
+    for (const path of ["/", "/aannemers/lindewaard", "/prijzen", "/inloggen", "/transparantie"]) {
       await page.goto(path);
       await expect(page.locator("body")).not.toContainText("FlipSelect");
     }
@@ -53,7 +54,7 @@ test.describe("Publieke site", () => {
 
   test("mobiel: geen horizontale scroll en werkend menu", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const path of ["/", "/aannemers", "/aannemers/lindewaard", "/prijzen"]) {
+    for (const path of ["/", "/transparantie", "/aannemers/lindewaard", "/prijzen"]) {
       await page.goto(path);
       await expectNoHorizontalScroll(page);
     }

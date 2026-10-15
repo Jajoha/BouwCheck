@@ -10,8 +10,8 @@ type NavItem = { href: string; label: string };
 
 const PUBLIC_NAV: NavItem[] = [
   { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "/aannemers", label: "Aannemers vergelijken" },
   { href: "/#voor-vastgoedflippers", label: "Voor vastgoedflippers" },
+  { href: "/transparantie", label: "Hoe wij selecteren" },
   { href: "/prijzen", label: "Prijzen" },
 ];
 
@@ -19,13 +19,11 @@ function navFor(user: SessionUser): NavItem[] {
   if (user.role === "aannemer") {
     return [
       { href: "/portaal", label: "Aannemersportaal" },
-      { href: "/aannemers", label: "Aannemers" },
     ];
   }
   const items: NavItem[] = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/aannemers", label: "Aannemers" },
-    { href: "/vergelijkingen", label: "Vergelijkingen" },
+    { href: "/projecten/nieuw", label: "Nieuw project" },
     { href: "/projecten", label: "Projecten" },
     { href: "/offerteaanvragen", label: "Offerteaanvragen" },
   ];
@@ -50,7 +48,7 @@ export async function SiteHeader() {
         <Logo href={user ? (user.role === "aannemer" ? "/portaal" : "/dashboard") : "/"} />
         <nav aria-label="Hoofdnavigatie" className="hidden flex-1 items-center gap-0.5 lg:flex">
           {nav.map((n) => (
-            <NavLink key={n.href} href={n.href}>
+            <NavLink key={n.href} href={n.href} exclude={n.href === "/projecten" ? ["/projecten/nieuw"] : undefined}>
               {n.label}
             </NavLink>
           ))}
@@ -64,7 +62,7 @@ export async function SiteHeader() {
                 <Link href="/inloggen">Inloggen</Link>
               </Button>
               <Button asChild size="sm">
-                <Link href="/aannemers">Start met vergelijken</Link>
+                <Link href="/projecten/nieuw">Start je project</Link>
               </Button>
             </>
           )}

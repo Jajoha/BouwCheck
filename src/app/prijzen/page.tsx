@@ -19,7 +19,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
     <div className="mx-auto max-w-7xl px-4 py-10 pb-28 sm:px-6">
       <PageHeader
         title="Prijzen"
-        description="Minder zoekwerk, betere vergelijkbaarheid en meer grip op renovatierisico's. We testen in deze bèta welk model het beste past."
+        description="Geen zoekwerk: beschrijf je project en ontvang teams van aannemers op budget, kwaliteit of snelheid. We testen in deze bèta welk model het beste past."
       />
       <Notice tone="warning" className="mt-6" title="Voorlopige testprijzen">
         Onderstaande bedragen zijn voorstellen om interesse te toetsen — geen bewezen marktprijzen en geen aanbod. Er worden in deze bèta geen betalingen verwerkt; een
@@ -59,9 +59,9 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           <p className="mt-2 text-ink-600">
             Laat je gegevens achter. We nemen contact op om je project of situatie te bespreken. Je aanvraag wordt opgeslagen in BouwCheck; er wordt geen betaling gestart.
           </p>
-          <p className="mt-4 text-sm text-ink-500">Wil je de bèta eerst zelf proberen? Start direct met vergelijken — dat is gratis tijdens de testfase.</p>
+          <p className="mt-4 text-sm text-ink-500">Wil je de bèta eerst zelf proberen? Start direct een project — dat is gratis tijdens de testfase (met een AI-tegoed per account).</p>
           <Button asChild variant="outline" className="mt-3">
-            <Link href="/aannemers">Aannemers vergelijken</Link>
+            <Link href="/projecten/nieuw">Start je project</Link>
           </Button>
         </div>
         <div className="rounded-xl border border-ink-200 bg-white p-6">

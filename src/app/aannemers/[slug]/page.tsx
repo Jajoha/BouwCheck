@@ -9,7 +9,6 @@ import { Avatar, DefinitionList, EmptyState, Notice, TableWrap, td, th } from "@
 import { AvailabilityBadge, DemoBadge, PriceLevelLabel, VerificationBadge } from "@/components/domain/badges";
 import { MetricTile } from "@/components/domain/metric";
 import { SourceTag } from "@/components/domain/source-tag";
-import { CompareToggle } from "@/components/compare/compare-toggle";
 import { FavoriteButton } from "@/components/domain/favorite-button";
 import { FlagDialog } from "@/components/domain/flag-dialog";
 import { getContractorDetail } from "@/lib/data/contractors";
@@ -40,8 +39,8 @@ export default async function ContractorPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 pb-28 sm:px-6">
-      <Link href="/aannemers" className="inline-flex items-center gap-1 text-sm text-ink-600 hover:text-ink-950">
-        <ArrowLeft className="size-4" aria-hidden /> Terug naar aannemers
+      <Link href={user ? "/projecten" : "/"} className="inline-flex items-center gap-1 text-sm text-ink-600 hover:text-ink-950">
+        <ArrowLeft className="size-4" aria-hidden /> {user ? "Naar je projecten" : "Naar home"}
       </Link>
 
       {c.status !== "actief" ? (
@@ -75,7 +74,6 @@ export default async function ContractorPage({ params }: Props) {
               <FileText aria-hidden /> Offerte aanvragen
             </Link>
           </Button>
-          <CompareToggle id={c.id} name={c.company_name} size="md" />
           <FavoriteButton contractorId={c.id} name={c.company_name} initial={favorites.has(c.id)} loggedIn={Boolean(user)} size="md" />
         </div>
       </div>

@@ -6,10 +6,10 @@ const COLUMNS = [
   {
     title: "Product",
     links: [
-      { href: "/aannemers", label: "Aannemers vergelijken" },
+      { href: "/projecten/nieuw", label: "Start je project" },
       { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
       { href: "/prijzen", label: "Prijzen (testfase)" },
-      { href: "/transparantie", label: "Hoe wij gegevens beoordelen" },
+      { href: "/transparantie", label: "Hoe wij selecteren en beoordelen" },
     ],
   },
   {

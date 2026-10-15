@@ -930,24 +930,72 @@ async function insertAll(tx: Queryable) {
     start: "2026-11-16", end: "2026-12-04", desc: "Binnenschilderwerk wanden, plafonds en kozijnen (ca. 95 m² woonoppervlak).", user: clients[1].id, created: "2026-10-12T09:50:00Z",
   });
 
-  // ── Favorieten & vergelijkingen ─────────────────────────────
+  // ── Favorieten ──────────────────────────────────────────────
   for (const key of ["lindewaard", "mozaiekhof", "vonkenberg"]) {
     await tx.query("insert into favorites (user_id, contractor_id) values ($1,$2)", [flipper.id, ids[key]]);
   }
-  const cmp1 = await one(
-    "insert into comparisons (user_id, project_id, name, notes, created_at, updated_at) values ($1,$2,$3,$4,$5,$5) returning id",
-    [flipper.id, p1, "Amersfoort — hoofdaannemer", "Prijs vs. projecthistorie vs. startdatum.", "2026-10-02T15:30:00Z"],
+
+  // ── Werkzaamheden (scope) van de demoprojecten ───────────────
+  const scope = async (projectId: string, items: [string, string, number | null, string | null, string | null][], summary: object | null) => {
+    for (const [i, [spec, desc, qty, unit, conf]] of items.entries()) {
+      await tx.query(
+        "insert into project_scope_items (project_id, specialty_id, description, quantity, unit, confidence, source, position) values ($1,$2,$3,$4,$5,$6,$7,$8)",
+        [projectId, spec, desc, qty, unit, conf, conf ? "ai" : "gebruiker", i],
+      );
+    }
+    if (summary) await tx.query("update projects set ai_summary = $2 where id = $1", [projectId, JSON.stringify(summary)]);
+  };
+  await scope(
+    p1,
+    [
+      ["hoofdaannemer", "Regie en uitvoering complete renovatie (casco t/m afwerking)", 112, "m2", "middel"],
+      ["sloopwerk", "Strippen begane grond incl. afvoer", 56, "m2", "middel"],
+      ["elektricien", "Nieuwe groepenkast", 1, "stuk", "hoog"],
+      ["elektricien", "Extra aansluitpunten (wcd/lichtpunten)", 18, "stuk", "laag"],
+      ["loodgieter", "Vervangen leidingwerk woning", 1, "project", "middel"],
+      ["stukadoor", "Wanden en plafonds sausklaar stucen", 260, "m2", "laag"],
+      ["schilder", "Binnenschilderwerk wanden en plafonds", 260, "m2", "laag"],
+    ],
+    {
+      summary: "[Demo] Jaren-50 tussenwoning, ca. 112 m², volledige renovatie van de begane grond met nieuwe installaties en afwerking door de hele woning.",
+      property_condition: "[Demo] Verouderde elektra (geen aardlekschakelaars zichtbaar), stucwerk met scheuren, kozijnen redelijk.",
+      risks: ["Mogelijk asbest in oude vloerbedekking of leidingisolatie (jaren-50)", "Draagkracht van te verwijderen wanden onbekend"],
+      open_questions: ["Is er een asbestinventarisatie beschikbaar?", "Blijft de bestaande keuken behouden?"],
+      assumptions: ["Wand- en plafondoppervlak geschat op basis van 112 m² woonoppervlak"],
+      demo: true,
+    },
   );
-  for (const [i, key] of ["lindewaard", "snelbouw-oost", "nieuwe-hoek"].entries()) {
-    await tx.query("insert into comparison_items (comparison_id, contractor_id, position) values ($1,$2,$3)", [cmp1.id, ids[key], i]);
-  }
-  const cmp2 = await one(
-    "insert into comparisons (user_id, project_id, name, created_at, updated_at) values ($1,$2,$3,$4,$4) returning id",
-    [flipper.id, p2, "Rotterdam — badkamer", "2026-10-03T10:00:00Z"],
+  await scope(
+    p2,
+    [
+      ["badkamerinstallateur", "Complete badkamer ca. 5 m² incl. sanitair", 1, "project", "hoog"],
+      ["tegelzetter", "Wandtegels badkamer zetten", 22, "m2", "middel"],
+      ["tegelzetter", "Vloertegels badkamer zetten", 5, "m2", "middel"],
+      ["keukeninstallateur", "Keuken monteren en aansluiten (keuken zelf aangeschaft)", 1, "project", "hoog"],
+    ],
+    {
+      summary: "[Demo] Nieuwe badkamer op houten verdiepingsvloer en montage van een zelf aangeschafte keuken.",
+      property_condition: "[Demo] Houten verdiepingsvloer; waterdichting en draagkracht aandachtspunt.",
+      risks: ["Houten vloer vraagt extra waterdichting en mogelijk versteviging"],
+      open_questions: ["Mag er volgens het VvE-reglement een inloopdouche worden geplaatst?"],
+      assumptions: [],
+      demo: true,
+    },
   );
-  for (const [i, key] of ["waterhoek", "mozaiekhof"].entries()) {
-    await tx.query("insert into comparison_items (comparison_id, contractor_id, position) values ($1,$2,$3)", [cmp2.id, ids[key], i]);
-  }
+  await scope(
+    p3,
+    [
+      ["isolatiespecialist", "Spouwmuurisolatie", 95, "m2", "middel"],
+      ["isolatiespecialist", "Vloerisolatie kruipruimte", 60, "m2", "middel"],
+      ["dakdekker", "Pannendak vernieuwen incl. isolatie", 70, "m2", "laag"],
+      ["elektricien", "Extra groep / aansluitpunt voor hybride warmtepomp", 2, "stuk", "middel"],
+    ],
+    null,
+  );
+  await scope(p4, [
+    ["stukadoor", "Wanden sausklaar", 140, "m2", null],
+    ["schilder", "Binnenschilderwerk", 140, "m2", null],
+  ], null);
 
   // ── Leads & beheerlog ───────────────────────────────────────
   await tx.query(
