@@ -3,13 +3,24 @@ import { env } from "@/lib/env";
 
 /** Altijd zichtbare melding zolang de applicatie in demo-modus draait. */
 export function DemoBanner() {
-  if (!env.demoMode) return null;
+  if (!env.demoMode && !env.ephemeralStorage) return null;
   return (
     <div className="border-b border-demo-700/20 bg-demo-100 text-demo-700">
       <p className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-1.5 text-xs sm:px-6">
         <FlaskConical className="size-3.5 shrink-0" aria-hidden />
         <span>
-          <strong className="font-semibold">Demo-modus:</strong> alle aannemers, cijfers en beoordelingen zijn fictief. Offerteaanvragen worden niet extern verzonden.
+          {env.demoMode ? (
+            <>
+              <strong className="font-semibold">Demo-modus:</strong> alle aannemers, cijfers en beoordelingen zijn fictief. Offerteaanvragen worden niet extern verzonden.
+            </>
+          ) : null}
+          {env.ephemeralStorage ? (
+            <>
+              {" "}
+              <strong className="font-semibold">Tijdelijke opslag:</strong> zonder gekoppelde database worden accounts, projecten en uploads niet blijvend bewaard en kunnen ze
+              verdwijnen bij een herstart van de server.
+            </>
+          ) : null}
         </span>
       </p>
     </div>

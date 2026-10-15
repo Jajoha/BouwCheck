@@ -16,6 +16,7 @@ BouwCheck is een bèta van een onafhankelijk vergelijkingsplatform voor Nederlan
 - [Configuratie](#configuratie)
 - [Database, migraties en seed](#database-migraties-en-seed)
 - [Supabase gebruiken](#supabase-gebruiken)
+- [Deployen op Vercel](#deployen-op-vercel)
 - [Demo-modus](#demo-modus)
 - [Tests](#tests)
 - [Hoe statistieken worden berekend](#hoe-statistieken-worden-berekend)
@@ -138,8 +139,8 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `DATABASE_URL` | PostgreSQL-verbinding. Leeg = lokale PGlite-demo-database. |
 | `DATABASE_POOL_SIZE` | Max. verbindingen per serverproces (standaard 5). |
 | `DEMO_MODE` | Demo-inlogknoppen, demo-verzending en demo-banner. Standaard aan zonder en uit mét `DATABASE_URL`. |
-| `BOUWCHECK_DATA_DIR` | Map voor PGlite en uploads (standaard `.data`). |
-| `APP_URL` | Publieke URL; bij `https://` krijgen sessiecookies de `Secure`-vlag. |
+| `BOUWCHECK_DATA_DIR` | Map voor PGlite en uploads (standaard `.data`; op Vercel/serverless automatisch `/tmp/bouwcheck`). |
+| `APP_URL` | Publieke URL; bij `https://` krijgen sessiecookies de `Secure`-vlag. Op Vercel standaard `https://$VERCEL_URL`. |
 | `ADMIN_PASSWORD` | Alleen voor `npm run db:create-admin`. |
 
 Er staan geen geheimen in de client-code; de databaseverbinding wordt uitsluitend server-side gebruikt.
@@ -175,6 +176,32 @@ BouwCheck gebruikt Supabase als **PostgreSQL-host**:
 - **Authenticatie** is applicatie-eigen (e-mail + wachtwoord met scrypt, sessietokens gehasht in `sessions`), niet Supabase Auth. Dat werkt identiek lokaal en op Supabase. Overstappen op Supabase Auth is mogelijk maar niet geïmplementeerd.
 - **Row Level Security** staat op álle tabellen aan, zonder policies, en rechten voor `anon`/`authenticated` zijn ingetrokken: via de publieke Supabase-API (anon key) is niets leesbaar of schrijfbaar. De applicatie verbindt server-side als database-eigenaar en dwingt autorisatie af in de server actions en data-access (eigenaarschap van projecten/aanvragen, rollen voor portaal en beheer).
 - **Bestanden** (bijlagen) worden opgeslagen op het lokale bestandssysteem (`BOUWCHECK_DATA_DIR/uploads`) en alleen via een geautoriseerde route geserveerd. Op serverless hosting (bijv. Vercel) is dat niet persistent → koppel vóór productie Supabase Storage of S3 (niet geïmplementeerd).
+
+---
+
+## Deployen op Vercel
+
+Op Vercel is de projectmap (`/var/task`) read-only; alleen `/tmp` is schrijfbaar.
+
+**Aanbevolen: koppel een database.** Zet in Vercel → *Settings → Environment Variables*:
+
+| Variabele | Waarde |
+| --- | --- |
+| `DATABASE_URL` | Supabase-connection string (transaction pooler, poort 6543) |
+| `DEMO_MODE` | `true` voor een demo-omgeving met demo-inlogknoppen, anders `false` |
+
+Draai daarna éénmalig vanaf je eigen computer (met dezelfde `DATABASE_URL` in `.env.local`):
+
+```bash
+npm run db:migrate
+npm run db:seed        # alleen voor een demo-omgeving
+```
+
+en deploy opnieuw. Accounts, projecten en vergelijkingen blijven dan bewaard en zijn op elke serverinstantie gelijk.
+
+**Zonder `DATABASE_URL` (alleen voor een snelle kennismaking)** start BouwCheck automatisch een tijdelijke demo-database in `/tmp`. Er verschijnt dan een banner *“Tijdelijke opslag”*. Beperkingen: elke serverinstantie heeft een eigen database, de eerste request na een koude start duurt enkele seconden (database aanmaken en demo-data laden), en accounts, projecten en uploads kunnen verdwijnen of tussen requests ‘wisselen’ wanneer Vercel een nieuwe instantie start. Gebruik dit niet voor een demo waarin je gegevens invoert die bewaard moeten blijven.
+
+Uploads (bijlagen) staan in beide gevallen in tijdelijke opslag; zie *Bekende beperkingen*.
 
 ---
 
