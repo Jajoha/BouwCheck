@@ -4,6 +4,7 @@
  *   npm run db:seed                 — demo-data laden (alleen in een lege database)
  *   npm run db:reset                — ALLEEN lokaal (PGlite): database wissen en opnieuw vullen
  *   npm run db:create-admin -- <e-mail> <naam> — beheerder aanmaken (wachtwoord via ADMIN_PASSWORD)
+ *   npm run db:deploy               — bij een (Vercel-)build: migreren, en in demo-modus een lege database vullen
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -13,8 +14,40 @@ import { seedDemoData } from "../src/lib/db/seed";
 import { hashPassword } from "../src/lib/auth/password";
 import { env, dbDriver } from "../src/lib/env";
 
+/**
+ * Draait tijdens `vercel-build`, vóór `next build`.
+ * - Zonder database: niets te doen (de app gebruikt dan tijdelijke opslag).
+ * - Preview-deploys migreren alleen met MIGRATE_ON_PREVIEW=true, zodat een preview-branch
+ *   nooit ongemerkt het schema van de productiedatabase wijzigt. Zet dit aan als Neon per
+ *   preview een eigen databasebranch aanmaakt.
+ */
+async function deploy() {
+  if (dbDriver !== "postgres") {
+    console.log("[db:deploy] Geen DATABASE_URL: migreren overgeslagen (tijdelijke opslag).");
+    return;
+  }
+  if (process.env.VERCEL_ENV === "preview" && process.env.MIGRATE_ON_PREVIEW !== "true") {
+    console.log("[db:deploy] Preview-deploy: migreren overgeslagen (zet MIGRATE_ON_PREVIEW=true bij een eigen databasebranch per preview).");
+    return;
+  }
+  const db = await openDatabase();
+  try {
+    await runMigrations(db, (m) => console.log(`[db:deploy] ${m}`));
+    const [{ n }] = await db.query<{ n: number }>("select count(*)::int as n from users");
+    if (n === 0 && env.demoMode) {
+      await seedDemoData(db, (m) => console.log(`[db:deploy] ${m}`));
+    } else if (n === 0) {
+      console.log("[db:deploy] Lege database zonder demo-modus: geen demo-data geladen. Maak een beheerder aan met db:create-admin.");
+    }
+    console.log("[db:deploy] Database is bijgewerkt.");
+  } finally {
+    await db.close();
+  }
+}
+
 async function main() {
   const [cmd, ...args] = process.argv.slice(2);
+  if (cmd === "deploy") return deploy();
   if (cmd === "reset") {
     if (dbDriver !== "pglite") throw new Error("db:reset is alleen toegestaan voor de lokale PGlite-database.");
     fs.rmSync(path.resolve(process.cwd(), env.dataDir, "pglite"), { recursive: true, force: true });

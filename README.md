@@ -16,8 +16,8 @@ BouwCheck is een bèta van een onafhankelijk platform voor Nederlandse vastgoedf
 - [Technologie en architectuur](#technologie-en-architectuur)
 - [Configuratie](#configuratie)
 - [Database, migraties en seed](#database-migraties-en-seed)
-- [Supabase gebruiken](#supabase-gebruiken)
-- [Deployen op Vercel](#deployen-op-vercel)
+- [Deployen op Vercel (Neon + Blob)](#deployen-op-vercel-neon--blob)
+- [Andere PostgreSQL-host (bijv. Supabase)](#andere-postgresql-host-bijv-supabase)
 - [Demo-modus](#demo-modus)
 - [Tests](#tests)
 - [Hoe statistieken worden berekend](#hoe-statistieken-worden-berekend)
@@ -122,7 +122,7 @@ Kandidaten zijn actieve aannemers die in de provincie werken. Er worden twee soo
 - **Tailwind CSS 4** met eigen design tokens (`src/app/globals.css`) en shadcn-achtige componenten (`src/components/ui`), Radix (dialogen), lucide-iconen, sonner (meldingen)
 - **PostgreSQL** via een dunne SQL-laag (`src/lib/db`):
   - zonder `DATABASE_URL`: **PGlite** (Postgres in WebAssembly, in-process) — geen installatie nodig;
-  - met `DATABASE_URL`: **postgres.js** naar elke PostgreSQL-server, bijv. **Supabase**.
+  - met `DATABASE_URL`: **postgres.js** naar elke PostgreSQL-server, bijv. **Neon via Vercel**.
   Beide gebruiken exact dezelfde migraties en queries.
 - **Anthropic SDK** (`@anthropic-ai/sdk`) voor de AI-intake, met gestructureerde JSON-output
 - **Zod** voor validatie van alle invoer (server-side; formulieren tonen dezelfde meldingen)
@@ -163,7 +163,10 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 
 | Variabele | Betekenis |
 | --- | --- |
-| `DATABASE_URL` | PostgreSQL-verbinding. Leeg = lokale PGlite-demo-database. |
+| `DATABASE_URL` | PostgreSQL-verbinding (gepoold). Leeg = lokale PGlite-demo-database. `POSTGRES_URL` wordt ook herkend. |
+| `DATABASE_URL_UNPOOLED` | Directe verbinding voor migraties (Neon zet deze zelf; `POSTGRES_URL_NON_POOLING` werkt ook). Leeg = `DATABASE_URL`. |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob voor foto's en bijlagen (privé). Leeg = lokale map. |
+| `MIGRATE_ON_PREVIEW` | `true` = ook preview-deploys migreren de database. |
 | `DATABASE_POOL_SIZE` | Max. verbindingen per serverproces (standaard 5). |
 | `DEMO_MODE` | Demo-inlogknoppen, demo-verzending en demo-banner. Standaard aan zonder en uit mét `DATABASE_URL`. |
 | `BOUWCHECK_DATA_DIR` | Map voor PGlite en uploads (standaard `.data`; op Vercel/serverless automatisch `/tmp/bouwcheck`). |
@@ -176,7 +179,7 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `AI_HOURLY_LIMIT` | Max. analyses per account per uur, standaard 10. |
 | `AI_MAX_PHOTOS` | Max. foto's per analyse, standaard 8. |
 
-Er staan geen geheimen in de client-code; databaseverbinding en API-sleutel worden uitsluitend server-side gebruikt.
+Er staan geen geheimen in de client-code; databaseverbinding, Blob-token en API-sleutel worden uitsluitend server-side gebruikt.
 
 ---
 
@@ -184,6 +187,7 @@ Er staan geen geheimen in de client-code; databaseverbinding en API-sleutel word
 
 | Commando | Wat |
 | --- | --- |
+| `npm run db:deploy` | Wat Vercel bij elke build draait: migreren en, in demo-modus, een lege database vullen. |
 | `npm run db:migrate` | Past nieuwe migraties uit `supabase/migrations` toe (houdt `schema_migrations` bij). |
 | `npm run db:seed` | Laadt demo-data, alleen als de database nog geen gebruikers heeft. |
 | `npm run db:reset` | **Alleen lokaal (PGlite):** verwijdert `.data/pglite` en bouwt alles opnieuw op. Stop eerst de dev-server. |
@@ -195,47 +199,40 @@ In de lokale demo-modus gebeuren migreren en seeden automatisch bij de eerste re
 
 ---
 
-## Supabase gebruiken
+## Deployen op Vercel (Neon + Blob)
 
-BouwCheck gebruikt Supabase als **PostgreSQL-host**:
+Alles wordt in Vercel zelf geregeld; je hebt geen apart Supabase-account nodig. De database is **Neon Postgres** (de opvolger van Vercel Postgres) en bestanden gaan naar **Vercel Blob**. Beide maak je aan en betaal je via Vercel.
 
-1. Maak een Supabase-project aan.
-2. Zet in `.env.local` de connection string als `DATABASE_URL` (bij serverless hosting de *transaction pooler*, poort 6543; `prepare: false` staat al ingesteld) en `DEMO_MODE=false`.
-3. `npm run db:migrate` (of plak de bestanden uit `supabase/migrations` in de SQL-editor, of gebruik `supabase db push`).
-4. Optioneel voor een demo-omgeving: `npm run db:seed`. Maak een beheerder aan met `npm run db:create-admin`.
+1. **Database:** Vercel → je project → *Storage* → *Create Database* → **Neon** → koppel aan dit project (alle omgevingen). Vercel zet `DATABASE_URL` en `DATABASE_URL_UNPOOLED`. Gebruik een **eigen database** voor BouwCheck, niet die van een ander project: tabellen als `users` en `sessions` zouden botsen.
+2. **Bestanden:** *Storage* → *Create* → **Blob** → kies toegang **Private** → koppel aan dit project. Vercel zet `BLOB_READ_WRITE_TOKEN`.
+3. **Overige variabelen** (*Settings → Environment Variables*):
 
-**Bewuste keuzes en wat dat betekent:**
+   | Variabele | Waarde |
+   | --- | --- |
+   | `ANTHROPIC_API_KEY` | Je Anthropic-API-sleutel (voor de AI-intake) |
+   | `DEMO_MODE` | `true` voor een demo-omgeving (demo-data + demo-inlogknoppen), anders `false` |
 
-- **Authenticatie** is applicatie-eigen (e-mail + wachtwoord met scrypt, sessietokens gehasht in `sessions`), niet Supabase Auth. Dat werkt identiek lokaal en op Supabase. Overstappen op Supabase Auth is mogelijk maar niet geïmplementeerd.
-- **Row Level Security** staat op álle tabellen aan, zonder policies, en rechten voor `anon`/`authenticated` zijn ingetrokken: via de publieke Supabase-API (anon key) is niets leesbaar of schrijfbaar. De applicatie verbindt server-side als database-eigenaar en dwingt autorisatie af in de server actions en data-access (eigenaarschap van projecten/aanvragen, rollen voor portaal en beheer).
-- **Bestanden** (bijlagen) worden opgeslagen op het lokale bestandssysteem (`BOUWCHECK_DATA_DIR/uploads`) en alleen via een geautoriseerde route geserveerd. Op serverless hosting (bijv. Vercel) is dat niet persistent → koppel vóór productie Supabase Storage of S3 (niet geïmplementeerd).
+4. **Opnieuw deployen.** Vercel draait `npm run vercel-build` = `db:deploy` + `next build`. `db:deploy`:
+   - past nieuwe migraties toe (via de directe verbinding, met een lock tegen gelijktijdige deploys);
+   - vult een **lege** database met demo-data als `DEMO_MODE=true`;
+   - slaat preview-deploys over, tenzij `MIGRATE_ON_PREVIEW=true` (zet dat aan als Neon per preview een eigen databasebranch maakt; anders zou een preview het schema van productie wijzigen).
+
+Een beheerder voor een niet-demo-omgeving maak je vanaf je eigen computer: `vercel env pull .env.local` en daarna `ADMIN_PASSWORD='…' npm run db:create-admin -- jij@bedrijf.nl "Naam"`.
+
+**Let op met `DEMO_MODE=true` op een openbare URL:** iedereen kan dan met de demo-knoppen inloggen, ook als demo-*beheerder*, en ziet daarmee alle projecten van alle accounts. Gebruik demo-modus dus niet zodra echte gebruikers echte projecten invoeren. Ook delen alle bezoekers die als demo-flipper inloggen één AI-limiet.
+
+**Zonder database** start BouwCheck op Vercel een tijdelijke demo-database in `/tmp` (banner *“Tijdelijke opslag”*). Elke serverinstantie heeft dan een eigen database: inloggen, een project aanmaken en de teamvoorstellen openen kunnen op verschillende instanties terechtkomen, waardoor je ineens uitgelogd bent of een project ‘niet gevonden’ wordt. Alleen geschikt om rond te kijken.
+
+**Zonder Blob** staan foto's en bijlagen in `/tmp` en verdwijnen ze bij een herstart (banner *“Tijdelijke bestandsopslag”*).
 
 ---
 
-## Deployen op Vercel
+## Andere PostgreSQL-host (bijv. Supabase)
 
-Op Vercel is de projectmap (`/var/task`) read-only; alleen `/tmp` is schrijfbaar.
+Elke PostgreSQL 15+ werkt via `DATABASE_URL` (bij serverless hosting de gepoolde verbinding; `prepare: false` staat al ingesteld). Migreer met `npm run db:migrate` of via `vercel-build`.
 
-**Aanbevolen: koppel een database.** Zet in Vercel → *Settings → Environment Variables*:
-
-| Variabele | Waarde |
-| --- | --- |
-| `DATABASE_URL` | Supabase-connection string (transaction pooler, poort 6543) |
-| `DEMO_MODE` | `true` voor een demo-omgeving met demo-inlogknoppen, anders `false` |
-| `ANTHROPIC_API_KEY` | Je Anthropic-API-sleutel (voor de AI-intake) |
-
-Draai daarna éénmalig vanaf je eigen computer (met dezelfde `DATABASE_URL` in `.env.local`):
-
-```bash
-npm run db:migrate
-npm run db:seed        # alleen voor een demo-omgeving
-```
-
-en deploy opnieuw. Accounts, projecten en AI-verbruik blijven dan bewaard en zijn op elke serverinstantie gelijk.
-
-**Zonder `DATABASE_URL` (alleen voor een snelle kennismaking)** start BouwCheck automatisch een tijdelijke demo-database in `/tmp`. Er verschijnt dan een banner *“Tijdelijke opslag”*. Beperkingen: elke serverinstantie heeft een eigen database, de eerste request na een koude start duurt enkele seconden (database aanmaken en demo-data laden), en accounts, projecten, uploads en de registratie van AI-verbruik kunnen verdwijnen of tussen requests ‘wisselen’ wanneer Vercel een nieuwe instantie start. Gebruik dit niet voor een demo waarin je gegevens invoert die bewaard moeten blijven.
-
-Uploads (bijlagen) staan in beide gevallen in tijdelijke opslag; zie *Bekende beperkingen*.
+- **Authenticatie** is applicatie-eigen (e-mail + wachtwoord met scrypt, sessietokens gehasht in `sessions`), niet de auth van de databasehost.
+- **Row Level Security** staat op álle tabellen aan, zonder policies; op Supabase worden ook de rechten van `anon`/`authenticated` ingetrokken (die rollen bestaan op Neon niet en worden dan overgeslagen). De applicatie verbindt server-side als database-eigenaar en dwingt autorisatie af in de server actions en data-access.
 
 ---
 
@@ -266,7 +263,7 @@ npm run smoke        # snelle crawl tegen een draaiende server op :3000 (BASE_UR
 
 Gebruik je een andere Chromium dan Playwright meelevert, zet dan `PLAYWRIGHT_CHROMIUM_PATH`.
 
-Unittests: 45. De e2e-suite (22 tests) dekt: homepage en navigatie, merknaam (geen oude productnaam), juridische pagina's en testprijzen, interesseformulier met validatie, mobiele layout zonder horizontale scroll en mobiel menu, doorverwijzing van de oude zoek- en vergelijkpagina's, profielen met bron- en demolabels, verborgen inactieve profielen, afgeschermde routes, registratie met validatie, onboarding, inloggen met fout wachtwoord, AI-intake met foto (validatie, AI-voorstel, risico's, corrigeren), handmatige intake met controle van de berekende kostenindicatie, teamvoorstellen per prioriteit, team kiezen → offerteaanvraag, offerte vastleggen, bewerken, AI-verbruik op profiel en in beheer, offerteaanvraag voorbereiden/controleren/demo-verzenden/status, projectresultaat met validatie en moderatiestatus, wachtwoordherstel, server-side afscherming van beheer en bijlagen, verificatie, moderatie, (de)activeren, beheerlog, aannemersportaal en nieuwe aannemersaanmelding.
+Unittests: 48. De e2e-suite draait standaard op PGlite; met `DATABASE_URL` in de omgeving (na `npm run db:deploy` op een lege database met `DEMO_MODE=true`) draait dezelfde suite tegen echte PostgreSQL. De e2e-suite (22 tests) dekt: homepage en navigatie, merknaam (geen oude productnaam), juridische pagina's en testprijzen, interesseformulier met validatie, mobiele layout zonder horizontale scroll en mobiel menu, doorverwijzing van de oude zoek- en vergelijkpagina's, profielen met bron- en demolabels, verborgen inactieve profielen, afgeschermde routes, registratie met validatie, onboarding, inloggen met fout wachtwoord, AI-intake met foto (validatie, AI-voorstel, risico's, corrigeren), handmatige intake met controle van de berekende kostenindicatie, teamvoorstellen per prioriteit, team kiezen → offerteaanvraag, offerte vastleggen, bewerken, AI-verbruik op profiel en in beheer, offerteaanvraag voorbereiden/controleren/demo-verzenden/status, projectresultaat met validatie en moderatiestatus, wachtwoordherstel, server-side afscherming van beheer en bijlagen, verificatie, moderatie, (de)activeren, beheerlog, aannemersportaal en nieuwe aannemersaanmelding.
 
 ---
 
@@ -293,7 +290,7 @@ Zie ook `/transparantie` en `src/lib/domain/metrics.ts`.
 - Autorisatie server-side in iedere server action en pagina (`requireUser`, `requireFlipper`, `requireRole`, `requireAdmin`); beheerpagina's controleren de rol zowel in de layout als per pagina. Server actions hebben de ingebouwde origin-controle van Next.js (CSRF).
 - Projecten, notities, bijlagen en aanvragen zijn alleen zichtbaar voor de eigenaar (en beheer). Aannemers zien alleen aanvragen die via het platform naar hen zijn verzonden, en alleen de daarbij gekozen bijlagen.
 - AI: de sleutel staat alleen in de serveromgeving; beschrijving en foto's worden alleen naar Anthropic gestuurd als de gebruiker op *Analyseer met AI* klikt (vermeld in de privacyverklaring). Gebruikersinvoer wordt in de prompt als data behandeld, de output wordt tegen een schema gevalideerd.
-- Uploads: alleen JPG/PNG/WebP/PDF, max. 10 MB, bestandssignatuur gecontroleerd, opgeslagen onder een willekeurige naam, geserveerd met `nosniff` en `no-store`.
+- Uploads: in Vercel Blob met privé-toegang (alleen te lezen met het servertoken, dus uitsluitend via de geautoriseerde downloadroute), anders lokaal; alleen JPG/PNG/WebP/PDF, max. 10 MB, bestandssignatuur gecontroleerd, opgeslagen onder een willekeurige naam, geserveerd met `nosniff` en `no-store`.
 - Openbare profielen bevatten geen velden uit `contractor_private`; reviews worden zonder naam van de opdrachtgever getoond.
 - Alle beheeracties worden gelogd in `admin_actions`.
 - Privacyverklaring, voorwaarden en disclaimer zijn **concepten** die vóór commercieel gebruik juridisch beoordeeld moeten worden. De applicatie claimt geen AVG-compliance.
@@ -306,7 +303,7 @@ Zie ook `/transparantie` en `src/lib/domain/metrics.ts`.
 | --- | --- | --- |
 | E-mail (offerteaanvragen, wachtwoordherstel, bevestigingen) | Niet geïmplementeerd; nergens gesimuleerd | E-mailprovider (bijv. Resend/Postmark) + templates |
 | Betalingen | Niet geïmplementeerd; CTA's leiden naar een interesseformulier | Betaalprovider (bijv. Mollie/Stripe) |
-| Bestandsopslag | Lokaal bestandssysteem | Supabase Storage/S3 bij serverless hosting |
+| Bestandsopslag | Vercel Blob (privé) als gekoppeld, anders lokaal bestandssysteem | Vercel Blob koppelen |
 | Auth | App-eigen e-mail/wachtwoord | Eventueel Supabase Auth/SSO, e-mailverificatie, 2FA |
 | Rate limiting | In-memory, per proces | Gedeelde rate limiter (bijv. Redis) |
 | Verificatie | Handmatige beoordeling door beheer, met bewijsreferentie | Werkproces + eventueel KvK-API-koppeling |

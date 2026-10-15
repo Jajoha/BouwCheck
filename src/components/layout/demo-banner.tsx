@@ -3,7 +3,7 @@ import { env } from "@/lib/env";
 
 /** Altijd zichtbare melding zolang de applicatie in demo-modus draait. */
 export function DemoBanner() {
-  if (!env.demoMode && !env.ephemeralStorage) return null;
+  if (!env.demoMode && !env.ephemeralStorage && !env.ephemeralUploads) return null;
   return (
     <div className="border-b border-demo-700/20 bg-demo-100 text-demo-700">
       <p className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-1.5 text-xs sm:px-6">
@@ -18,6 +18,12 @@ export function DemoBanner() {
             <>
               {" "}
               <strong className="font-semibold">Tijdelijke opslag:</strong> zonder gekoppelde database worden accounts, projecten en uploads niet blijvend bewaard en kunnen ze
+              verdwijnen bij een herstart van de server.
+            </>
+          ) : env.ephemeralUploads ? (
+            <>
+              {" "}
+              <strong className="font-semibold">Tijdelijke bestandsopslag:</strong> zonder gekoppelde Vercel Blob-opslag kunnen geüploade foto&apos;s en bijlagen
               verdwijnen bij een herstart van de server.
             </>
           ) : null}

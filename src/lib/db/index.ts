@@ -50,11 +50,11 @@ async function createPglite(): Promise<Database> {
   };
 }
 
-async function createPostgres(url: string): Promise<Database> {
+async function createPostgres(url: string, max = Number(process.env.DATABASE_POOL_SIZE ?? 5)): Promise<Database> {
   const { default: postgres } = await import("postgres");
   const sql = postgres(url, {
-    max: Number(process.env.DATABASE_POOL_SIZE ?? 5),
-    // Supabase transaction pooler ondersteunt geen prepared statements
+    max,
+    // Gepoolde verbindingen (Neon/Supabase pooler, transactiemodus) ondersteunen geen prepared statements
     prepare: false,
     onnotice: () => {},
     types: {
@@ -127,7 +127,7 @@ export async function transaction<T>(fn: (tx: Queryable) => Promise<T>): Promise
   return database.transaction(fn);
 }
 
-/** Voor scripts: maak een losse verbinding zonder auto-seed. */
+/** Voor scripts: één directe (niet-gepoolde, indien beschikbaar) verbinding zonder auto-seed. */
 export async function openDatabase(): Promise<Database> {
-  return dbDriver === "postgres" ? createPostgres(env.databaseUrl!) : createPglite();
+  return dbDriver === "postgres" ? createPostgres(env.migrationDatabaseUrl!, 1) : createPglite();
 }

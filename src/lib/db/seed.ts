@@ -943,7 +943,7 @@ async function insertAll(tx: Queryable) {
         [projectId, spec, desc, qty, unit, conf, conf ? "ai" : "gebruiker", i],
       );
     }
-    if (summary) await tx.query("update projects set ai_summary = $2 where id = $1", [projectId, JSON.stringify(summary)]);
+    if (summary) await tx.query("update projects set ai_summary = $2::text::jsonb where id = $1", [projectId, JSON.stringify(summary)]);
   };
   await scope(
     p1,

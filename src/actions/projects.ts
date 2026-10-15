@@ -1,11 +1,10 @@
 "use server";
 
-import fs from "node:fs/promises";
-import path from "node:path";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb, sql, sqlOne, transaction } from "@/lib/db";
-import { ALLOWED_UPLOADS, hasValidSignature, storeProjectFile, uploadRoot } from "@/lib/uploads";
+import { ALLOWED_UPLOADS, hasValidSignature, storeProjectFile } from "@/lib/uploads";
+import { deleteFiles } from "@/lib/storage";
 import { assertUser, AuthError, FLIPPER_ROLES } from "@/lib/auth/session";
 import { addProjectEvent, getProjectForUser } from "@/lib/data/projects";
 import { attachmentKindSchema, parseForm, projectNotesSchema, projectSchema } from "@/lib/validation";
@@ -80,7 +79,7 @@ export async function deleteProjectAction(projectId: string): Promise<ActionResu
     await ownedProject(projectId);
     const files = await sql<{ storage_path: string }>("select storage_path from project_attachments where project_id = $1", [projectId]);
     await sql("delete from projects where id = $1", [projectId]);
-    for (const f of files) await fs.rm(path.resolve(uploadRoot(), f.storage_path), { force: true });
+    await deleteFiles(files.map((f) => f.storage_path)).catch((err) => console.error("Bijlagen verwijderen mislukt", err));
   } catch (err) {
     return handle(err);
   }
@@ -179,7 +178,7 @@ export async function deleteAttachmentAction(projectId: string, attachmentId: st
       "delete from project_attachments where id = $1 and project_id = $2 returning storage_path",
       [attachmentId, projectId],
     );
-    if (row) await fs.rm(path.resolve(uploadRoot(), row.storage_path), { force: true });
+    if (row) await deleteFiles([row.storage_path]).catch((err) => console.error("Bijlage verwijderen mislukt", err));
   } catch (err) {
     return handle(err);
   }

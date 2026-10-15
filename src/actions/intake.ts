@@ -101,7 +101,7 @@ export async function createProjectFromIntakeAction(fd: FormData): Promise<Actio
       const [row] = await tx.query<{ id: string }>(
         `insert into projects (user_id, name, location, province, property_type, renovation_type, area_m2, budget_amount, budget_vat_included,
            desired_start_date, desired_completion_date, status, description, ai_summary)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'orienteren',$12,$13) returning id`,
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'orienteren',$12,$13::text::jsonb) returning id`,
         [user.id, name, d.location, d.province, d.property_type, d.renovation_type, d.area_m2 ?? null, d.budget_amount ?? null, d.budget_vat_included,
           d.desired_start_date ?? null, d.desired_completion_date ?? null, d.description, summary.ok && summary.data ? JSON.stringify(summary.data) : null],
       );

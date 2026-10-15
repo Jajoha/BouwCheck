@@ -20,7 +20,7 @@ async function admin() {
 }
 
 async function log(db: Queryable | null, user: SessionUser, action: string, entityType: string, entityId: string | null, details: Record<string, unknown> = {}) {
-  const q = "insert into admin_actions (admin_user_id, action, entity_type, entity_id, details) values ($1,$2,$3,$4,$5)";
+  const q = "insert into admin_actions (admin_user_id, action, entity_type, entity_id, details) values ($1,$2,$3,$4,$5::text::jsonb)";
   const params = [user.id, action, entityType, entityId, JSON.stringify(details)];
   if (db) await db.query(q, params);
   else await sql(q, params);

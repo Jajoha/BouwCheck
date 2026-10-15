@@ -1,7 +1,5 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { sqlOne } from "@/lib/db";
-import { env } from "@/lib/env";
+import { readFile } from "@/lib/storage";
 import { getCurrentUser } from "@/lib/auth/session";
 
 /**
@@ -31,20 +29,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     );
   }
   if (!allowed) return new Response("Geen toegang", { status: 403 });
-  const root = path.resolve(process.cwd(), env.dataDir, "uploads");
-  const full = path.resolve(root, file.storage_path);
-  if (!full.startsWith(root + path.sep)) return new Response("Ongeldig pad", { status: 400 });
-  try {
-    const data = await fs.readFile(full);
-    return new Response(data, {
-      headers: {
-        "Content-Type": file.mime_type,
-        "Content-Disposition": `${file.mime_type === "application/pdf" || file.mime_type.startsWith("image/") ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(file.file_name)}`,
-        "X-Content-Type-Options": "nosniff",
-        "Cache-Control": "private, no-store",
-      },
-    });
-  } catch {
-    return new Response("Bestand ontbreekt", { status: 410 });
-  }
+  const data = await readFile(file.storage_path);
+  if (!data) return new Response("Bestand ontbreekt", { status: 410 });
+  return new Response(data, {
+    headers: {
+      "Content-Type": file.mime_type,
+      "Content-Disposition": `${file.mime_type === "application/pdf" || file.mime_type.startsWith("image/") ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(file.file_name)}`,
+      "X-Content-Type-Options": "nosniff",
+      "Cache-Control": "private, no-store",
+    },
+  });
 }

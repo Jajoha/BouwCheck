@@ -2,7 +2,20 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Database } from "./index";
 
+// Willekeurige, vaste sleutel voor pg_advisory_lock: voorkomt dat twee gelijktijdige deploys tegelijk migreren.
+const MIGRATION_LOCK = 724_310_515;
+
 export async function runMigrations(db: Database, log: (m: string) => void = () => {}) {
+  if (db.driver !== "postgres") return applyPending(db, log);
+  await db.query("select pg_advisory_lock($1)", [MIGRATION_LOCK]);
+  try {
+    await applyPending(db, log);
+  } finally {
+    await db.query("select pg_advisory_unlock($1)", [MIGRATION_LOCK]);
+  }
+}
+
+async function applyPending(db: Database, log: (m: string) => void) {
   await db.query(
     "create table if not exists schema_migrations (name text primary key, applied_at timestamptz not null default now())",
   );
@@ -17,8 +30,8 @@ export async function runMigrations(db: Database, log: (m: string) => void = () 
   for (const file of files) {
     if (applied.has(file)) continue;
     const content = fs.readFileSync(path.join(dir, file), "utf8");
-    await db.exec(content);
-    await db.query("insert into schema_migrations (name) values ($1)", [file]);
+    // Migratie en registratie in één batch: bij een fout wordt geen van beide vastgelegd.
+    await db.exec(`${content}\n;\ninsert into schema_migrations (name) values ('${file.replace(/'/g, "''")}');`);
     log(`Migratie toegepast: ${file}`);
   }
 }
