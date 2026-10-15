@@ -9,10 +9,10 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const { rol } = await searchParams;
   return (
     <AuthCard
-      title={rol === "aannemer" ? "Bedrijf aanmelden" : "Account aanmaken"}
+      title={rol === "aannemer" ? "Aanmelden als uitvoerder" : "Account aanmaken"}
       description={
         rol === "aannemer"
-          ? "Maak eerst een account aan. Daarna kies je de rol ‘Aannemer’ en vul je je bedrijfsprofiel in."
+          ? "Voor aannemersbedrijven, zzp-vakmensen en klussers. Maak eerst een account aan; daarna vul je je profiel in."
           : "Registreer je om je project te beschrijven en teamvoorstellen te ontvangen."
       }
       footer={

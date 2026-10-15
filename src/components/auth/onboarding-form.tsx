@@ -24,7 +24,7 @@ export function OnboardingForm({ defaults }: { defaults: { name: string; company
             {[
               ["flipper", "Vastgoedflipper"],
               ["investeerder", "Vastgoedinvesteerder"],
-              ["aannemer", "Aannemer"],
+              ["aannemer", "Aannemer, zzp'er of klusser"],
             ].map(([v, l]) => (
               <Radio key={v} name="role" value={v} label={l} defaultChecked={defaults.role === v} className="rounded-lg border border-ink-200 px-3 py-2.5 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50" />
             ))}

@@ -15,7 +15,7 @@ test.describe("Aannemersprofielen (geen zelf zoeken of vergelijken)", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Klusbedrijf De Nieuwe Hoek");
     await expect(page.getByText("Demo-data — niet geverifieerd").first()).toBeVisible();
     await expect(page.getByText("Onvoldoende gegevens voor een betrouwbare vergelijking")).toBeVisible();
-    await expect(page.getByText("Bron: Zelf opgegeven door bedrijf").first()).toBeVisible();
+    await expect(page.getByText("Bron: Zelf opgegeven door uitvoerder").first()).toBeVisible();
     await expect(page.getByText("Bron: Ervaringen van opdrachtgevers")).toBeVisible();
 
     await page.goto("/aannemers/lindewaard");

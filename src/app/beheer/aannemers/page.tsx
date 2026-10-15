@@ -24,7 +24,7 @@ export default async function AdminContractors() {
         actions={
           <Button asChild>
             <Link href="/beheer/aannemers/nieuw">
-              <Plus aria-hidden /> Aannemer toevoegen
+              <Plus aria-hidden /> Uitvoerder toevoegen
             </Link>
           </Button>
         }

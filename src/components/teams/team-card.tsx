@@ -5,7 +5,8 @@ import { DemoBadge, VerificationBadge } from "@/components/domain/badges";
 import { ChooseTeamButton } from "./choose-team-button";
 import { summarizeVerification } from "@/lib/domain/verification";
 import type { Priority, TeamOption } from "@/lib/domain/teams";
-import { specialtyName } from "@/lib/domain/constants";
+import { specialtyName, PROVIDER_TYPES } from "@/lib/domain/constants";
+import { checkAgeDays, REGISTER_MAX_AGE_DAYS } from "@/lib/domain/registers";
 import { formatDate, formatEuro, formatNumber, formatPercent } from "@/lib/format";
 import { daysBetween } from "@/lib/domain/metrics";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,15 @@ const unitLabel = (u: string | null) => (u === "m2" ? "m²" : u ?? "");
 export function costLabel(o: TeamOption) {
   if (o.cost.min === 0 && o.cost.max === 0) return "Niet te begroten";
   return `${formatEuro(o.cost.min)} – ${formatEuro(o.cost.max)}`;
+}
+
+function registerStatus(c: TeamOption["members"][number]["contractor"], today: string): { text: string; warn: boolean } {
+  if (c.is_demo) return { text: "registers: demo, niet gecontroleerd", warn: false };
+  const last = c.register?.lastCheckedAt ?? null;
+  const age = checkAgeDays(last, today);
+  if (age === null) return { text: "registers: nog niet gecontroleerd", warn: true };
+  if (age > REGISTER_MAX_AGE_DAYS) return { text: `registers: laatst gecontroleerd ${formatDate(last)} (verouderd)`, warn: true };
+  return { text: `registers gecontroleerd op ${formatDate(last)}`, warn: false };
 }
 
 function explain(priority: Priority, o: TeamOption, ctx: { budget: number | null; desiredStart: string | null }) {
@@ -81,6 +91,7 @@ export function TeamCard({
   compareTo?: { label: string; option: TeamOption }[];
 }) {
   const meta = PRIORITY_META[priority];
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <article className={cn("rounded-[var(--radius-card)] border bg-white", recommended ? "border-ink-900 shadow-[var(--shadow-raised)]" : "border-ink-200")} data-testid="team-option">
       <header className="flex flex-col gap-2 border-b border-ink-100 p-4 sm:flex-row sm:items-start sm:justify-between">
@@ -134,13 +145,18 @@ export function TeamCard({
                   <p className="text-xs text-ink-600">{m.roles.map(specialtyName).join(", ")}</p>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
+                  <Badge tone="muted">{PROVIDER_TYPES[m.contractor.provider_type ?? "bedrijf"].short}</Badge>
                   <VerificationBadge level={verification.highest} isDemo={m.contractor.is_demo} />
                 </div>
               </div>
               <p className="mt-1.5 text-xs text-ink-600">
                 Beschikbaar: {m.start ? formatDate(m.start) : "onbekend"} · Beoordeling:{" "}
                 {m.quality.sufficient ? `${formatNumber(m.quality.rating, 1)}/5 (n=${m.quality.ratingN})` : `onvoldoende (${m.quality.ratingN} van min. 3)`} · Projecten:{" "}
-                {m.quality.registeredProjects} ({m.quality.verifiedProjects} gecontroleerd)
+                {m.quality.registeredProjects} ({m.quality.verifiedProjects} gecontroleerd) ·{" "}
+                {(() => {
+                  const r = registerStatus(m.contractor, today);
+                  return <span className={r.warn ? "text-warn-700" : undefined}>{r.text}</span>;
+                })()}
               </p>
               <table className="mt-2 w-full text-xs">
                 <tbody>

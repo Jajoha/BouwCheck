@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Inbox, ShieldCheck, Tag, FolderOpen, MessageSquare, Building2, ExternalLink } from "lucide-react";
+import { Inbox, ShieldCheck, Tag, FolderOpen, MessageSquare, Building2, ExternalLink, Landmark } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DefinitionList, EmptyState, Notice, PageHeader, TableWrap, td, th } from "@/components/ui/misc";
@@ -9,6 +9,9 @@ import { ContractorProfileForm } from "@/components/portal/contractor-profile-fo
 import { emptyContractorProfile } from "@/components/portal/profile-defaults";
 import { DeleteButton, RateForm, ReferenceForm, RespondToRequestForm, RespondToReviewForm, VerificationRequestForm } from "@/components/portal/portal-widgets";
 import { saveOwnProfileAction } from "@/actions/portal";
+import { SignalResponseForm } from "@/components/admin/register-widgets";
+import { getRegisterState } from "@/lib/data/registers";
+import { SIGNAL_KINDS } from "@/lib/domain/registers";
 import { requireRole } from "@/lib/auth/session";
 import { getOwnContractor, getReviewsForContractorOwner, getVerificationEvents } from "@/lib/data/portal";
 import { getContractorDetail } from "@/lib/data/contractors";
@@ -36,11 +39,12 @@ export default async function PortalPage() {
     );
   }
 
-  const [detail, events, requests, reviews] = await Promise.all([
+  const [detail, events, requests, reviews, register] = await Promise.all([
     getContractorDetail(own.slug, { includeInactive: true }),
     getVerificationEvents(own.id),
     listQuoteRequestsForContractor(own.id),
     getReviewsForContractorOwner(own.id),
+    getRegisterState(own.id),
   ]);
   const requestAttachments = await Promise.all(requests.map((r) => getQuoteRequestAttachments(r.id)));
   const openVerification = events.find((e) => e.verification_type === "bedrijfsgegevens" && e.status === "aangevraagd");
@@ -285,6 +289,47 @@ export default async function PortalPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
+                <Landmark className="size-4" aria-hidden /> Openbare registers
+              </CardTitle>
+              <CardDescription>
+                BouwCheck controleert periodiek officiële registers (faillissementen, KvK, rechtspraak) op je KvK-nummer. Een bevinding wordt pas zichtbaar na beoordeling
+                door BouwCheck. Je kunt op elk zichtbaar signaal openbaar reageren.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3 text-sm">
+              {register.lastCheck ? (
+                <p className="text-ink-700">Laatst gecontroleerd op {formatDate(register.lastCheck.created_at)}.</p>
+              ) : (
+                <p className="text-ink-600">{own.is_demo ? "Demo-profiel: niet in echte registers gecontroleerd." : "Nog niet gecontroleerd."}</p>
+              )}
+              {register.signals.length === 0 ? (
+                <p className="text-ink-600">Er staan geen registersignalen op je profiel.</p>
+              ) : (
+                register.signals.map((s) => (
+                  <div key={s.id} className="rounded-lg border border-ink-200 p-3">
+                    <p className="font-medium text-ink-950">
+                      {SIGNAL_KINDS[s.kind].label}: {s.title}
+                    </p>
+                    <p className="mt-1 text-xs text-ink-600">
+                      {s.effect === "uitsluiting" ? "Gevolg: je wordt niet opgenomen in teamvoorstellen." : "Gevolg: waarschuwing bij teamvoorstellen."}{" "}
+                      <a href={s.source_url} target="_blank" rel="noopener noreferrer" className="underline">
+                        Bron: {s.source_name}
+                      </a>
+                    </p>
+                    <div className="mt-2">
+                      <SignalResponseForm signalId={s.id} existing={s.contractor_response} />
+                    </div>
+                  </div>
+                ))
+              )}
+              <p className="text-xs text-ink-500">
+                Klopt een signaal niet (bijv. een andere onderneming met dezelfde naam)? Reageer hierboven of neem contact op; BouwCheck kan het signaal dan intrekken.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <Building2 className="size-4" aria-hidden /> Bedrijfsprofiel
               </CardTitle>
             </CardHeader>
@@ -296,6 +341,7 @@ export default async function PortalPage() {
                     action={saveOwnProfileAction}
                     submitLabel="Profiel opslaan"
                     initial={{
+                      provider_type: own.provider_type,
                       company_name: own.company_name,
                       description: own.description,
                       city: own.city ?? "",

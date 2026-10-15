@@ -90,10 +90,11 @@ export default async function AdminAiUsage() {
               <tr>
                 <th className={th}>Tijdstip</th>
                 <th className={th}>Account</th>
+                <th className={th}>Functie</th>
                 <th className={th}>Model</th>
                 <th className={th}>Status</th>
                 <th className={`${th} text-right`}>Input / cache / output</th>
-                <th className={`${th} text-right`}>Foto&apos;s</th>
+                <th className={`${th} text-right`}>Foto&apos;s / zoekopdr.</th>
                 <th className={`${th} text-right`}>Kosten</th>
               </tr>
             </thead>
@@ -102,6 +103,7 @@ export default async function AdminAiUsage() {
                 <tr key={r.id}>
                   <td className={`${td} whitespace-nowrap text-xs`}>{formatDateTime(r.created_at)}</td>
                   <td className={td}>{r.name}</td>
+                  <td className={`${td} text-xs`}>{r.feature === "registercontrole" ? "Registercontrole" : "Intake"}</td>
                   <td className={`${td} text-xs`}>{r.model}</td>
                   <td className={td}>
                     <Badge tone={r.status === "ok" ? "positive" : "warning"} title={r.error_message ?? undefined}>
@@ -111,7 +113,9 @@ export default async function AdminAiUsage() {
                   <td className={`${td} tabular text-right text-xs`}>
                     {formatNumber(r.input_tokens)} / {formatNumber(r.cache_read_tokens)} / {formatNumber(r.output_tokens)}
                   </td>
-                  <td className={`${td} tabular text-right`}>{r.image_count}</td>
+                  <td className={`${td} tabular text-right`}>
+                    {r.image_count} / {r.web_search_requests}
+                  </td>
                   <td className={`${td} tabular text-right`}>{usd(r.cost_usd, 4)}</td>
                 </tr>
               ))}

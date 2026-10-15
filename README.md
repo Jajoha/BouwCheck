@@ -2,7 +2,7 @@
 
 **De juiste aannemer. Zonder verrassingen.**
 
-BouwCheck is een bèta van een onafhankelijk platform voor Nederlandse vastgoedflippers en -investeerders. De flipper beschrijft het project (en voegt eventueel foto's toe); AI zet dat om in een lijst werkzaamheden met hoeveelheden; BouwCheck stelt daarna **teams van aannemers en vakspecialisten** samen, geordend per prioriteit: **Budget**, **Kwaliteit** en **Snelheid**. Handmatig aannemers vergelijken is bewust geen onderdeel van het product: BouwCheck levert wie wat kan doen, met uitleg waarom.
+BouwCheck is een bèta van een onafhankelijk platform voor Nederlandse vastgoedflippers en -investeerders. De flipper beschrijft het project (en voegt eventueel foto's toe); AI zet dat om in een lijst werkzaamheden met hoeveelheden; BouwCheck stelt daarna **teams van uitvoerders** samen — aannemersbedrijven, zelfstandige vakmensen (zzp) én klussers — geordend per prioriteit: **Budget**, **Kwaliteit** en **Snelheid**. Handmatig aannemers vergelijken is bewust geen onderdeel van het product: BouwCheck levert wie wat kan doen, met uitleg waarom.
 
 > **Demo-data.** Alle aannemers, KvK-nummers, contactgegevens, tarieven, projectresultaten, beoordelingen en verificatiestatussen in de seed zijn fictief. Ze zijn gemarkeerd met `is_demo = true` en worden in de interface getoond als **“Demo-data — niet geverifieerd”**.
 
@@ -13,6 +13,7 @@ BouwCheck is een bèta van een onafhankelijk platform voor Nederlandse vastgoedf
 - [Snel starten](#snel-starten)
 - [Wat zit erin](#wat-zit-erin)
 - [AI-intake en teamvoorstellen](#ai-intake-en-teamvoorstellen)
+- [Uitvoerders en openbare registers](#uitvoerders-en-openbare-registers)
 - [Technologie en architectuur](#technologie-en-architectuur)
 - [Configuratie](#configuratie)
 - [Database, migraties en seed](#database-migraties-en-seed)
@@ -79,6 +80,8 @@ Demo terugzetten naar de beginsituatie: **Beheer → Demo-data → Demo-data ter
 | AI-intake: beschrijving + foto's → werkzaamheden met hoeveelheden, risico's, open vragen; altijd te corrigeren | `/projecten/nieuw`, `/projecten/[id]/werkzaamheden` | Werkt (vereist `ANTHROPIC_API_KEY`; zonder sleutel handmatig invullen) |
 | Teamvoorstellen per prioriteit (Budget / Kwaliteit / Snelheid), team kiezen → offerteaanvraag | `/projecten/[id]/voorstellen` | Werkt |
 | AI-verbruik per account (tokens, kosten in USD, limieten per maand en per uur) | `/beheer/ai-gebruik`, `/profiel` | Werkt |
+| Uitvoerders: aannemersbedrijf, zzp-vakman of klusser (vakgebied ‘Allround klusser’) | `/portaal`, `/aannemers/[slug]` | Werkt |
+| Registercontrole door een AI-agent (insolventie, KvK, rechtspraak), beoordeling door beheer, reactie door uitvoerder, uitsluiting/waarschuwing in teamvoorstellen | `/beheer/registers`, profiel, portaal | Werkt (vereist `ANTHROPIC_API_KEY`; dagelijkse run vereist `CRON_SECRET`) |
 | Registratie, inloggen, uitloggen, wachtwoordherstel, onboarding | `/registreren`, `/inloggen`, `/wachtwoord-vergeten`, `/onboarding` | Werkt (herstelmail: zie beperkingen) |
 | Dashboard (projecten, aanvragen, favorieten, activiteit, aandachtspunten) | `/dashboard` | Werkt |
 | Renovatieprojecten: bewerken, status, gekozen aannemers, offertes vastleggen, bijlagen, notities, tijdlijn | `/projecten/...` | Werkt |
@@ -116,6 +119,26 @@ Kandidaten zijn actieve aannemers die in de provincie werken. Er worden twee soo
 
 ---
 
+## Uitvoerders en openbare registers
+
+**Niet alleen aannemers.** Elk profiel heeft een soort: *aannemersbedrijf*, *zelfstandig vakman (zzp)* of *klusser*. Er is een vakgebied ‘Allround klusser (kleine klussen)’ met uurtarieven; de AI-intake zet kleine, losse klussen daar onder. Klussers en zzp'ers worden net als bedrijven in teams opgenomen; de soort staat bij elk teamlid.
+
+**Registercontrole** (`src/lib/ai/register-agent.ts`, `src/lib/domain/registers.ts`):
+
+1. Een AI-agent (Claude met webzoeken en -ophalen, beperkt tot `rechtspraak.nl`, `kvk.nl` en `officielebekendmakingen.nl`) zoekt op **KvK-nummer** naar faillissement, surseance, opgeheven inschrijving, recente inschrijving, mogelijke doorstart en rechterlijke uitspraken. Het rapport komt via een tool met strikt schema; elke bevinding heeft een bron-URL en een koppelingsbasis (`kvk_nummer`, `naam_en_adres` of `naam`).
+2. Alles is een **voorstel** (`register_signals.status = 'voorgesteld'`) tot een beheerder het in **Beheer → Registers** goedkeurt of afwijst (afwijzen vereist een notitie).
+3. **Beleid, ook afgedwongen in de database:** *uitsluiten* van teamvoorstellen kan alleen bij een juridisch feit (faillissement, surseance, opgeheven KvK-inschrijving) dat op KvK-nummer is gekoppeld. Al het andere is een *waarschuwing*. Een beheerder kan alleen afzwakken, nooit verzwaren.
+4. Uitgesloten uitvoerders staan op de voorstellenpagina apart, met reden en bron. Waarschuwingen staan als notitie bij het team. Het profiel toont ook “geen bijzonderheden gevonden”, met datum en geraadpleegde registers.
+5. De uitvoerder ziet zichtbare signalen in het portaal en kan openbaar reageren.
+6. Privacy: bij eenmanszaken worden nooit WSNP, persoonlijke schulden of privégegevens vastgelegd (staat in de agentinstructie en het schema kent die soort niet).
+7. Een controle ouder dan 90 dagen geldt als verouderd. Een **Vercel Cron** (`vercel.json`, dagelijks) controleert per run `REGISTER_CRON_BATCH` uitvoerders met een verlopen of ontbrekende controle; dit vereist `CRON_SECRET`. Demo-uitvoerders (fictieve KvK-nummers) worden nooit gecontroleerd.
+
+Kosten per controle (tokens + webzoekopdrachten à $0,01) staan per aanroep in **Beheer → AI-gebruik**. Ze tellen niet mee voor de AI-limiet van gebruikers.
+
+**Beperking:** of de agent een register daadwerkelijk kan uitlezen, hangt af van die website; kan dat niet, dan staat dat in de samenvatting en telt dat register niet als geraadpleegd. “Niets gevonden” is dus geen garantie.
+
+---
+
 ## Technologie en architectuur
 
 - **Next.js 16** (App Router, server components, server actions) + **TypeScript** + **React 19**
@@ -148,7 +171,7 @@ tests/unit, tests/e2e
 
 ### Datamodel (kern)
 
-`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects` (incl. `ai_summary`), `project_scope_items` (werkzaamheden), `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites` · `ai_usage` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
+`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects` (incl. `ai_summary`), `project_scope_items` (werkzaamheden), `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites` · `ai_usage` · `register_checks`, `register_signals` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
 
 - Bedragen: `numeric(12,2)` + expliciete valuta (`EUR`) + btw-status per bedrag. Datums als `date`, doorlooptijden in kalenderdagen.
 - Prijs-typen gescheiden: `indicatief` / `offerte` / `overeengekomen`; indicatieve tarieven staan apart in `contractor_rates` (bron altijd *zelf opgegeven*).
@@ -167,6 +190,8 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `DATABASE_URL_UNPOOLED` | Directe verbinding voor migraties (Neon zet deze zelf; `POSTGRES_URL_NON_POOLING` werkt ook). Leeg = `DATABASE_URL`. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob voor foto's en bijlagen (privé). Leeg = lokale map. |
 | `MIGRATE_ON_PREVIEW` | `true` = ook preview-deploys migreren de database. |
+| `CRON_SECRET` | Geheim voor de dagelijkse registercontrole (Vercel Cron). Leeg = geplande controle uit. |
+| `REGISTER_CRON_BATCH` | Uitvoerders per geplande run (1–5, standaard 2). |
 | `DATABASE_POOL_SIZE` | Max. verbindingen per serverproces (standaard 5). |
 | `DEMO_MODE` | Demo-inlogknoppen, demo-verzending en demo-banner. Standaard aan zonder en uit mét `DATABASE_URL`. |
 | `BOUWCHECK_DATA_DIR` | Map voor PGlite en uploads (standaard `.data`; op Vercel/serverless automatisch `/tmp/bouwcheck`). |
@@ -209,7 +234,8 @@ Alles wordt in Vercel zelf geregeld; je hebt geen apart Supabase-account nodig. 
 
    | Variabele | Waarde |
    | --- | --- |
-   | `ANTHROPIC_API_KEY` | Je Anthropic-API-sleutel (voor de AI-intake) |
+   | `ANTHROPIC_API_KEY` | Je Anthropic-API-sleutel (AI-intake en registercontrole) |
+   | `CRON_SECRET` | Een lange willekeurige tekenreeks; zet de dagelijkse registercontrole aan |
    | `DEMO_MODE` | `true` voor een demo-omgeving (demo-data + demo-inlogknoppen), anders `false` |
 
 4. **Opnieuw deployen.** Vercel draait `npm run vercel-build` = `db:deploy` + `next build`. `db:deploy`:
@@ -263,7 +289,7 @@ npm run smoke        # snelle crawl tegen een draaiende server op :3000 (BASE_UR
 
 Gebruik je een andere Chromium dan Playwright meelevert, zet dan `PLAYWRIGHT_CHROMIUM_PATH`.
 
-Unittests: 48. De e2e-suite draait standaard op PGlite; met `DATABASE_URL` in de omgeving (na `npm run db:deploy` op een lege database met `DEMO_MODE=true`) draait dezelfde suite tegen echte PostgreSQL. De e2e-suite (22 tests) dekt: homepage en navigatie, merknaam (geen oude productnaam), juridische pagina's en testprijzen, interesseformulier met validatie, mobiele layout zonder horizontale scroll en mobiel menu, doorverwijzing van de oude zoek- en vergelijkpagina's, profielen met bron- en demolabels, verborgen inactieve profielen, afgeschermde routes, registratie met validatie, onboarding, inloggen met fout wachtwoord, AI-intake met foto (validatie, AI-voorstel, risico's, corrigeren), handmatige intake met controle van de berekende kostenindicatie, teamvoorstellen per prioriteit, team kiezen → offerteaanvraag, offerte vastleggen, bewerken, AI-verbruik op profiel en in beheer, offerteaanvraag voorbereiden/controleren/demo-verzenden/status, projectresultaat met validatie en moderatiestatus, wachtwoordherstel, server-side afscherming van beheer en bijlagen, verificatie, moderatie, (de)activeren, beheerlog, aannemersportaal en nieuwe aannemersaanmelding.
+Unittests: 57. De e2e-suite draait standaard op PGlite; met `DATABASE_URL` in de omgeving (na `npm run db:deploy` op een lege database met `DEMO_MODE=true`) draait dezelfde suite tegen echte PostgreSQL. De e2e-suite (25 tests) dekt: homepage en navigatie, merknaam (geen oude productnaam), juridische pagina's en testprijzen, interesseformulier met validatie, mobiele layout zonder horizontale scroll en mobiel menu, doorverwijzing van de oude zoek- en vergelijkpagina's, profielen met bron- en demolabels, verborgen inactieve profielen, afgeschermde routes, registratie met validatie, onboarding, inloggen met fout wachtwoord, AI-intake met foto (validatie, AI-voorstel, risico's, corrigeren), handmatige intake met controle van de berekende kostenindicatie, teamvoorstellen per prioriteit, team kiezen → offerteaanvraag, offerte vastleggen, bewerken, AI-verbruik op profiel en in beheer, offerteaanvraag voorbereiden/controleren/demo-verzenden/status, projectresultaat met validatie en moderatiestatus, wachtwoordherstel, server-side afscherming van beheer en bijlagen, klussers en zzp'ers als uitvoerder, uitsluiting op basis van registers in teamvoorstellen, de registeragent (inclusief pauze-en-hervat van de zoeklus) met beoordeling door beheer, verificatie, moderatie, (de)activeren, beheerlog, aannemersportaal en nieuwe aannemersaanmelding.
 
 ---
 

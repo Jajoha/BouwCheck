@@ -1,11 +1,12 @@
-import { CircleDashed, BadgeCheck, FileCheck2, MessageSquareQuote } from "lucide-react";
+import { CircleDashed, BadgeCheck, FileCheck2, MessageSquareQuote, Landmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SOURCES = {
-  zelf: { label: "Zelf opgegeven door bedrijf", Icon: CircleDashed, cls: "text-ink-500 border-ink-200 bg-white" },
+  zelf: { label: "Zelf opgegeven door uitvoerder", Icon: CircleDashed, cls: "text-ink-500 border-ink-200 bg-white" },
   admin: { label: "Administratief gecontroleerd", Icon: BadgeCheck, cls: "text-info-700 border-info-100 bg-info-100/40" },
   project: { label: "Projectgegevens (per regel gelabeld)", Icon: FileCheck2, cls: "text-brand-800 border-brand-200 bg-brand-50" },
   ervaring: { label: "Ervaringen van opdrachtgevers", Icon: MessageSquareQuote, cls: "text-warn-700 border-warn-100 bg-warn-50" },
+  register: { label: "Openbare registers, door beheer beoordeeld", Icon: Landmark, cls: "text-ink-700 border-ink-300 bg-ink-50" },
 } as const;
 
 /** Bronlabel: maakt per sectie duidelijk waar de informatie vandaan komt. */

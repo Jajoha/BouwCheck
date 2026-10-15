@@ -28,7 +28,8 @@ export default function TransparencyPage() {
               of corrigeert de werkzaamheden; zonder AI vul je ze zelf in.
             </li>
             <li>
-              <strong>Kandidaten.</strong> Alleen actieve aannemers die in de provincie van je project werken en het betreffende vakgebied uitvoeren.
+              <strong>Kandidaten.</strong> Alleen actieve uitvoerders — aannemersbedrijven, zelfstandige vakmensen (zzp) en klussers — die in de provincie van je project
+              werken en het betreffende vakgebied uitvoeren. Kleine klussen kunnen naar een klusser gaan.
             </li>
             <li>
               <strong>Teams.</strong> Een hoofdaannemer die alles aanneemt, of een team van losse vakspecialisten (per vakgebied één). Bij een team van specialisten ligt
@@ -55,6 +56,31 @@ export default function TransparencyPage() {
               Dan wordt een team niet tussen de anderen gerangschikt maar apart getoond, met de reden.
             </li>
           </ol>
+        </section>
+        <section>
+          <h2 className="text-lg font-semibold text-ink-950">Openbare registers</h2>
+          <p className="mt-3">
+            Een AI-agent zoekt per uitvoerder op KvK-nummer in officiële registers: het Centraal Insolventieregister, het KvK Handelsregister, Rechtspraak.nl en officiële
+            bekendmakingen. Alles wat de agent vindt is een voorstel; een medewerker controleert de bron en beslist. Er is geen score: een signaal is een feit met een bron.
+          </p>
+          <ul className="mt-3 list-disc space-y-1 pl-5">
+            <li>
+              <strong>Uitsluiten</strong> van teamvoorstellen gebeurt alleen bij een juridisch feit — faillissement, surseance van betaling of een opgeheven
+              KvK-inschrijving — dat in de bron op het <em>KvK-nummer</em> van de uitvoerder staat. De uitvoerder verschijnt dan apart, met reden en bron. De database
+              dwingt deze regel af.
+            </li>
+            <li>
+              <strong>Waarschuwen</strong> bij al het andere (een recente inschrijving, een mogelijke doorstart op hetzelfde adres, een rechterlijke uitspraak, of een
+              juridisch feit dat alleen op naam is gevonden). De uitvoerder blijft gerangschikt; de waarschuwing staat bij het team.
+            </li>
+            <li>
+              <strong>Niets gevonden</strong> tonen we ook, met de controledatum en de geraadpleegde registers. Dat is geen garantie: niet alles staat online. Controles
+              ouder dan 90 dagen gelden als verouderd en worden opnieuw ingepland.
+            </li>
+            <li>
+              <strong>Reageren:</strong> de uitvoerder ziet elk zichtbaar signaal in het portaal en kan er openbaar op reageren; een onjuist signaal trekken we in.
+            </li>
+          </ul>
         </section>
         <section>
           <h2 className="text-lg font-semibold text-ink-950">Vier soorten informatie</h2>

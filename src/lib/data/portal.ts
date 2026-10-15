@@ -1,4 +1,5 @@
 import "server-only";
+import type { ProviderType } from "@/lib/domain/constants";
 import { sql, sqlOne } from "@/lib/db";
 
 export async function getOwnContractor(userId: string) {
@@ -11,6 +12,7 @@ export async function getContractorForEdit(by: { ownerUserId: string } | { id: s
     id: string;
     slug: string;
     company_name: string;
+    provider_type: ProviderType;
     description: string;
     city: string | null;
     hq_province: string | null;
@@ -30,7 +32,7 @@ export async function getContractorForEdit(by: { ownerUserId: string } | { id: s
     primary_specialty: string | null;
     areas: string[];
   }>(
-    `select c.id, c.slug, c.company_name, c.description, c.city, c.hq_province, c.kvk_number, c.email, c.phone, c.website, c.price_level,
+    `select c.id, c.slug, c.company_name, c.provider_type, c.description, c.city, c.hq_province, c.kvk_number, c.email, c.phone, c.website, c.price_level,
             c.availability_status, c.available_from, c.team_size, c.founded_year, c.project_types, c.status, c.is_demo,
             coalesce((select array_agg(specialty_id) from contractor_specialties where contractor_id = c.id), '{}') as specialty_ids,
             (select specialty_id from contractor_specialties where contractor_id = c.id and is_primary limit 1) as primary_specialty,

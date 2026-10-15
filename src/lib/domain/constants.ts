@@ -14,6 +14,7 @@ export const SPECIALTIES = [
   { id: "dakdekker", name: "Dakdekker" },
   { id: "vloerenlegger", name: "Vloerenlegger" },
   { id: "isolatiespecialist", name: "Isolatiespecialist" },
+  { id: "klusser", name: "Allround klusser (kleine klussen)" },
 ] as const;
 
 export type SpecialtyId = (typeof SPECIALTIES)[number]["id"];
@@ -178,10 +179,19 @@ export const FLAG_STATUS = {
   afgewezen: "Afgewezen",
 } as const;
 
+/** Soort uitvoerder: BouwCheck is niet beperkt tot aannemersbedrijven. */
+export const PROVIDER_TYPES = {
+  bedrijf: { label: "Aannemersbedrijf", short: "Bedrijf", description: "Bedrijf met personeel of onderaannemers (bv, vof of eenmanszaak)." },
+  zzp: { label: "Zelfstandig vakman (zzp)", short: "Zzp-vakman", description: "Werkt zelf, zonder personeel, in een of meer vakgebieden." },
+  klusser: { label: "Klusser", short: "Klusser", description: "Allround klusjesman voor kleinere klussen en afwerking." },
+} as const;
+export type ProviderType = keyof typeof PROVIDER_TYPES;
+export const PROVIDER_TYPE_IDS = Object.keys(PROVIDER_TYPES) as [ProviderType, ...ProviderType[]];
+
 export const USER_ROLES = {
   flipper: "Vastgoedflipper",
   investeerder: "Vastgoedinvesteerder",
-  aannemer: "Aannemer",
+  aannemer: "Uitvoerder (aannemer, zzp of klusser)",
   beheerder: "Beheerder",
 } as const;
 export type UserRole = keyof typeof USER_ROLES;

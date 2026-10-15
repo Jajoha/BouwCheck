@@ -92,8 +92,9 @@ test.describe("Rollen, beheer en aannemersportaal", () => {
     await page.getByRole("button", { name: "Opslaan en doorgaan" }).click();
     await expect(page).toHaveURL(/\/portaal/);
 
-    await page.getByLabel("Bedrijfsnaam").fill("E2E Testbouw");
-    await page.getByLabel("Bedrijfsomschrijving").fill("Testbedrijf voor geautomatiseerde tests van BouwCheck.");
+    await page.getByRole("radio", { name: /^Klusser/ }).check();
+    await page.getByLabel("Bedrijfs- of handelsnaam").fill("E2E Testbouw");
+    await page.getByLabel("Omschrijving").fill("Testbedrijf voor geautomatiseerde tests van BouwCheck.");
     await page.getByLabel("Vestigingsplaats").fill("Zwolle");
     await page.getByLabel("Provincie vestiging").selectOption("Overijssel");
     await page.getByLabel("Timmerman").check();

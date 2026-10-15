@@ -1,5 +1,6 @@
 /** Gedeelde (niet-client) standaardwaarden voor het aannemersprofielformulier. */
 export type ContractorProfileValues = {
+  provider_type: string;
   company_name: string;
   description: string;
   city: string;
@@ -21,6 +22,7 @@ export type ContractorProfileValues = {
 };
 
 export const emptyContractorProfile: ContractorProfileValues = {
+  provider_type: "bedrijf",
   company_name: "",
   description: "",
   city: "",

@@ -80,6 +80,11 @@ const BASE_RATES: Record<string, RateSpec[]> = {
     { description: "Spouwmuurisolatie", unit: "m2", min: 22, max: 32, materials: true },
     { description: "Vloerisolatie kruipruimte", unit: "m2", min: 28, max: 40, materials: true },
   ],
+  klusser: [
+    { description: "Klusuurtarief (kleine klussen en afwerking)", unit: "uur", min: 35, max: 45, materials: false },
+    { description: "Plinten plaatsen", unit: "meter", min: 7, max: 11, materials: false },
+    { description: "Binnendeur afhangen", unit: "stuk", min: 90, max: 140, materials: false },
+  ],
 };
 const LEVEL_FACTOR: Record<string, number> = { budget: 0.85, midden: 1, premium: 1.2, onbekend: 1 };
 
@@ -97,6 +102,7 @@ const TYPICAL_BUDGET: Record<string, [number, number]> = {
   dakdekker: [7000, 24000],
   vloerenlegger: [1800, 6500],
   isolatiespecialist: [3000, 12000],
+  klusser: [400, 2500],
 };
 const TYPICAL_DURATION: Record<string, number> = {
   hoofdaannemer: 65,
@@ -111,6 +117,7 @@ const TYPICAL_DURATION: Record<string, number> = {
   badkamerinstallateur: 15,
   dakdekker: 10,
   vloerenlegger: 5,
+  klusser: 3,
   isolatiespecialist: 4,
 };
 
@@ -131,6 +138,7 @@ type Profile = {
 type ContractorSpec = {
   key: string;
   name: string;
+  providerType?: "bedrijf" | "zzp" | "klusser";
   description: string;
   city: string;
   province: string;
@@ -450,6 +458,84 @@ const CONTRACTORS: ContractorSpec[] = [
     ],
   },
   {
+    key: "handige-henk",
+    name: "Klusservice Handige Henk",
+    providerType: "klusser",
+    description:
+      "Zelfstandige klusser voor afwerking en kleine klussen: plinten, deuren afhangen, kitwerk, ophangwerk en kleine reparaties. Werkt alleen en plant per dagdeel.",
+    city: "Nieuwegein",
+    province: "Utrecht",
+    areas: ["Utrecht", "Gelderland"],
+    specialties: ["klusser", "schilder"],
+    priceLevel: "budget",
+    availability: "direct",
+    availableFrom: null,
+    teamSize: 1,
+    founded: 2021,
+    projectTypes: ["Cosmetische opknapbeurt", "Gedeeltelijke renovatie"],
+    businessVerified: true,
+    profile: { n: 5, onTime: 0.8, devMean: 2, devSpread: 6, rating: 4.3, verified: 0.4, confirmed: 0.4, rework: 0.2, reviewShare: 1 },
+    references: [
+      { title: "Afwerking na renovatie tussenwoning", city: "Houten", property_type: "Tussenwoning", renovation_type: "Cosmetische opknapbeurt", year: 2025, description: "Plinten, deuren afhangen en schilderwerk kozijnen binnen.", work: ["klusser", "schilder"] },
+    ],
+  },
+  {
+    key: "timmerwerk-de-vries",
+    name: "Timmerwerk De Vries",
+    providerType: "zzp",
+    description: "Zelfstandig timmerman (zzp): binnendeuren, kozijnen, wanden en vloeren. Neemt ook losse klussen aan tijdens renovaties.",
+    city: "Hilversum",
+    province: "Noord-Holland",
+    areas: ["Noord-Holland", "Utrecht"],
+    specialties: ["timmerman", "klusser"],
+    priceLevel: "midden",
+    availability: "binnen_1_maand",
+    availableFrom: "2026-11-16",
+    teamSize: 1,
+    founded: 2017,
+    projectTypes: ["Gedeeltelijke renovatie", "Complete renovatie"],
+    businessVerified: false,
+    profile: { n: 4, onTime: 0.75, devMean: 4, devSpread: 6, rating: 4.5, verified: 0.5, confirmed: 0.25, rework: 0, reviewShare: 1 },
+    references: [],
+  },
+  {
+    key: "klusmaat-arnhem",
+    name: "Klusmaat Arnhem",
+    providerType: "klusser",
+    description: "Klusser voor kleine reparaties en opruimwerk. Recent gestart; nog weinig projectgegevens.",
+    city: "Arnhem",
+    province: "Gelderland",
+    areas: ["Gelderland"],
+    specialties: ["klusser"],
+    priceLevel: "budget",
+    availability: "direct",
+    availableFrom: null,
+    teamSize: 1,
+    founded: 2026,
+    projectTypes: ["Cosmetische opknapbeurt"],
+    businessVerified: false,
+    profile: { n: 1, onTime: 1, devMean: 0, devSpread: 2, rating: 4, verified: 0, confirmed: 1, rework: 0, reviewShare: 1 },
+    references: [],
+  },
+  {
+    key: "gebroeders-stal",
+    name: "Bouwbedrijf Gebroeders Stal",
+    description: "Demoprofiel met een fictief registersignaal: laat zien hoe een uitvoerder wordt uitgesloten van teamvoorstellen, met reden en bron.",
+    city: "Utrecht",
+    province: "Utrecht",
+    areas: ["Utrecht"],
+    specialties: ["hoofdaannemer", "sloopwerk"],
+    priceLevel: "budget",
+    availability: "direct",
+    availableFrom: null,
+    teamSize: 8,
+    founded: 2012,
+    projectTypes: ["Complete renovatie"],
+    businessVerified: false,
+    profile: { n: 3, onTime: 0.67, devMean: 8, devSpread: 10, rating: 3.9, verified: 0, confirmed: 0.33, rework: 0.33, reviewShare: 1 },
+    references: [],
+  },
+  {
     key: "vlakvloer",
     name: "Vloerenbedrijf Vlakvloer",
     description: "Nieuwe aanmelding: PVC- en laminaatvloeren. Profiel wacht op beoordeling door beheer.",
@@ -555,8 +641,8 @@ async function insertAll(tx: Queryable) {
     const row = await one(
       `insert into contractors (slug, company_name, description, city, hq_province, kvk_number, email, phone, website,
          price_level, availability_status, available_from, availability_updated_at, team_size, founded_year, project_types,
-         status, owner_user_id, is_demo)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,null,$9,$10,$11, now() - interval '9 days', $12,$13,$14,$15,$16,true) returning id`,
+         status, owner_user_id, is_demo, provider_type)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,null,$9,$10,$11, now() - interval '9 days', $12,$13,$14,$15,$16,true,$17) returning id`,
       [
         c.key,
         c.name,
@@ -574,6 +660,7 @@ async function insertAll(tx: Queryable) {
         c.projectTypes,
         status,
         c.key === "kwastenburg" ? contractorUser.id : null,
+        c.providerType ?? "bedrijf",
       ],
     );
     ids[c.key] = row.id;
@@ -992,6 +1079,43 @@ async function insertAll(tx: Queryable) {
     ["stukadoor", "Wanden sausklaar", 140, "m2", null],
     ["schilder", "Binnenschilderwerk", 140, "m2", null],
   ], null);
+
+  // ── Registercontrole (fictieve voorbeelden) ────────────────
+  // Demo-uitvoerders hebben fictieve KvK-nummers en worden nooit in echte registers gezocht.
+  // Deze rijen laten alleen zien hoe uitsluiting, waarschuwing en beoordeling werken.
+  const demoCheck = async (key: string, summary: string, findings: number) =>
+    one(
+      `insert into register_checks (contractor_id, status, kvk_number, kvk_confirmed, summary, sources_checked, findings_count, model, requested_by, is_demo, created_at)
+       values ($1,'voltooid',null,false,$2,'[{"name":"Voorbeeld — geen echte controle","url":"https://www.kvk.nl/"}]'::jsonb,$3,'demo',$4,true, now() - interval '12 days') returning id`,
+      [ids[key], summary, findings, admin.id],
+    );
+  const stalCheck = await demoCheck("gebroeders-stal", "[Demo] Fictieve controle: voorbeeld van een uitsluitend registersignaal.", 1);
+  await tx.query(
+    `insert into register_signals (contractor_id, check_id, kind, effect, match_basis, title, summary, source_name, source_url, event_date, status, reviewed_by, reviewed_at, review_note, is_demo)
+     values ($1,$2,'faillissement','uitsluiting','kvk_nummer','[Demo] Faillissement uitgesproken (fictief)',
+       'Fictief voorbeeld: de rechtbank heeft het faillissement van deze onderneming uitgesproken. Er bestaat geen echte onderneming met deze naam.',
+       'Centraal Insolventieregister (demo — fictief)','https://insolventies.rechtspraak.nl/', current_date - 30,'goedgekeurd',$3, now() - interval '11 days','Demo: fictief voorbeeld',true)`,
+    [ids["gebroeders-stal"], stalCheck.id, admin.id],
+  );
+  const henkCheck = await demoCheck("handige-henk", "[Demo] Fictieve controle: voorbeeld van een waarschuwing.", 1);
+  await tx.query(
+    `insert into register_signals (contractor_id, check_id, kind, effect, match_basis, title, summary, source_name, source_url, event_date, status, reviewed_by, reviewed_at, review_note,
+       contractor_response, responded_at, is_demo)
+     values ($1,$2,'doorstart_zelfde_adres','waarschuwing','naam_en_adres','[Demo] Eerdere onderneming op hetzelfde adres (fictief)',
+       'Fictief voorbeeld: op hetzelfde vestigingsadres stond tot 2021 een andere eenmanszaak ingeschreven.',
+       'KvK Handelsregister (demo — fictief)','https://www.kvk.nl/', '2021-03-01','goedgekeurd',$3, now() - interval '11 days','Demo: fictief voorbeeld',
+       '[Demo] Dat was mijn vorige eenmanszaak; die is netjes uitgeschreven zonder schulden.', now() - interval '9 days', true)`,
+    [ids["handige-henk"], henkCheck.id, admin.id],
+  );
+  const klusmaatCheck = await demoCheck("klusmaat-arnhem", "[Demo] Fictieve controle: voorbeeld van een voorstel dat nog beoordeeld moet worden.", 2);
+  await tx.query(
+    `insert into register_signals (contractor_id, check_id, kind, effect, match_basis, title, summary, source_name, source_url, event_date, status, is_demo) values
+     ($1,$2,'jonge_inschrijving','waarschuwing','kvk_nummer','[Demo] Inschrijving jonger dan een jaar (fictief)',
+       'Fictief voorbeeld: de onderneming is minder dan een jaar geleden ingeschreven.', 'KvK Handelsregister (demo — fictief)','https://www.kvk.nl/', current_date - 120,'voorgesteld',true),
+     ($1,$2,'rechterlijke_uitspraak','waarschuwing','naam','[Demo] Uitspraak over een onderneming met een vergelijkbare naam (fictief)',
+       'Fictief voorbeeld: alleen op naam gevonden; mogelijk een andere onderneming.', 'Rechtspraak.nl (demo — fictief)','https://uitspraken.rechtspraak.nl/', current_date - 400,'voorgesteld',true)`,
+    [ids["klusmaat-arnhem"], klusmaatCheck.id],
+  );
 
   // ── Leads & beheerlog ───────────────────────────────────────
   await tx.query(

@@ -15,7 +15,7 @@ const COLUMNS = [
   {
     title: "Voor aannemers",
     links: [
-      { href: "/registreren?rol=aannemer", label: "Bedrijf aanmelden" },
+      { href: "/registreren?rol=aannemer", label: "Aanmelden als uitvoerder" },
       { href: "/inloggen", label: "Inloggen aannemersportaal" },
     ],
   },

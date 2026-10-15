@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, ListChecks } from "lucide-react";
+import { ArrowLeft, Pencil, ListChecks, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState, Notice, PageHeader } from "@/components/ui/misc";
 import { TeamCard, PRIORITY_META, costLabel } from "@/components/teams/team-card";
@@ -10,6 +10,7 @@ import { getProjectForUser } from "@/lib/data/projects";
 import { getScope } from "@/lib/data/scope";
 import { proposalsFor } from "@/lib/data/teams";
 import { formatDate, formatMoney, formatNumber } from "@/lib/format";
+import { specialtyName, PROVIDER_TYPES } from "@/lib/domain/constants";
 import type { Priority } from "@/lib/domain/teams";
 import { site } from "@/config/site";
 
@@ -62,7 +63,7 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
     );
   }
 
-  const proposals = await proposalsFor(
+  const { proposals, excluded } = await proposalsFor(
     scope.map((s) => ({ specialty_id: s.specialty_id, description: s.description, quantity: s.quantity, unit: s.unit })),
     { province: p.province, area_m2: p.area_m2, budget_amount: p.budget_amount, desired_start_date: p.desired_start_date },
   );
@@ -75,15 +76,47 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
       {header}
       <div className="mt-6 flex flex-col gap-3">
         <Notice tone="info" title="Hoe deze voorstellen tot stand komen">
-          BouwCheck stelt per prioriteit teams samen uit aannemers die in {p.province ?? "je regio"} werken en de benodigde vakgebieden uitvoeren: één hoofdaannemer, of
-          losse vakspecialisten. Elke prioriteit ordent op één criterium — er is geen verborgen totaalscore. Teams met te weinig gegevens voor een criterium staan apart,
+          BouwCheck stelt per prioriteit teams samen uit uitvoerders die in {p.province ?? "je regio"} werken en de benodigde vakgebieden uitvoeren: één hoofdaannemer, of
+          losse vakspecialisten — aannemersbedrijven, zzp-vakmensen en klussers. Elke prioriteit ordent op één criterium — er is geen verborgen totaalscore. Teams met te weinig gegevens voor een criterium staan apart,
           met de reden. Kosten zijn indicaties op basis van opgegeven tarieven, geen offertes. <Link href="/transparantie">Meer uitleg</Link>
         </Notice>
         {noScopeQuantities ? (
           <Notice tone="warning">Er zijn geen hoeveelheden bekend, dus kosten kunnen niet worden ingeschat. Vul hoeveelheden aan bij de werkzaamheden.</Notice>
         ) : null}
-        {!p.province ? <Notice tone="warning">Er is geen provincie bekend: alle aannemers komen in aanmerking, ongeacht werkgebied.</Notice> : null}
+        {!p.province ? <Notice tone="warning">Er is geen provincie bekend: alle uitvoerders komen in aanmerking, ongeacht werkgebied.</Notice> : null}
       </div>
+
+      {excluded.length ? (
+        <section className="mt-6 rounded-[var(--radius-card)] border border-danger-700/30 bg-white p-4" aria-labelledby="uitgesloten-titel" data-testid="register-exclusions">
+          <h2 id="uitgesloten-titel" className="flex items-center gap-2 text-sm font-semibold text-ink-950">
+            <ShieldAlert className="size-4 text-danger-700" aria-hidden /> Niet meegenomen op basis van openbare registers
+          </h2>
+          <p className="mt-1 text-xs text-ink-600">
+            Deze uitvoerders hadden in aanmerking kunnen komen, maar een door BouwCheck gecontroleerd juridisch feit, gekoppeld op KvK-nummer, sluit ze uit. Andere
+            registersignalen sluiten niemand uit; die staan als waarschuwing bij het team.
+          </p>
+          <ul className="mt-3 divide-y divide-ink-100 text-sm">
+            {excluded.map((e) => (
+              <li key={e.contractor.id} className="flex flex-col gap-0.5 py-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                <span>
+                  <Link href={`/aannemers/${e.contractor.slug}`} className="font-medium text-ink-950 hover:underline">
+                    {e.contractor.company_name}
+                  </Link>{" "}
+                  <span className="text-xs text-ink-500">
+                    · {PROVIDER_TYPES[e.contractor.provider_type ?? "bedrijf"].short} · {e.specialties.map(specialtyName).join(", ").toLowerCase()}
+                  </span>
+                </span>
+                <span className="text-xs text-danger-700">
+                  {e.reason} ·{" "}
+                  <a href={e.signal.source_url} target="_blank" rel="noopener noreferrer" className="underline">
+                    bron
+                  </a>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Overzicht van de drie aanbevelingen */}
       <div className="mt-8 grid gap-4 md:grid-cols-3">
@@ -163,7 +196,7 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
         );
       })}
       <p className="mt-10 text-xs text-ink-500">
-        Berekend op {formatDate(new Date())} met de actuele gegevens van {site.name}. Beschikbaarheid en tarieven zijn door aannemers zelf opgegeven; statistieken pas vanaf{" "}
+        Berekend op {formatDate(new Date())} met de actuele gegevens van {site.name}. Beschikbaarheid en tarieven zijn door uitvoerders zelf opgegeven; statistieken pas vanaf{" "}
         {site.minSampleSize} waarnemingen.
       </p>
     </div>

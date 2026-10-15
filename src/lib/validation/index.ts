@@ -12,6 +12,7 @@ import {
   RENOVATION_TYPES,
   SPECIALTY_IDS,
   ATTACHMENT_KINDS,
+  PROVIDER_TYPE_IDS,
 } from "@/lib/domain/constants";
 
 // ── Hulpfuncties voor FormData ──────────────────────────────
@@ -248,8 +249,9 @@ export const contractorResponseSchema = z.object({ review_id: uuid, response: te
 
 // ── Aannemersprofiel (portaal en beheer) ────────────────────
 export const contractorProfileSchema = z.object({
-  company_name: text(2, 120, "Bedrijfsnaam"),
-  description: text(20, 3000, "Bedrijfsomschrijving"),
+  provider_type: z.preprocess((v) => empty(v) ?? "bedrijf", z.enum(PROVIDER_TYPE_IDS, { error: "Kies wat voor uitvoerder je bent." })),
+  company_name: text(2, 120, "Bedrijfs- of handelsnaam"),
+  description: text(20, 3000, "Omschrijving"),
   city: text(2, 80, "Vestigingsplaats"),
   hq_province: z.enum(PROVINCE_VALUES, { error: "Kies een provincie." }),
   kvk_number: z.preprocess((v) => empty(trimmed(v)), z.string().regex(/^\d{8}( \(fictief\))?$/, "Een KvK-nummer bestaat uit 8 cijfers.").optional()),

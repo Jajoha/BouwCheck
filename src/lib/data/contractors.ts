@@ -3,13 +3,14 @@ import { sql, sqlOne } from "@/lib/db";
 import { site } from "@/config/site";
 import { computeMetrics, dataCompleteness, type ContractorMetrics, type OutcomeInput, type ReviewInput } from "@/lib/domain/metrics";
 import { summarizeVerification, VERIFICATION_LEVELS, type VerificationSummary, type VerificationLevel } from "@/lib/domain/verification";
-import { AVAILABILITY_ORDER, PRICE_LEVEL_ORDER, type AvailabilityStatus, type PriceLevel } from "@/lib/domain/constants";
+import { AVAILABILITY_ORDER, PRICE_LEVEL_ORDER, type AvailabilityStatus, type PriceLevel, type ProviderType } from "@/lib/domain/constants";
 
 /** Openbare aannemersgegevens. Bevat bewust geen velden uit contractor_private. */
 export type ContractorSummary = {
   id: string;
   slug: string;
   company_name: string;
+  provider_type: ProviderType;
   description: string;
   city: string | null;
   hq_province: string | null;
@@ -30,7 +31,7 @@ export type ContractorSummary = {
   updated_at: string;
 };
 
-const BASE_COLUMNS = `c.id, c.slug, c.company_name, c.description, c.city, c.hq_province, c.price_level, c.availability_status,
+const BASE_COLUMNS = `c.id, c.slug, c.company_name, c.provider_type, c.description, c.city, c.hq_province, c.price_level, c.availability_status,
   c.available_from, c.availability_updated_at::text as availability_updated_at, c.project_types, c.status, c.is_demo, c.owner_user_id,
   c.updated_at::text as updated_at`;
 

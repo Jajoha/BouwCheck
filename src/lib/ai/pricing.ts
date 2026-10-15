@@ -35,3 +35,6 @@ export function costUsd(u: TokenUsage): { usd: number; priced: boolean } {
     (u.input_tokens * p.input + u.cache_creation_input_tokens * p.input * 1.25 + u.cache_read_input_tokens * p.input * 0.1 + u.output_tokens * p.output) / 1_000_000;
   return { usd, priced: Boolean(known) };
 }
+
+/** Webzoekopdrachten (server-side tool) worden apart gefactureerd: $10 per 1.000 zoekopdrachten. Ophalen van pagina's (web fetch) is niet apart geprijsd. */
+export const WEB_SEARCH_USD_PER_REQUEST = 0.01;

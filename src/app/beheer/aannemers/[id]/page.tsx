@@ -14,8 +14,10 @@ import { getContractorForEdit, getVerificationEvents } from "@/lib/data/portal";
 import { VERIFICATION_EVENT_STATUS, VERIFICATION_TYPES } from "@/lib/domain/constants";
 import { formatDate } from "@/lib/format";
 import { requireAdmin } from "@/lib/auth/session";
+import { RunRegisterCheckButton } from "@/components/admin/register-widgets";
+import { aiConfig } from "@/lib/ai/config";
 
-export const metadata: Metadata = { title: "Beheer — aannemer" };
+export const metadata: Metadata = { title: "Beheer — uitvoerder" };
 
 export default async function AdminContractor({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,12 +31,25 @@ export default async function AdminContractor({ params }: { params: Promise<{ id
   return (
     <>
       <PageHeader
-        eyebrow="Aannemer"
+        eyebrow="Uitvoerder"
         title={c.company_name}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {c.is_demo ? <DemoBadge /> : null}
             <ContractorStatusControl id={c.id} status={c.status} name={c.company_name} />
+            <RunRegisterCheckButton
+              contractorId={c.id}
+              name={c.company_name}
+              disabledReason={
+                c.is_demo
+                  ? "Demo: geen registercontrole"
+                  : !c.kvk_number || !/^\d{8}$/.test(c.kvk_number)
+                    ? "Geen geldig KvK-nummer voor registercontrole"
+                    : !aiConfig.configured
+                      ? "AI niet geconfigureerd"
+                      : null
+              }
+            />
             <Link href={`/aannemers/${c.slug}`} className="inline-flex items-center gap-1 text-sm text-brand-700 hover:underline">
               Profiel bekijken <ExternalLink className="size-3.5" aria-hidden />
             </Link>
@@ -53,6 +68,7 @@ export default async function AdminContractor({ params }: { params: Promise<{ id
               showStatus
               submitLabel="Wijzigingen opslaan"
               initial={{
+                provider_type: c.provider_type,
                 company_name: c.company_name,
                 description: c.description,
                 city: c.city ?? "",

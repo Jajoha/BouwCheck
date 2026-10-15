@@ -3,9 +3,10 @@ import { NavLink } from "@/components/layout/nav-link";
 
 const NAV = [
   { href: "/beheer", label: "Overzicht" },
-  { href: "/beheer/aannemers", label: "Aannemers" },
+  { href: "/beheer/aannemers", label: "Uitvoerders" },
   { href: "/beheer/aanmeldingen", label: "Aanmeldingen" },
   { href: "/beheer/verificaties", label: "Verificaties" },
+  { href: "/beheer/registers", label: "Registers" },
   { href: "/beheer/moderatie", label: "Resultaten & reviews" },
   { href: "/beheer/meldingen", label: "Meldingen" },
   { href: "/beheer/projecten", label: "Projecten" },

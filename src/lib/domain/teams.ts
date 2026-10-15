@@ -10,9 +10,14 @@
  *   anderen gerangschikt maar achteraan getoond, met de reden.
  * - Kosten zijn bandbreedtes op basis van door aannemers zelf opgegeven
  *   indicatieve tarieven × hoeveelheden uit de scope. Geen offerte.
+ * - Uitvoerders zijn aannemersbedrijven, zzp-vakmensen én klussers.
+ * - Een goedgekeurd uitsluitend registersignaal (faillissement e.d., op KvK-nummer)
+ *   haalt een uitvoerder uit alle teams; hij staat dan apart, met reden en bron.
+ *   Goedgekeurde waarschuwingen blijven zichtbaar bij het teamlid.
  */
 import type { ContractorMetrics } from "./metrics";
-import { specialtyName } from "./constants";
+import { specialtyName, type ProviderType } from "./constants";
+import { exclusionReason, SIGNAL_KINDS, type RegisterSignal } from "./registers";
 
 export type ScopeItem = {
   specialty_id: string;
@@ -42,7 +47,12 @@ export type TeamContractor = {
   rates: TeamRate[];
   metrics: ContractorMetrics;
   businessVerified: boolean;
+  provider_type?: ProviderType;
+  /** Goedgekeurde registersignalen en laatste controle; ontbreekt = geen gegevens. */
+  register?: { signals: RegisterSignal[]; lastCheckedAt: string | null };
 };
+
+export type ExcludedProvider = { contractor: TeamContractor; signal: RegisterSignal; reason: string; specialties: string[] };
 
 export type TeamProjectInput = {
   province: string | null;
@@ -234,12 +244,38 @@ function buildOption(
     qualitySufficient,
     weakest,
     missingSpecialties: extra.missing ?? [],
-    notes: extra.notes ?? [],
+    notes: [...(extra.notes ?? []), ...registerWarningNotes(members)],
   };
 }
 
+const exclusionOf = (c: TeamContractor) => c.register?.signals.find((s) => s.status === "goedgekeurd" && s.effect === "uitsluiting") ?? null;
+
 function eligible(contractors: TeamContractor[], province: string | null) {
-  return province ? contractors.filter((c) => c.areas.includes(province)) : contractors;
+  return (province ? contractors.filter((c) => c.areas.includes(province)) : contractors).filter((c) => !exclusionOf(c));
+}
+
+/** Uitvoerders die zonder registersignaal in aanmerking waren gekomen, maar zijn uitgesloten — met reden en bron. */
+export function registerExclusions(scope: ScopeItem[], contractors: TeamContractor[], input: TeamProjectInput): ExcludedProvider[] {
+  const needed = new Set(scope.map((s) => s.specialty_id));
+  const out: ExcludedProvider[] = [];
+  for (const c of contractors) {
+    const signal = exclusionOf(c);
+    if (!signal) continue;
+    if (input.province && !c.areas.includes(input.province)) continue;
+    const specialties = c.specialties.filter((s) => needed.has(s));
+    if (specialties.length === 0) continue;
+    out.push({ contractor: c, signal, reason: exclusionReason(signal), specialties });
+  }
+  return out.sort((a, b) => a.contractor.company_name.localeCompare(b.contractor.company_name, "nl"));
+}
+
+/** Notities bij een team voor goedgekeurde registerwaarschuwingen van teamleden. */
+function registerWarningNotes(members: { contractor: TeamContractor }[]): string[] {
+  return members.flatMap(({ contractor: c }) =>
+    (c.register?.signals ?? [])
+      .filter((s) => s.status === "goedgekeurd" && s.effect === "waarschuwing")
+      .map((s) => `Registersignaal bij ${c.company_name}: ${SIGNAL_KINDS[s.kind].label.toLowerCase()} — ${s.title} (bron: ${s.source_name}).`),
+  );
 }
 
 /** Hoofdaannemer-teams: één aannemer die het hele project aanneemt (eventueel met eigen onderaannemers). */

@@ -1,12 +1,13 @@
 import "server-only";
 import { sql } from "@/lib/db";
 import { getContractorsByIds, getRatesForContractors } from "./contractors";
-import { buildProposals, type ScopeItem, type TeamContractor, type TeamProjectInput } from "@/lib/domain/teams";
+import { loadRegisterInfo } from "./registers";
+import { buildProposals, registerExclusions, type ScopeItem, type TeamContractor, type TeamProjectInput } from "@/lib/domain/teams";
 
-/** Alle actieve aannemers in de vorm die de teammotor verwacht. */
+/** Alle actieve uitvoerders (bedrijven, zzp'ers en klussers) in de vorm die de teammotor verwacht. */
 export async function loadTeamContractors(): Promise<TeamContractor[]> {
   const ids = (await sql<{ id: string }>("select id from contractors where status = 'actief'")).map((r) => r.id);
-  const [contractors, rates] = await Promise.all([getContractorsByIds(ids), getRatesForContractors(ids)]);
+  const [contractors, rates, register] = await Promise.all([getContractorsByIds(ids), getRatesForContractors(ids), loadRegisterInfo(ids)]);
   return contractors.map((c) => ({
     id: c.id,
     slug: c.slug,
@@ -21,14 +22,16 @@ export async function loadTeamContractors(): Promise<TeamContractor[]> {
       .map((r) => ({ specialty_id: r.specialty_id, description: r.description, unit: r.unit, price_min: r.price_min, price_max: r.price_max, vat_included: r.vat_included })),
     metrics: c.metrics,
     businessVerified: c.verification.businessVerified,
+    provider_type: c.provider_type,
+    register: register.get(c.id) ?? { signals: [], lastCheckedAt: null },
   }));
 }
 
-export function todayIso() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Amsterdam" }).format(new Date());
-}
+import { todayIso } from "@/lib/today";
+export { todayIso };
 
 export async function proposalsFor(scope: ScopeItem[], project: Omit<TeamProjectInput, "today">) {
   const contractors = await loadTeamContractors();
-  return buildProposals(scope, contractors, { ...project, today: todayIso() });
+  const input = { ...project, today: todayIso() };
+  return { proposals: buildProposals(scope, contractors, input), excluded: registerExclusions(scope, contractors, input) };
 }

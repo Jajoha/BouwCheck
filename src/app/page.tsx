@@ -38,7 +38,7 @@ async function getPreview(): Promise<{ project: { name: string; is_demo: boolean
   );
   if (!project) return { project: null, best: [] };
   const scope = await getScope(project.id);
-  const proposals = await proposalsFor(
+  const { proposals } = await proposalsFor(
     scope.map((s) => ({ specialty_id: s.specialty_id, description: s.description, quantity: s.quantity, unit: s.unit })),
     { province: project.province, area_m2: project.area_m2, budget_amount: project.budget_amount, desired_start_date: project.desired_start_date },
   );
@@ -56,11 +56,11 @@ const PROBLEMS = [
 const STEPS = [
   { icon: ClipboardList, title: "Beschrijf je project en voeg foto's toe", text: "In je eigen woorden: wat moet eruit, wat moet er nieuw, hoe is de staat van de woning. Foto's van badkamer, meterkast of dak helpen." },
   { icon: Sparkles, title: "AI zet het om in werkzaamheden", text: "Per vakgebied, met hoeveelheden, risico's en open vragen. Jij controleert en corrigeert; de AI noemt geen prijzen en kiest geen aannemers." },
-  { icon: CheckCircle2, title: "Ontvang teams op budget, kwaliteit en snelheid", text: "BouwCheck stelt teams samen uit aannemers in jouw regio en ordent ze per prioriteit — met de onderbouwing en wat er nog ontbreekt." },
+  { icon: CheckCircle2, title: "Ontvang teams op budget, kwaliteit en snelheid", text: "BouwCheck stelt teams samen uit aannemers, zzp-vakmensen en klussers in jouw regio en ordent ze per prioriteit — met de onderbouwing en wat er nog ontbreekt." },
 ];
 
 const BENEFITS = [
-  { icon: Users, title: "Wie wat kan doen, al samengesteld", text: "Een hoofdaannemer of een team van vakspecialisten dat samen alle werkzaamheden dekt — je hoeft zelf niet te zoeken of te vergelijken." },
+  { icon: Users, title: "Wie wat kan doen, al samengesteld", text: "Een hoofdaannemer, of een team van vakspecialisten en klussers dat samen alle werkzaamheden dekt — je hoeft zelf niet te zoeken of te vergelijken." },
   { icon: Receipt, title: "Kostenindicatie per onderdeel", text: "Bandbreedtes op basis van opgegeven tarieven × hoeveelheden, getoetst aan je budget. Indicatie, geen offerte — dat staat er altijd bij." },
   { icon: CalendarRange, title: "Wanneer het team kan starten", text: "De datum waarop het hele team beschikbaar is, naast je gewenste start." },
   { icon: ShieldAlert, title: "Risico's vóór je offertes opvraagt", text: "De intake signaleert risico's en open vragen (asbest, draagconstructie, onduidelijke scope), zodat offertes vergelijkbaar worden." },
@@ -88,8 +88,8 @@ const FAQ = [
     a: "Omdat er voor dat criterium te weinig gegevens zijn: geen passend tarief, te weinig beoordelingen of onbekende beschikbaarheid. Liever eerlijk ‘onbekend’ dan een misleidende plek in de ranglijst.",
   },
   {
-    q: "Waar komen de gegevens over aannemers vandaan?",
-    a: "Uit wat het bedrijf zelf opgeeft (tarieven, werkgebied, beschikbaarheid), administratieve controles door BouwCheck en projectresultaten die opdrachtgevers registreren. In deze bèta zijn alle aannemersprofielen fictieve demo-data.",
+    q: "Waar komen de gegevens over uitvoerders vandaan?",
+    a: "Uit wat de uitvoerder zelf opgeeft (tarieven, werkgebied, beschikbaarheid), administratieve controles door BouwCheck, projectresultaten die opdrachtgevers registreren en openbare registers (faillissementen, KvK, rechtspraak), gecontroleerd door een AI-agent en beoordeeld door BouwCheck. In deze bèta zijn alle profielen fictieve demo-data.",
   },
   {
     q: "Kunnen aannemers betalen voor een plek in een voorstel?",
@@ -241,13 +241,14 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <div className="flex flex-col gap-6 rounded-2xl border border-ink-200 p-8 md:flex-row md:items-center md:justify-between md:p-10">
           <div className="max-w-2xl">
-            <h2 className="text-2xl font-semibold tracking-tight text-ink-950">Aannemer of onderaannemer?</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink-950">Aannemer, zzp-vakman of klusser?</h2>
             <p className="mt-2 text-ink-600">
-              Maak een bedrijfsprofiel aan, vul tarieven, werkgebied en beschikbaarheid in en ontvang offerteaanvragen van vastgoedinvesteerders. Nieuwe profielen starten als &lsquo;Zelf opgegeven&rsquo;; verificatie vraag je aan in het portaal.
+              BouwCheck is niet alleen voor aannemersbedrijven: ook zelfstandige vakmensen en klussers worden in teams opgenomen. Maak een profiel aan, vul tarieven,
+              werkgebied en beschikbaarheid in en ontvang offerteaanvragen van vastgoedinvesteerders. Nieuwe profielen starten als &lsquo;Zelf opgegeven&rsquo;; verificatie vraag je aan in het portaal.
             </p>
           </div>
           <Button asChild variant="dark" size="lg">
-            <Link href="/registreren?rol=aannemer">Bedrijf aanmelden</Link>
+            <Link href="/registreren?rol=aannemer">Aanmelden als uitvoerder</Link>
           </Button>
         </div>
       </section>

@@ -18,20 +18,20 @@ export async function writeContractorProfile(
     if (taken.length) slug = `${slug}-${Math.random().toString(36).slice(2, 6)}`;
     const [row] = await tx.query<{ id: string }>(
       `insert into contractors (slug, company_name, description, city, hq_province, kvk_number, email, phone, website, price_level,
-         availability_status, available_from, availability_updated_at, team_size, founded_year, project_types, status, owner_user_id, is_demo)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, now(), $13,$14,$15,$16,$17,$18) returning id`,
+         availability_status, available_from, availability_updated_at, team_size, founded_year, project_types, status, owner_user_id, is_demo, provider_type)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, now(), $13,$14,$15,$16,$17,$18,$19) returning id`,
       [slug, d.company_name, d.description, d.city, d.hq_province, d.kvk_number ?? null, d.email ?? null, d.phone ?? null, d.website ?? null,
         d.price_level, d.availability_status, d.available_from ?? null, d.team_size ?? null, d.founded_year ?? null, d.project_types,
-        extra.status ?? "in_beoordeling", extra.ownerUserId ?? null, extra.isDemo ?? false],
+        extra.status ?? "in_beoordeling", extra.ownerUserId ?? null, extra.isDemo ?? false, d.provider_type],
     );
     id = row.id;
   } else {
     await tx.query(
       `update contractors set company_name=$2, description=$3, city=$4, hq_province=$5, kvk_number=$6, email=$7, phone=$8, website=$9,
          price_level=$10, availability_status=$11, available_from=$12, availability_updated_at = now(), team_size=$13, founded_year=$14,
-         project_types=$15, updated_at=now() where id=$1`,
+         project_types=$15, provider_type=$16, updated_at=now() where id=$1`,
       [id, d.company_name, d.description, d.city, d.hq_province, d.kvk_number ?? null, d.email ?? null, d.phone ?? null, d.website ?? null,
-        d.price_level, d.availability_status, d.available_from ?? null, d.team_size ?? null, d.founded_year ?? null, d.project_types],
+        d.price_level, d.availability_status, d.available_from ?? null, d.team_size ?? null, d.founded_year ?? null, d.project_types, d.provider_type],
     );
     await tx.query("delete from contractor_specialties where contractor_id = $1", [id]);
     await tx.query("delete from contractor_service_areas where contractor_id = $1", [id]);

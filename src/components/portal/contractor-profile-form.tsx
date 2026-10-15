@@ -4,7 +4,7 @@ import { Checkbox, Field, Fieldset, Input, Select, Textarea } from "@/components
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Notice } from "@/components/ui/misc";
 import { useServerForm } from "@/lib/forms/use-server-form";
-import { AVAILABILITY, PRICE_LEVELS, PROVINCES, RENOVATION_TYPES, SPECIALTIES } from "@/lib/domain/constants";
+import { AVAILABILITY, PRICE_LEVELS, PROVIDER_TYPES, PROVINCES, RENOVATION_TYPES, SPECIALTIES } from "@/lib/domain/constants";
 import type { ActionResult } from "@/lib/forms/types";
 
 export type { ContractorProfileValues } from "./profile-defaults";
@@ -15,14 +15,27 @@ export function ContractorProfileForm({ action, initial, submitLabel, showStatus
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
       {result && !result.ok && result.message ? <Notice tone="danger">{result.message}</Notice> : null}
+      <Fieldset legend="Wat voor uitvoerder ben je?" error={errors("provider_type")}>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {Object.entries(PROVIDER_TYPES).map(([id, t]) => (
+            <label key={id} className="flex cursor-pointer gap-2 rounded-lg border border-ink-200 p-3 text-sm has-[:checked]:border-ink-900 has-[:checked]:bg-ink-50">
+              <input type="radio" name="provider_type" value={id} defaultChecked={(initial.provider_type || "bedrijf") === id} className="mt-0.5" />
+              <span>
+                <span className="font-medium text-ink-950">{t.label}</span>
+                <span className="mt-0.5 block text-xs text-ink-600">{t.description}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </Fieldset>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Bedrijfsnaam" htmlFor="company_name" required error={errors("company_name")}>
+        <Field label="Bedrijfs- of handelsnaam" htmlFor="company_name" required error={errors("company_name")}>
           <Input id="company_name" name="company_name" defaultValue={initial.company_name} />
         </Field>
-        <Field label="KvK-nummer" htmlFor="kvk_number" error={errors("kvk_number")} hint="8 cijfers. Nodig voor verificatie van bedrijfsgegevens.">
+        <Field label="KvK-nummer" htmlFor="kvk_number" error={errors("kvk_number")} hint="8 cijfers. Ook zzp'ers en klussers hebben er een. Nodig voor verificatie en voor de controle in openbare registers.">
           <Input id="kvk_number" name="kvk_number" defaultValue={initial.kvk_number} inputMode="numeric" />
         </Field>
-        <Field label="Bedrijfsomschrijving" htmlFor="description" required error={errors("description")} className="sm:col-span-2">
+        <Field label="Omschrijving" htmlFor="description" required error={errors("description")} className="sm:col-span-2">
           <Textarea id="description" name="description" rows={4} defaultValue={initial.description} />
         </Field>
         <Field label="Vestigingsplaats" htmlFor="city" required error={errors("city")}>

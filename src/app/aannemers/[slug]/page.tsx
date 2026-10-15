@@ -12,10 +12,12 @@ import { SourceTag } from "@/components/domain/source-tag";
 import { FavoriteButton } from "@/components/domain/favorite-button";
 import { FlagDialog } from "@/components/domain/flag-dialog";
 import { getContractorDetail } from "@/lib/data/contractors";
+import { getRegisterState } from "@/lib/data/registers";
+import { RegisterSection } from "@/components/domain/register-section";
 import { getFavoriteIds } from "@/lib/data/records";
 import { getCurrentUser } from "@/lib/auth/session";
 import { budgetDeviationPct, delayDays } from "@/lib/domain/metrics";
-import { OUTCOME_VERIFICATION, RATE_UNITS, specialtyName, type OutcomeVerification } from "@/lib/domain/constants";
+import { OUTCOME_VERIFICATION, PROVIDER_TYPES, RATE_UNITS, specialtyName, type OutcomeVerification } from "@/lib/domain/constants";
 import { VERIFICATION_LEVELS } from "@/lib/domain/verification";
 import { formatDate, formatDays, formatEuro, formatMoney, formatPercent } from "@/lib/format";
 import { site } from "@/config/site";
@@ -25,7 +27,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const c = await getContractorDetail(slug);
-  return { title: c ? c.company_name : "Aannemer niet gevonden" };
+  return { title: c ? c.company_name : "Uitvoerder niet gevonden" };
 }
 
 export default async function ContractorPage({ params }: Props) {
@@ -33,7 +35,7 @@ export default async function ContractorPage({ params }: Props) {
   const user = await getCurrentUser();
   const c = await getContractorDetail(slug, { includeInactive: user?.role === "beheerder" });
   if (!c) notFound();
-  const favorites = user ? await getFavoriteIds(user.id) : new Set<string>();
+  const [favorites, register] = await Promise.all([user ? getFavoriteIds(user.id) : Promise.resolve(new Set<string>()), getRegisterState(c.id)]);
   const m = c.metrics;
   const quoteHref = `/offerteaanvragen/nieuw?aannemer=${c.id}`;
 
@@ -60,6 +62,7 @@ export default async function ContractorPage({ params }: Props) {
               <MapPin className="size-4" aria-hidden /> {c.city ? `${c.city} · ` : ""}Werkgebied: {c.areas.join(", ")}
             </p>
             <div className="mt-3 flex flex-wrap gap-1.5">
+              <Badge tone="muted">{PROVIDER_TYPES[c.provider_type].label}</Badge>
               {c.is_demo ? <DemoBadge /> : null}
               {c.verification.levels.map((l) => (
                 <VerificationBadge key={l} level={l} isDemo={c.is_demo} />
@@ -315,6 +318,8 @@ export default async function ContractorPage({ params }: Props) {
               )}
             </CardContent>
           </Card>
+
+          <RegisterSection state={register} isDemo={c.is_demo} kvkNumber={c.kvk_number} />
 
           <Card>
             <CardHeader>

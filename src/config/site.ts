@@ -6,7 +6,7 @@ export const site = {
   name: "BouwCheck",
   tagline: "De juiste aannemer. Zonder verrassingen.",
   description:
-    "Beschrijf je renovatieproject en ontvang een onderbouwde samenstelling van aannemers en onderaannemers, geordend op budget, kwaliteit of snelheid.",
+    "Beschrijf je renovatieproject en ontvang een onderbouwde samenstelling van aannemers, zzp-vakmensen en klussers, geordend op budget, kwaliteit of snelheid.",
   contactEmail: "contact@bouwcheck.test",
   locale: "nl-NL",
   currency: "EUR",
@@ -17,7 +17,7 @@ export const site = {
   hero: {
     title: "De juiste aannemer maakt het verschil tussen winst en verlies.",
     subtitle:
-      "Beschrijf je project en voeg foto's toe. BouwCheck bepaalt de werkzaamheden en stelt teams van aannemers samen — geordend op budget, kwaliteit of snelheid, onderbouwd met projectresultaten.",
+      "Beschrijf je project en voeg foto's toe. BouwCheck bepaalt de werkzaamheden en stelt teams samen van aannemers, zzp-vakmensen en klussers — geordend op budget, kwaliteit of snelheid, onderbouwd met projectresultaten.",
     primaryCta: "Start je project",
     secondaryCta: "Bekijk hoe het werkt",
   },
