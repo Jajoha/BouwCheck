@@ -1,14 +1,27 @@
 import Link from "next/link";
 import { site } from "@/config/site";
 import { Logo } from "./logo";
+import { env } from "@/lib/env";
+
+const PRODUCT_LINKS = env.features.offertecheck
+  ? [
+      { href: "/offertecheck", label: "Gratis Offertecheck" },
+      { href: "/projecten/nieuw", label: "Teamvoorstel aanvragen" },
+      ...(env.features.foundingMembers ? [{ href: "/founding-members", label: "Founding members" }] : []),
+      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
+      { href: "/prijzen", label: "Prijzen" },
+    ]
+  : [
+      { href: "/projecten/nieuw", label: "Start je project" },
+      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
+      { href: "/prijzen", label: "Prijzen (testfase)" },
+    ];
 
 const COLUMNS = [
   {
     title: "Product",
     links: [
-      { href: "/projecten/nieuw", label: "Start je project" },
-      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-      { href: "/prijzen", label: "Prijzen (testfase)" },
+      ...PRODUCT_LINKS,
       { href: "/transparantie", label: "Hoe wij selecteren en beoordelen" },
     ],
   },

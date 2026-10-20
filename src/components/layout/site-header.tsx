@@ -6,6 +6,7 @@ import { NavLink } from "./nav-link";
 import { UserMenu } from "./user-menu";
 import { FunnelHidden } from "./funnel-hidden";
 import { getCurrentUser, type SessionUser } from "@/lib/auth/session";
+import { env } from "@/lib/env";
 
 type NavItem = { href: string; label: string };
 
@@ -15,6 +16,19 @@ const PUBLIC_NAV: NavItem[] = [
   { href: "/transparantie", label: "Hoe wij selecteren" },
   { href: "/prijzen", label: "Prijzen" },
 ];
+
+/** Met de Offertecheck: de funnel staat centraal. */
+const FUNNEL_NAV: NavItem[] = [
+  { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
+  { href: "/offertecheck", label: "Offertecheck" },
+  { href: "/prijzen", label: "Prijzen" },
+  { href: "/#voor-vakmensen", label: "Voor vakmensen" },
+];
+
+/** De primaire knop rechtsboven voor bezoekers. */
+export function primaryCta() {
+  return env.features.offertecheck ? { href: "/offertecheck", label: "Gratis Offertecheck" } : { href: "/projecten/nieuw", label: "Start je project" };
+}
 
 function navFor(user: SessionUser): NavItem[] {
   if (user.role === "aannemer") {
@@ -34,7 +48,8 @@ function navFor(user: SessionUser): NavItem[] {
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
-  const nav = user ? navFor(user) : PUBLIC_NAV;
+  const nav = user ? navFor(user) : env.features.offertecheck ? FUNNEL_NAV : PUBLIC_NAV;
+  const cta = primaryCta();
   const secondary: NavItem[] = user
     ? user.role === "aannemer"
       ? [{ href: "/profiel", label: "Mijn account" }]
@@ -64,12 +79,12 @@ export async function SiteHeader() {
                   <Link href="/inloggen">Inloggen</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link href="/projecten/nieuw">Start je project</Link>
+                  <Link href={cta.href}>{cta.label}</Link>
                 </Button>
               </>
             )}
           </div>
-          <MobileMenu items={[...nav, ...secondary]} loggedIn={Boolean(user)} />
+          <MobileMenu items={[...nav, ...secondary]} loggedIn={Boolean(user)} cta={cta} />
         </FunnelHidden>
       </div>
     </header>
