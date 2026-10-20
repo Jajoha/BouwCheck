@@ -3,6 +3,7 @@ import { NavLink } from "@/components/layout/nav-link";
 
 const NAV = [
   { href: "/beheer", label: "Overzicht" },
+  { href: "/beheer/offertechecks", label: "Offertechecks" },
   { href: "/beheer/aannemers", label: "Uitvoerders" },
   { href: "/beheer/aanmeldingen", label: "Aanmeldingen" },
   { href: "/beheer/verificaties", label: "Verificaties" },
