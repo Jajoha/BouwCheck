@@ -73,6 +73,8 @@ export function redactPersonalData(text: string): string {
 // ── Rapport ─────────────────────────────────────────────────
 export type PostStatus = "geprijsd" | "inbegrepen" | "stelpost" | "uitgesloten" | "ontbreekt";
 
+export type PriceRange = { min: number; max: number };
+
 export type Report = {
   versie: 1;
   samenvatting: string;
@@ -84,7 +86,8 @@ export type Report = {
     vakgebied: string;
     per_offerte: { status: PostStatus; bedrag: number | null }[];
   }[];
-  ontbrekend: { offerte: string; posten: string[] }[];
+  /** `indicaties` (gelijk aan `posten`): wat andere offertes voor die post rekenen; null als geen enkele een bedrag noemt. */
+  ontbrekend: { offerte: string; posten: string[]; indicaties?: (PriceRange | null)[] }[];
   stelposten: { offerte: string; omschrijving: string; bedrag: number | null; toelichting: string | null }[];
   uitsluitingen: { offerte: string; omschrijving: string; toelichting: string | null }[];
   voorwaarden: { offerte: string; omschrijving: string }[];
@@ -105,7 +108,13 @@ export const reportSchema: z.ZodType<Report> = z.object({
       per_offerte: z.array(z.object({ status: z.enum(["geprijsd", "inbegrepen", "stelpost", "uitgesloten", "ontbreekt"]), bedrag: z.number().nullable() })),
     }),
   ),
-  ontbrekend: z.array(z.object({ offerte: z.string(), posten: z.array(z.string()) })),
+  ontbrekend: z.array(
+    z.object({
+      offerte: z.string(),
+      posten: z.array(z.string()),
+      indicaties: z.array(z.object({ min: z.number(), max: z.number() }).nullable()).optional(),
+    }),
+  ),
   stelposten: z.array(z.object({ offerte: z.string(), omschrijving: z.string(), bedrag: z.number().nullable(), toelichting: z.string().nullable() })),
   uitsluitingen: z.array(z.object({ offerte: z.string(), omschrijving: z.string(), toelichting: z.string().nullable() })),
   voorwaarden: z.array(z.object({ offerte: z.string(), omschrijving: z.string() })),
@@ -171,6 +180,12 @@ function statusFor(lines: ExtractedLine[]): { status: PostStatus; bedrag: number
 }
 
 const round = (n: number) => Math.round(n * 100) / 100;
+
+/** Wat de andere offertes voor een post rekenen (geprijsd of als stelpost), als indicatie voor de offerte waarin hij ontbreekt. */
+function priceRange(perOffer: { status: PostStatus; bedrag: number | null }[], except: number): PriceRange | null {
+  const amounts = perOffer.filter((x, i) => i !== except && x.bedrag !== null && x.bedrag > 0 && (x.status === "geprijsd" || x.status === "stelpost")).map((x) => x.bedrag!);
+  return amounts.length ? { min: Math.min(...amounts), max: Math.max(...amounts) } : null;
+}
 const eur = (n: number) => `€ ${Math.round(n).toLocaleString("nl-NL")}`;
 
 export type ReportInput = {
@@ -193,12 +208,12 @@ export function buildReport({ offers, posts, openQuestions, summary }: ReportInp
     offers.length < 2
       ? []
       : labels
-          .map((label, o) => ({
-            offerte: label,
-            posten: reportPosts
-              .filter((p) => STATUS_RANK[p.per_offerte[o].status] <= STATUS_RANK.uitgesloten && p.per_offerte.some((x) => STATUS_RANK[x.status] >= STATUS_RANK.inbegrepen))
-              .map((p) => p.omschrijving),
-          }))
+          .map((label, o) => {
+            const missing = reportPosts.filter(
+              (p) => STATUS_RANK[p.per_offerte[o].status] <= STATUS_RANK.uitgesloten && p.per_offerte.some((x) => STATUS_RANK[x.status] >= STATUS_RANK.inbegrepen),
+            );
+            return { offerte: label, posten: missing.map((p) => p.omschrijving), indicaties: missing.map((p) => priceRange(p.per_offerte, o)) };
+          })
           .filter((x) => x.posten.length);
 
   const linesOfType = (type: LineType) =>
@@ -316,3 +331,21 @@ export const POST_STATUS_LABELS: Record<PostStatus, string> = {
   ontbreekt: "Ontbreekt",
 };
 
+
+// ── Capaciteit per week ─────────────────────────────────────
+
+/** Leest OFFERTECHECK_MAX_PER_WEEK: een positief geheel getal, anders null (dan tonen we geen limiet). */
+export function parseWeeklyMax(raw: string | undefined): number | null {
+  const v = raw?.trim();
+  if (!v || !/^\d+$/.test(v)) return null;
+  const n = Number(v);
+  return n > 0 ? n : null;
+}
+
+export type WeeklyCapacity = { max: number; remaining: number };
+
+/** Null = geen limiet ingesteld (de "Beperkt"-regel blijft verborgen). */
+export function weeklyCapacity(max: number | null, submittedThisWeek: number): WeeklyCapacity | null {
+  if (max === null) return null;
+  return { max, remaining: Math.max(0, max - submittedThisWeek) };
+}

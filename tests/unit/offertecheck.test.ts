@@ -125,7 +125,8 @@ describe("buildReport", () => {
   });
 
   it("vindt ontbrekende posten, stelposten, uitsluitingen en prijsverschillen", () => {
-    expect(report.ontbrekend).toEqual([{ offerte: "B", posten: ["Tegelwerk", "Sanitair"] }]);
+    // met een indicatie in euro's uit de offertes die de post wel prijzen
+    expect(report.ontbrekend).toEqual([{ offerte: "B", posten: ["Tegelwerk", "Sanitair"], indicaties: [{ min: 3000, max: 3000 }, { min: 1500, max: 1500 }] }]);
     expect(report.stelposten).toEqual([{ offerte: "A", omschrijving: "Sanitair", bedrag: 1500, toelichting: "Keuze sanitair nog open" }]);
     expect(report.uitsluitingen[0]).toMatchObject({ offerte: "B", omschrijving: "Tegelwerk" });
     expect(report.prijsverschillen).toEqual([{ post: "Schilderwerk", laagste: { offerte: "A", bedrag: 2000 }, hoogste: { offerte: "B", bedrag: 3600 }, factor: 1.8 }]);
@@ -155,6 +156,22 @@ describe("buildReport", () => {
   });
 });
 
+describe("rapport zonder bevindingen", () => {
+  it("heeft geen bevindingen als alle offertes hetzelfde bevatten", () => {
+    const same = [offer([line({ omschrijving: "Schilderwerk", bedrag_excl_btw: 2000 })]), offer([line({ omschrijving: "Schilderwerk", bedrag_excl_btw: 2100 })])];
+    const r = buildReport({ offers: same, posts: normalizeAlignment(same, { scope_posten: [{ omschrijving: "Schilderwerk", vakgebied: "schilder", regels: [{ offerte: 0, regel: 0 }, { offerte: 1, regel: 0 }] }] }), openQuestions: [], summary: "" });
+    expect(r.ontbrekend).toEqual([]);
+    expect(r.prijsverschillen).toEqual([]);
+    expect(r.stelposten).toEqual([]);
+    expect(r.bevindingen).toEqual([]);
+  });
+
+  it("oude rapporten zonder indicaties blijven geldig", () => {
+    const r = buildReport({ offers: [offer([line({})])], posts: [], openQuestions: [], summary: "" });
+    expect(reportSchema.safeParse({ ...r, ontbrekend: [{ offerte: "A", posten: ["x"] }] }).success).toBe(true);
+  });
+});
+
 describe("benchmarkRows (toestemming en anonimisering)", () => {
   const lines = [
     line({ bedrag_excl_btw: 2000, hoeveelheid: 100, eenheid: "m2" }),
@@ -176,5 +193,24 @@ describe("benchmarkRows (toestemming en anonimisering)", () => {
 describe("deadlineFor", () => {
   it("is 48 uur na indienen", () => {
     expect(deadlineFor("2026-10-20T10:00:00Z").toISOString()).toBe("2026-10-22T10:00:00.000Z");
+  });
+});
+
+describe("capaciteit per week", () => {
+  it("leest OFFERTECHECK_MAX_PER_WEEK alleen als positief geheel getal", async () => {
+    const { parseWeeklyMax } = await import("@/lib/domain/offertecheck");
+    expect(parseWeeklyMax(undefined)).toBeNull();
+    expect(parseWeeklyMax("")).toBeNull();
+    expect(parseWeeklyMax("0")).toBeNull();
+    expect(parseWeeklyMax("abc")).toBeNull();
+    expect(parseWeeklyMax("12,5")).toBeNull();
+    expect(parseWeeklyMax(" 20 ")).toBe(20);
+  });
+
+  it("zonder limiet geen capaciteit (regel verborgen); met limiet echte resterende plekken", async () => {
+    const { weeklyCapacity } = await import("@/lib/domain/offertecheck");
+    expect(weeklyCapacity(null, 7)).toBeNull();
+    expect(weeklyCapacity(20, 7)).toEqual({ max: 20, remaining: 13 });
+    expect(weeklyCapacity(5, 9)).toEqual({ max: 5, remaining: 0 });
   });
 });

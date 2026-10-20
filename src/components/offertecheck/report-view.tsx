@@ -25,12 +25,25 @@ function Section({ icon: Icon, title, description, children }: { icon: React.Ele
   );
 }
 
+/** "Vinden we niets? Dan zeggen we dat eerlijk": geen enkel signaal in het rapport. */
+export function nothingFound(r: Report) {
+  return !r.ontbrekend.length && !r.stelposten.length && !r.uitsluitingen.length && !r.prijsverschillen.length;
+}
+
 /** Het rapport van een Offertecheck. `showContractor` alleen in beheer: aannemersnamen zijn intern. */
 export function ReportView({ report, showContractor = false }: { report: Report; showContractor?: boolean }) {
   const label = (l: string) => `Offerte ${l}`;
   return (
     <div>
       {report.samenvatting ? <p className="text-base text-ink-800">{report.samenvatting}</p> : null}
+      {nothingFound(report) ? (
+        <div className="mt-5 rounded-[var(--radius-card)] border border-brand-200 bg-brand-50 p-4 sm:p-5">
+          <h2 className="text-sm font-semibold text-brand-800">We vonden niets opvallends</h2>
+          <p className="mt-1 text-sm text-ink-700">
+            In deze offertes vonden we geen ontbrekende posten, stelposten, uitsluitingen of grote prijsverschillen. Lees wel de voorwaarden en eventuele vragen hieronder.
+          </p>
+        </div>
+      ) : null}
       {report.bevindingen.length ? (
         <div className="mt-5 rounded-[var(--radius-card)] border border-ink-200 bg-ink-50 p-4 sm:p-5">
           <h2 className="text-sm font-semibold text-ink-950">Belangrijkste bevindingen</h2>
@@ -94,15 +107,25 @@ export function ReportView({ report, showContractor = false }: { report: Report;
       </Section>
 
       {report.ontbrekend.length ? (
-        <Section icon={FileWarning} title="Ontbrekende posten" description="Posten die een andere offerte wel noemt. Vraag na of dit werk elders zit of echt ontbreekt.">
+        <Section icon={FileWarning} title="Ontbrekende posten" description="Posten die een andere offerte wel noemt, met wat die offertes ervoor rekenen: een indicatie van wat het je later kan kosten. Vraag na of dit werk elders zit of echt ontbreekt.">
           <div className="grid gap-3 sm:grid-cols-2">
             {report.ontbrekend.map((m) => (
               <div key={m.offerte} className="rounded-[var(--radius-card)] border border-danger-100 bg-danger-50/40 p-4">
                 <p className="text-sm font-semibold text-ink-950">{label(m.offerte)}</p>
                 <ul className="mt-1.5 list-disc pl-5 text-sm text-ink-800">
-                  {m.posten.map((p) => (
-                    <li key={p}>{p}</li>
-                  ))}
+                  {m.posten.map((p, i) => {
+                    const range = m.indicaties?.[i];
+                    return (
+                      <li key={p}>
+                        {p}
+                        {range ? (
+                          <span className="tabular block text-xs text-ink-600">
+                            Andere offertes: {range.min === range.max ? formatEuro(range.min) : `${formatEuro(range.min)} – ${formatEuro(range.max)}`} excl. btw
+                          </span>
+                        ) : null}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}
@@ -141,7 +164,7 @@ export function ReportView({ report, showContractor = false }: { report: Report;
       ) : null}
 
       {report.prijsverschillen.length ? (
-        <Section icon={Scale} title="Grote prijsverschillen" description="Posten waar de hoogste prijs minstens anderhalf keer de laagste is. Vaak zit het verschil in hoeveelheden of kwaliteit.">
+        <Section icon={Scale} title="Grote prijsverschillen" description="Posten waar de hoogste prijs minstens anderhalf keer de laagste is. Bij de hoogste prijs betaal je mogelijk te veel; een opvallend lage prijs kan betekenen dat er werk ontbreekt. Vaak zit het verschil in hoeveelheden of kwaliteit.">
           <ul className="flex flex-col gap-2">
             {report.prijsverschillen.map((g) => (
               <li key={g.post} className="flex flex-col gap-0.5 rounded-lg border border-ink-200 bg-white p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
@@ -156,7 +179,7 @@ export function ReportView({ report, showContractor = false }: { report: Report;
       ) : null}
 
       {report.open_vragen.length ? (
-        <Section icon={CircleHelp} title="Vragen om aan de aannemers te stellen">
+        <Section icon={CircleHelp} title="Je onderhandelingslijst" description="De vragen die je aan elke aannemer stelt voordat je tekent.">
           <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-sm text-ink-800">
             {report.open_vragen.map((q, i) => (
               <li key={i}>
