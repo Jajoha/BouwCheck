@@ -38,6 +38,17 @@ function parseBool(value: string | undefined): boolean | undefined {
   return ["1", "true", "yes", "ja"].includes(value.toLowerCase());
 }
 
+export const FEATURE_FLAGS = ["FEATURE_OFFERTECHECK", "FEATURE_FOUNDING_MEMBERS", "FEATURE_DEPOSIT_PAYMENTS"] as const;
+
+/** Feature flags via omgevingsvariabelen; standaard uit. */
+export function parseFeatureFlags(source: Record<string, string | undefined>) {
+  return {
+    offertecheck: parseBool(source.FEATURE_OFFERTECHECK) ?? false,
+    foundingMembers: parseBool(source.FEATURE_FOUNDING_MEMBERS) ?? false,
+    depositPayments: parseBool(source.FEATURE_DEPOSIT_PAYMENTS) ?? false,
+  };
+}
+
 export const env = {
   databaseUrl,
   migrationDatabaseUrl,
@@ -55,8 +66,12 @@ export const env = {
   serverless,
   appUrl: process.env.APP_URL?.trim() || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
   isProduction: process.env.NODE_ENV === "production",
-  /** E-mailverzending is in deze bèta niet geïmplementeerd. */
+  /**
+   * Wachtwoordherstel per e-mail is nog niet geïmplementeerd. Transactionele mails en opvolgreeksen
+   * lopen via src/lib/email (Resend, zie emailConfig daar).
+   */
   emailConfigured: false,
+  features: parseFeatureFlags(process.env),
 };
 
 export const dbDriver: "postgres" | "pglite" = databaseUrl ? "postgres" : "pglite";
