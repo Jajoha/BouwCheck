@@ -1,5 +1,5 @@
 import "server-only";
-import { sql, sqlOne } from "@/lib/db";
+import { isMissingTableError, sql, sqlOne } from "@/lib/db";
 import { freeSeats } from "@/lib/domain/ladder";
 
 export type RegionSeats = { regio: string; plekken: number; bezet: number; vrij: number };
@@ -31,8 +31,15 @@ export async function listReservations() {
 
 export type CaseRow = { id: string; titel: string; regio: string | null; samenvatting: string; resultaat: string | null; gepubliceerd: boolean };
 
+/** Gepubliceerde cases voor de homepage. Ontbreekt de tabel nog (migratie niet toegepast), dan geen blok in plaats van een foutpagina. */
 export async function listPublishedCases() {
-  return sql<CaseRow>("select id, titel, regio, samenvatting, resultaat, gepubliceerd from cases where gepubliceerd order by sort_order, created_at desc limit 6");
+  try {
+    return await sql<CaseRow>("select id, titel, regio, samenvatting, resultaat, gepubliceerd from cases where gepubliceerd order by sort_order, created_at desc limit 6");
+  } catch (err) {
+    if (!isMissingTableError(err)) throw err;
+    console.error("[cases] tabel ontbreekt: database is niet gemigreerd (npm run db:migrate of MIGRATE_ON_PREVIEW=true)");
+    return [];
+  }
 }
 
 export async function listAllCases() {

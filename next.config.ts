@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   cacheComponents: false,
   serverExternalPackages: ["@electric-sql/pglite", "postgres"],
   poweredByHeader: false,
+  // Migraties worden ook tijdens runtime gelezen (lokale demo-database, controle in Beheer)
+  outputFileTracingIncludes: { "/*": ["./supabase/migrations/*.sql"] },
   turbopack: {
     rules: {
       "*.css": {

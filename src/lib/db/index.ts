@@ -111,6 +111,11 @@ export function getDb(): Promise<Database> {
   return g.__bouwcheckDb;
 }
 
+/** True als een query faalde omdat een tabel (nog) niet bestaat, bijv. door een niet-toegepaste migratie. */
+export function isMissingTableError(err: unknown): boolean {
+  return Boolean(err && typeof err === "object" && "code" in err && (err as { code: unknown }).code === "42P01");
+}
+
 /** Korte helper voor een enkele query. */
 export async function sql<T = Row>(text: string, params: unknown[] = []): Promise<T[]> {
   const database = await getDb();
