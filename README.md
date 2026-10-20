@@ -171,7 +171,7 @@ tests/unit, tests/e2e
 
 ### Datamodel (kern)
 
-`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects` (incl. `ai_summary`), `project_scope_items` (werkzaamheden), `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites` · `ai_usage` · `register_checks`, `register_signals` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
+`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects` (incl. `ai_summary`), `project_scope_items` (werkzaamheden), `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites` · `ai_usage` · `funnel_events` · `email_messages`, `email_unsubscribes` · `register_checks`, `register_signals` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
 
 - Bedragen: `numeric(12,2)` + expliciete valuta (`EUR`) + btw-status per bedrag. Datums als `date`, doorlooptijden in kalenderdagen.
 - Prijs-typen gescheiden: `indicatief` / `offerte` / `overeengekomen`; indicatieve tarieven staan apart in `contractor_rates` (bron altijd *zelf opgegeven*).
@@ -203,6 +203,9 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `AI_MONTHLY_LIMIT_USD` | Max. AI-kosten per account per kalendermaand, standaard 5. |
 | `AI_HOURLY_LIMIT` | Max. analyses per account per uur, standaard 10. |
 | `AI_MAX_PHOTOS` | Max. foto's per analyse, standaard 8. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | E-mail via Resend. Beide nodig; `EMAIL_FROM` op een bij Resend geverifieerd domein. Leeg = mails blijven in de outbox als *niet geconfigureerd*. |
+| `EMAIL_REPLY_TO` | Optioneel antwoordadres. |
+| `FEATURE_OFFERTECHECK`, `FEATURE_FOUNDING_MEMBERS`, `FEATURE_DEPOSIT_PAYMENTS` | Feature flags voor de funnel, standaard uit. |
 
 Er staan geen geheimen in de client-code; databaseverbinding, Blob-token en API-sleutel worden uitsluitend server-side gebruikt.
 
@@ -327,7 +330,7 @@ Zie ook `/transparantie` en `src/lib/domain/metrics.ts`.
 
 | Onderwerp | Huidige situatie | Nodig voor productie |
 | --- | --- | --- |
-| E-mail (offerteaanvragen, wachtwoordherstel, bevestigingen) | Niet geïmplementeerd; nergens gesimuleerd | E-mailprovider (bijv. Resend/Postmark) + templates |
+| E-mail | Outbox + Resend-koppeling (`src/lib/email`), testmail en status in **Beheer → E-mail**; geplande mails via de cron `/api/cron/e-mail`. Wachtwoordherstel en offerteaanvragen gebruiken nog geen e-mail | Domein bij Resend verifiëren, `RESEND_API_KEY` + `EMAIL_FROM` zetten |
 | Betalingen | Niet geïmplementeerd; CTA's leiden naar een interesseformulier | Betaalprovider (bijv. Mollie/Stripe) |
 | Bestandsopslag | Vercel Blob (privé) als gekoppeld, anders lokaal bestandssysteem | Vercel Blob koppelen |
 | Auth | App-eigen e-mail/wachtwoord | Eventueel Supabase Auth/SSO, e-mailverificatie, 2FA |

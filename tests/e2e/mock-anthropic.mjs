@@ -100,6 +100,17 @@ http
       try {
         const body = JSON.parse(raw);
         const beta = String(req.headers["anthropic-beta"] ?? "");
+        // Nep-Resend (RESEND_BASE_URL wijst ook naar deze server)
+        if (req.url === "/resend/emails") {
+          if (req.headers.authorization !== "Bearer test-resend") return fail(res, "Resend-sleutel ontbreekt");
+          if (!body.from || !body.to?.length || !body.subject || !body.html || !body.text) return fail(res, "onvolledige mail");
+          if (body.to[0].includes("weiger")) {
+            res.writeHead(422, { "content-type": "application/json" }).end(JSON.stringify({ message: "ongeldig adres" }));
+            return;
+          }
+          console.log(`[mock-resend] ok: ${body.to[0]} – ${body.subject}`);
+          return json(res, { id: `re_${Date.now()}` });
+        }
         if (!req.url.startsWith("/v1/messages")) return fail(res, `onverwacht pad ${req.url}`);
         if (!req.headers["x-api-key"]) return fail(res, "x-api-key ontbreekt");
         if (body.model !== "claude-opus-5-5") return fail(res, `onverwacht model ${body.model}`);
