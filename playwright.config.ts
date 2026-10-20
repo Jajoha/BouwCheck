@@ -41,6 +41,7 @@ export default defineConfig({
         RESEND_BASE_URL: "http://127.0.0.1:3199/resend",
         EMAIL_FROM: "BouwCheck <test@bouwcheck.test>",
         FEATURE_OFFERTECHECK: "true",
+        FEATURE_FOUNDING_MEMBERS: "true",
         OFFERTECHECK_AGENDA_URL: "https://agenda.voorbeeld.test/bouwcheck",
       },
     },
