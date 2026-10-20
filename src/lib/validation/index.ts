@@ -128,6 +128,7 @@ export const registerSchema = z
     email,
     password,
     password_confirm: z.string(),
+    next: optionalText(300),
     terms: checkbox.refine((v) => v, "Je moet akkoord gaan met de (concept)voorwaarden."),
   })
   .refine((d) => d.password === d.password_confirm, { path: ["password_confirm"], message: "De wachtwoorden komen niet overeen." });
@@ -143,6 +144,7 @@ export const onboardingSchema = z.object({
   role: z.enum(["flipper", "investeerder", "aannemer"], { error: "Kies je rol." }),
   region: optionalEnum(PROVINCE_VALUES),
   project_types: z.preprocess((v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]), z.array(z.enum(RENOVATION_VALUES))),
+  next: optionalText(300),
 });
 
 // ── Projecten ───────────────────────────────────────────────
@@ -300,6 +302,18 @@ export const leadSchema = z.object({
   phone: optionalText(30),
   message: optionalText(3000),
   consent: checkbox.refine((v) => v, "Geef toestemming om contact met je op te nemen."),
+});
+
+export const offertecheckSchema = z.object({
+  naam: text(2, 120, "Naam"),
+  email,
+  telefoon: optionalText(30),
+  projectomschrijving: optionalText(2000),
+  provincie: optionalEnum(PROVINCE_VALUES),
+  consent_contact: checkbox.refine((v) => v, "Geef toestemming om contact met je op te nemen over de check."),
+  consent_benchmark: checkbox,
+  // honeypot: blijft leeg bij mensen
+  website: z.preprocess((v) => (typeof v === "string" ? v : ""), z.string().max(0, "Ongeldige invoer.")),
 });
 
 export const flagSchema = z.object({
