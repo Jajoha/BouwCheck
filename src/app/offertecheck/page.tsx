@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { EyeOff, ShieldCheck, Trash2 } from "lucide-react";
 import { OffertecheckForm } from "@/components/offertecheck/offertecheck-form";
+import { OFFER, OfferFull } from "@/components/offertecheck/offer";
+import { Notice } from "@/components/ui/misc";
+import { getWeeklyCapacity, WEEK_FULL_MESSAGE } from "@/lib/data/offertecheck";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Gratis Offertecheck",
-  description: "Upload je offertes. Binnen 48 uur zie je wat er ontbreekt, wat er is uitgesloten en waar de prijzen uiteenlopen.",
+  description: OFFER.intro,
 };
 
 const ASSURANCES = [
@@ -16,18 +19,22 @@ const ASSURANCES = [
 ];
 
 /** Landingspagina met één doel: offertes uploaden. Geen hoofdmenu (zie FunnelHidden in de header). */
-export default function OffertecheckPage() {
+export default async function OffertecheckPage() {
   if (!env.features.offertecheck) notFound();
+  const capacity = await getWeeklyCapacity();
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 pb-28 sm:px-6 sm:py-14">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Gratis tijdens de bèta</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink-950 sm:text-4xl">Upload je offertes. Weet binnen 48 uur wat ze je niet vertellen.</h1>
-      <p className="mt-3 max-w-2xl text-base text-ink-600">
-        Wij zetten je offertes op één scope en laten zien wat er ontbreekt, wat er is uitgesloten en waar de prijzen uiteenlopen. Gratis tijdens de bèta.
-      </p>
-      <div className="mt-8 rounded-[var(--radius-card)] border border-ink-200 bg-white p-5 sm:p-8">
-        <OffertecheckForm uploadMode={env.blobConfigured ? "blob" : "server"} />
-      </div>
+      <OfferFull capacity={capacity} />
+      <section id="upload" aria-labelledby="upload-titel" className="mt-12 scroll-mt-24 rounded-[var(--radius-card)] border border-ink-200 bg-white p-5 sm:p-8">
+        <h2 id="upload-titel" className="mb-5 text-xl font-semibold text-ink-950">
+          Upload je offertes
+        </h2>
+        {capacity && capacity.remaining === 0 ? (
+          <Notice tone="warning">{WEEK_FULL_MESSAGE}</Notice>
+        ) : (
+          <OffertecheckForm uploadMode={env.blobConfigured ? "blob" : "server"} />
+        )}
+      </section>
       <ul className="mt-8 grid gap-4 sm:grid-cols-3">
         {ASSURANCES.map(({ Icon, title, text }) => (
           <li key={title} className="flex gap-3 sm:flex-col sm:gap-2">

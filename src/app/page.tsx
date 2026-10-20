@@ -29,6 +29,7 @@ import { ladderPrices, site } from "@/config/site";
 import { env } from "@/lib/env";
 import { listPublishedCases, type CaseRow } from "@/lib/data/founding";
 import { CheckExample } from "@/components/marketing/check-example";
+import { OfferBenefits, OfferCta, OfferIntro } from "@/components/offertecheck/offer";
 import { sqlOne } from "@/lib/db";
 import { getScope } from "@/lib/data/scope";
 import { proposalsFor } from "@/lib/data/teams";
@@ -371,27 +372,20 @@ async function OffertecheckHome() {
   return (
     <>
       <section className="border-b border-ink-100 bg-gradient-to-b from-ink-50/80 to-white">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:pb-24 lg:pt-20">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-14 lg:pb-24 lg:pt-20">
           <div>
-            <Badge tone="neutral" className="mb-5">
-              Gratis tijdens de bèta
-            </Badge>
-            <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-ink-950 sm:text-5xl">Upload je offertes. Weet binnen 48 uur wat ze je niet vertellen.</h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-600">
-              Wij zetten je offertes op één scope en laten zien wat er ontbreekt, wat er is uitgesloten en waar de prijzen uiteenlopen.
-            </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Button asChild size="lg">
-                <Link href="/offertecheck">
-                  Gratis Offertecheck <ArrowRight aria-hidden />
-                </Link>
-              </Button>
-              <Link href="/projecten/nieuw" className="text-sm font-medium text-ink-700 underline underline-offset-4 hover:text-ink-950">
-                Geen offertes? Vraag direct een teamvoorstel aan
-              </Link>
-            </div>
-            <p className="mt-6 text-sm text-ink-500">Je offertes worden niet gedeeld met aannemers. Een medewerker controleert elk rapport.</p>
+            <OfferIntro />
+            <OfferCta className="mt-7" />
           </div>
+          <OfferBenefits className="rounded-2xl border border-ink-200 bg-white p-5 shadow-[var(--shadow-raised)] sm:p-7" />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 pt-16 sm:px-6" aria-labelledby="voorbeeld-check">
+        <h2 id="voorbeeld-check" className="text-2xl font-semibold tracking-tight text-ink-950">
+          Zo ziet een check eruit
+        </h2>
+        <div className="mt-6">
           <CheckExample />
         </div>
       </section>

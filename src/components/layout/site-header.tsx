@@ -27,7 +27,7 @@ const FUNNEL_NAV: NavItem[] = [
 
 /** De primaire knop rechtsboven voor bezoekers. */
 export function primaryCta() {
-  return env.features.offertecheck ? { href: "/offertecheck", label: "Gratis Offertecheck" } : { href: "/projecten/nieuw", label: "Start je project" };
+  return env.features.offertecheck ? { href: "/offertecheck#upload", label: "Gratis Offertecheck" } : { href: "/projecten/nieuw", label: "Start je project" };
 }
 
 function navFor(user: SessionUser): NavItem[] {
