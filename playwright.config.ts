@@ -40,6 +40,8 @@ export default defineConfig({
         RESEND_API_KEY: "test-resend",
         RESEND_BASE_URL: "http://127.0.0.1:3199/resend",
         EMAIL_FROM: "BouwCheck <test@bouwcheck.test>",
+        FEATURE_OFFERTECHECK: "true",
+        OFFERTECHECK_AGENDA_URL: "https://agenda.voorbeeld.test/bouwcheck",
       },
     },
   ],
