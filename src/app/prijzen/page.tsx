@@ -5,15 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Notice, PageHeader } from "@/components/ui/misc";
 import { LeadForm } from "@/components/marketing/lead-form";
+import { LadderPricing } from "@/components/marketing/ladder-pricing";
 import { pricingPlans } from "@/config/site";
 import { getCurrentUser } from "@/lib/auth/session";
+import { env } from "@/lib/env";
+import { LADDER_LEAD_TYPES, type LeadType } from "@/lib/domain/constants";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Prijzen (testfase)" };
+export const metadata: Metadata = { title: "Prijzen" };
 
 export default async function PricingPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
   const { plan } = await searchParams;
   const user = await getCurrentUser();
+  if (env.features.offertecheck) {
+    const selected: LeadType = LADDER_LEAD_TYPES.includes(plan as LeadType) ? (plan as LeadType) : "pro";
+    return <LadderPricing selected={selected} user={user ? { name: user.name, email: user.email } : null} foundingMembers={env.features.foundingMembers} />;
+  }
+  // Zonder Offertecheck: de oorspronkelijke testprijzen
   const selected = pricingPlans.find((p) => p.id === plan)?.id ?? "selectie";
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 pb-28 sm:px-6">
