@@ -25,3 +25,14 @@ export async function expectNoHorizontalScroll(page: Page) {
   }
   expect(overflow).toBeLessThanOrEqual(1);
 }
+
+/** Teksten van het Offertecheck-aanbod, letterlijk zoals aangeleverd. */
+export const OFFER_INTRO =
+  "Een offerte die goedkoop lijkt, kan je duizenden euro's aan meerwerk kosten. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Dan teken je pas als je weet wat je koopt.";
+export const OFFER_BENEFITS = [
+  "Alle offertes op één scope. Elke post naast elkaar, zodat je appels met appels vergelijkt.",
+  "Ontbrekende posten in euro's. Wat in de ene offerte zit en in de andere niet, met een indicatie van wat het je later kost.",
+  "Stelposten en uitsluitingen uitgelicht. De plekken waar meerwerk vandaan komt, met uitleg waarom.",
+  "Prijsverschillen per post. Waar je mogelijk te veel betaalt, en waar een lage prijs verdacht laag is.",
+  "Je onderhandelingslijst. De vragen die je aan elke aannemer stelt voordat je tekent.",
+];

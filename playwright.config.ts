@@ -42,6 +42,7 @@ export default defineConfig({
         EMAIL_FROM: "BouwCheck <test@bouwcheck.test>",
         FEATURE_OFFERTECHECK: "true",
         FEATURE_FOUNDING_MEMBERS: "true",
+        OFFERTECHECK_MAX_PER_WEEK: "40",
         OFFERTECHECK_AGENDA_URL: "https://agenda.voorbeeld.test/bouwcheck",
       },
     },

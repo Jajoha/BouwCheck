@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectNoHorizontalScroll } from "./helpers";
+import { expectNoHorizontalScroll, OFFER_BENEFITS, OFFER_INTRO } from "./helpers";
 
 test.describe("Publieke site", () => {
   test("homepage rond de Offertecheck: propositie, navigatie en werkende CTA's", async ({ page }) => {
@@ -7,7 +7,11 @@ test.describe("Publieke site", () => {
     page.on("pageerror", (e) => errors.push(String(e)));
     await page.goto("/");
     await expect(page).toHaveTitle(/BouwCheck/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Upload je offertes. Weet binnen 48 uur wat ze je niet vertellen.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Gratis Offertecheck: zie het meerwerk vóórdat je tekent");
+    await expect(page.getByText(OFFER_INTRO, { exact: true })).toBeVisible();
+    const benefits = page.getByRole("heading", { name: "Wat je krijgt", level: 2 }).locator("xpath=following-sibling::ul[1]");
+    await expect(benefits.getByRole("listitem")).toHaveText(OFFER_BENEFITS);
+    await expect(page.getByRole("main").getByRole("link", { name: "Upload je offertes – gratis" })).toHaveAttribute("href", "/offertecheck#upload");
     await expect(page.getByText("Demo-modus:")).toBeVisible();
     // statische voorbeeldcheck, als demo gelabeld
     const example = page.getByRole("figure", { name: "Voorbeeld van een Offertecheck" });
@@ -20,7 +24,7 @@ test.describe("Publieke site", () => {
     // navigatie
     const nav = page.getByRole("navigation", { name: "Hoofdnavigatie" });
     for (const label of ["Hoe het werkt", "Offertecheck", "Prijzen", "Voor vakmensen"]) await expect(nav.getByRole("link", { name: label })).toBeVisible();
-    await expect(page.getByRole("banner").getByRole("link", { name: "Gratis Offertecheck" })).toBeVisible();
+    await expect(page.getByRole("banner").getByRole("link", { name: "Gratis Offertecheck" })).toHaveAttribute("href", "/offertecheck#upload");
     // ladder, verhaal (placeholder), founding members, vakmensen en nieuwe FAQ
     for (const step of ["Offertecheck", "Teamvoorstel", "Projectpas", "Pro"]) await expect(page.locator("#hoe-het-werkt").getByRole("heading", { name: step, exact: true })).toBeVisible();
     await expect(page.getByText("Placeholder — oprichtersverhaal.")).toBeVisible();
@@ -31,11 +35,9 @@ test.describe("Publieke site", () => {
     // CTA's
     await nav.getByRole("link", { name: "Hoe het werkt" }).click();
     await expect(page.getByRole("heading", { name: "Hoe het werkt" })).toBeInViewport();
-    await page.getByRole("link", { name: "Geen offertes? Vraag direct een teamvoorstel aan" }).click();
-    await expect(page).toHaveURL(/\/inloggen\?next=%2Fprojecten%2Fnieuw/);
-    await page.goto("/");
-    await page.getByRole("main").getByRole("link", { name: /Gratis Offertecheck/ }).first().click();
-    await expect(page).toHaveURL(/\/offertecheck$/);
+    await page.getByRole("main").getByRole("link", { name: "Upload je offertes – gratis" }).click();
+    await expect(page).toHaveURL(/\/offertecheck#upload$/);
+    await expect(page.getByRole("heading", { name: "Upload je offertes", level: 2 })).toBeInViewport();
     expect(errors).toEqual([]);
   });
 

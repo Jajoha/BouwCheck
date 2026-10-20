@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { expectNoHorizontalScroll, loginAs, logout } from "./helpers";
+import { expectNoHorizontalScroll, loginAs, logout, OFFER_BENEFITS, OFFER_INTRO } from "./helpers";
 import { makePdf } from "./pdf";
 
 const OFFERTE_ALFA = makePdf([
@@ -36,11 +36,34 @@ async function fillAndSubmit(page: Page, email: string) {
 }
 
 test.describe("Offertecheck", () => {
-  test("landingspagina zonder hoofdmenu, met validatie", async ({ page }) => {
+  test("aanbod bovenaan, zonder hoofdmenu, en capaciteit berekend uit ingediende checks", async ({ page }) => {
     await page.goto("/offertecheck");
-    await expect(page.getByRole("heading", { name: "Upload je offertes. Weet binnen 48 uur wat ze je niet vertellen." })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Gratis Offertecheck: zie het meerwerk vóórdat je tekent");
+    await expect(page.getByText(OFFER_INTRO, { exact: true })).toBeVisible();
+    const benefits = page.getByRole("heading", { name: "Wat je krijgt", level: 2 }).locator("xpath=following-sibling::ul[1]");
+    await expect(benefits.getByRole("listitem")).toHaveText(OFFER_BENEFITS);
+    await expect(page.getByRole("heading", { name: "Bonus", level: 2 })).toBeVisible();
+    await expect(
+      page.getByText("Wil je teams die op deze ene scope offreren? Je krijgt binnen 72 uur een gratis teamvoorstel van aannemers, zzp-vakmensen en klussers, geordend op budget, kwaliteit of snelheid.", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Onze belofte", level: 2 })).toBeVisible();
+    await expect(
+      page.getByText("Je rapport binnen 48 uur, anders krijg je je teamvoorstel met voorrang. Vinden we niets? Dan zeggen we dat eerlijk, en teken je met een gerust hart.", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Privé", level: 2 })).toBeVisible();
+    await expect(page.getByText("Je offertes worden niet gedeeld met aannemers. Je kunt ze op elk moment laten verwijderen.", { exact: true })).toBeVisible();
+    // OFFERTECHECK_MAX_PER_WEEK=40 in de e2e-omgeving; resterende plekken komen uit de database
+    await expect(page.getByText("Elke check wordt door een mens nagekeken. Daarom nemen we er maximaal 40 per week aan.", { exact: true })).toBeVisible();
+    const left = Number((await page.getByText(/^Nog \d+ plekken? deze week\.$/).textContent())!.match(/\d+/)![0]);
+    expect(left).toBeLessThanOrEqual(40);
+    const cta = page.getByRole("link", { name: "Upload je offertes – gratis" });
+    await expect(cta).toHaveAttribute("href", "/offertecheck#upload");
+    await cta.click();
+    await expect(page).toHaveURL(/#upload$/);
+    await expect(page.getByRole("heading", { name: "Upload je offertes", level: 2 })).toBeInViewport();
     await expect(page.getByRole("navigation", { name: "Hoofdnavigatie" })).toHaveCount(0);
-    await expect(page.getByText("Niet gedeeld met aannemers")).toBeVisible();
+    await expect(page.getByText("Niet gedeeld met aannemers", { exact: true })).toBeVisible();
+    await expect(page.getByText("Demo-modus:")).toBeVisible();
 
     await page.getByRole("button", { name: "Offertes laten checken" }).click();
     await expect(page.getByText("Voeg minimaal één offerte toe.")).toBeVisible();
@@ -54,10 +77,20 @@ test.describe("Offertecheck", () => {
     await expect(page.getByText("Geef toestemming om contact met je op te nemen over de check.")).toBeVisible();
   });
 
-  test("mobiel: geen horizontale scroll", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 800 });
+  test("mobiel (375 px): geen horizontale scroll, 16 px marge en knop direct na de intro", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/offertecheck");
     await expectNoHorizontalScroll(page);
+    const h1 = await page.getByRole("heading", { level: 1 }).boundingBox();
+    expect(Math.round(h1!.x)).toBe(16);
+    const intro = await page.getByText(OFFER_INTRO, { exact: true }).boundingBox();
+    const cta = await page.getByRole("link", { name: "Upload je offertes – gratis" }).boundingBox();
+    expect(cta!.y).toBeGreaterThan(intro!.y + intro!.height - 1);
+    expect(cta!.y - (intro!.y + intro!.height)).toBeLessThan(48);
+    await expect(page.getByRole("link", { name: "Upload je offertes – gratis" })).toBeInViewport();
+    await page.goto("/");
+    await expectNoHorizontalScroll(page);
+    await expect(page.getByRole("main").getByRole("link", { name: "Upload je offertes – gratis" })).toBeVisible();
   });
 
   test("volledige keten: upload, analyse, review, rapport, mail, teamvoorstel en verwijderen", async ({ page }) => {
@@ -152,8 +185,14 @@ test.describe("Offertecheck", () => {
     await expect(page.getByText("keten@voorbeeld.nl")).toHaveCount(0);
   });
 
-  test("beheer verwijdert een check inclusief bestanden", async ({ page }) => {
+  test("beheer verwijdert een check inclusief bestanden; de check telt mee voor de weekcapaciteit", async ({ page }) => {
+    const plekken = async () => {
+      await page.goto("/offertecheck");
+      return Number((await page.getByText(/^Nog \d+ plekken? deze week\.$/).textContent())!.match(/\d+/)![0]);
+    };
+    const before = await plekken();
     await fillAndSubmit(page, "verwijder@voorbeeld.nl");
+    expect(await plekken()).toBe(before - 1);
     await loginAs(page, "beheerder");
     await page.goto("/beheer/offertechecks");
     await page.getByRole("row").filter({ hasText: "verwijder@voorbeeld.nl" }).getByRole("link").click();
