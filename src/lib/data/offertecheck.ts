@@ -14,7 +14,10 @@ import {
   deadlineFor,
   normalizeAlignment,
   OFFERTECHECK_MAX_FILES,
+  parseWeeklyMax,
+  weeklyCapacity,
   type Report,
+  type WeeklyCapacity,
 } from "@/lib/domain/offertecheck";
 
 const num = (v: string | undefined, fallback: number) => {
@@ -29,7 +32,23 @@ export const offertecheckConfig = {
   maxPerEmailPerDay: num(process.env.OFFERTECHECK_MAX_PER_EMAIL, 3),
   /** Optionele agendalink op de bedankpagina (bijv. Calendly of een Google-afsprakenpagina). */
   agendaUrl: process.env.OFFERTECHECK_AGENDA_URL?.trim() || null,
+  /** Maximaal aantal checks per week (elke check wordt door een mens nagekeken). Leeg = geen limiet en geen "Beperkt"-regel. */
+  maxPerWeek: parseWeeklyMax(process.env.OFFERTECHECK_MAX_PER_WEEK),
 };
+
+/** Ingediende checks in de lopende week (maandag 00:00 tot nu, Nederlandse tijd); ook verwijderde tellen mee. */
+export async function checksSubmittedThisWeek(): Promise<number> {
+  const row = await sqlOne<{ n: number }>(
+    `select count(*)::int as n from offerte_checks
+      where submitted_at >= (date_trunc('week', now() at time zone 'Europe/Amsterdam') at time zone 'Europe/Amsterdam')`,
+  );
+  return row?.n ?? 0;
+}
+
+export async function getWeeklyCapacity(): Promise<WeeklyCapacity | null> {
+  if (offertecheckConfig.maxPerWeek === null) return null;
+  return weeklyCapacity(offertecheckConfig.maxPerWeek, await checksSubmittedThisWeek());
+}
 
 const hash = (secret: string) => createHash("sha256").update(secret).digest("hex");
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -70,7 +89,11 @@ export type ConceptInput = {
 };
 
 /** Maakt een concept-check aan; het geheim krijgt alleen de browser die het formulier invult. */
+export const WEEK_FULL_MESSAGE = "Deze week zijn alle plekken voor de Offertecheck bezet. Probeer het volgende week opnieuw.";
+
 export async function createConcept(input: ConceptInput): Promise<{ ok: true; id: string; secret: string } | { ok: false; message: string }> {
+  const capacity = await getWeeklyCapacity();
+  if (capacity && capacity.remaining === 0) return { ok: false, message: WEEK_FULL_MESSAGE };
   const recent = await sqlOne<{ n: number }>(
     "select count(*)::int as n from offerte_checks where lower(email) = lower($1) and status <> 'concept' and created_at > now() - interval '24 hours'",
     [input.email],
@@ -119,6 +142,8 @@ export async function submitConcept(checkId: string, secret: string): Promise<{ 
   const concept = await verifyConcept(checkId, secret);
   if (!concept) return { ok: false, message: "Deze check is verlopen. Begin opnieuw." };
   if (concept.fileCount === 0) return { ok: false, message: "Voeg minimaal één offerte toe." };
+  const capacity = await getWeeklyCapacity();
+  if (capacity && capacity.remaining === 0) return { ok: false, message: WEEK_FULL_MESSAGE };
   const row = await sqlOne<{ id: string }>(
     "update offerte_checks set status = 'ingediend', submitted_at = now(), upload_secret_hash = null where id = $1 and status = 'concept' returning id",
     [checkId],
