@@ -41,6 +41,7 @@ export async function submitLeadAction(fd: FormData): Promise<ActionResult> {
     [d.lead_type, d.name, d.email, d.company ?? null, d.phone ?? null, d.message ?? null, user?.id ?? null],
   );
   if (d.lead_type === "pro") await logEvent("pro_interesse", { subjectType: "lead", userId: user?.id ?? null });
+  if (d.lead_type === "projectpas") await logEvent("projectpas_interesse", { subjectType: "lead", userId: user?.id ?? null });
   redirect(`/bedankt?type=${d.lead_type}`);
 }
 

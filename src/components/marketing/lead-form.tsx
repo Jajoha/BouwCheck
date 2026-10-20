@@ -4,17 +4,31 @@ import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/form-c
 import { SubmitButton } from "@/components/ui/submit-button";
 import { submitLeadAction } from "@/actions/engagement";
 import { useServerForm } from "@/lib/forms/use-server-form";
-import { LEAD_TYPES } from "@/lib/domain/constants";
+import { LEAD_TYPES, LEGACY_LEAD_TYPES, type LeadType } from "@/lib/domain/constants";
 
-export function LeadForm({ type, name = "", email = "", submitLabel = "Versturen", messagePlaceholder }: { type: string; name?: string; email?: string; submitLabel?: string; messagePlaceholder?: string }) {
+export function LeadForm({
+  type,
+  types = LEGACY_LEAD_TYPES,
+  name = "",
+  email = "",
+  submitLabel = "Versturen",
+  messagePlaceholder,
+}: {
+  type: string;
+  types?: LeadType[];
+  name?: string;
+  email?: string;
+  submitLabel?: string;
+  messagePlaceholder?: string;
+}) {
   const { pending, onSubmit, errors } = useServerForm(submitLeadAction);
   return (
     <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2" noValidate>
       <Field label="Onderwerp" htmlFor="lead_type" required error={errors("lead_type")} className="sm:col-span-2">
         <Select id="lead_type" name="lead_type" defaultValue={type}>
-          {Object.entries(LEAD_TYPES).map(([k, v]) => (
+          {types.map((k) => (
             <option key={k} value={k}>
-              {v}
+              {LEAD_TYPES[k]}
             </option>
           ))}
         </Select>

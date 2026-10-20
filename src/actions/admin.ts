@@ -321,7 +321,7 @@ export async function resetDemoDataAction(): Promise<ActionResult> {
     await db.exec(`truncate table admin_actions, flags, verification_events, reviews, project_outcomes, quotes, quote_request_attachments,
       quote_requests, project_attachments, project_events, project_contractors, project_specialties, projects, project_scope_items, ai_usage, register_signals, register_checks,
       favorites, contractor_references, contractor_rates, contractor_service_areas, contractor_specialties, contractor_private, contractors,
-      interest_leads, benchmark_regels, offerte_regels, offerte_bestanden, offerte_checks, funnel_events, email_messages, email_unsubscribes, password_reset_tokens, sessions, users restart identity cascade`);
+      interest_leads, founding_member_reserveringen, cases, benchmark_regels, offerte_regels, offerte_bestanden, offerte_checks, funnel_events, email_messages, email_unsubscribes, password_reset_tokens, sessions, users restart identity cascade`);
     fs.rmSync(path.resolve(process.cwd(), env.dataDir, "uploads"), { recursive: true, force: true });
     await seedDemoData(db);
   } catch (err) {
