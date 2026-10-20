@@ -10,6 +10,8 @@ import { checkUsageAllowed, getUserUsageThisMonth, recordUsage } from "@/lib/dat
 import { addProjectEvent, getProjectForUser } from "@/lib/data/projects";
 import { replaceScope } from "@/lib/data/scope";
 import { logEvent } from "@/lib/events";
+import { getCheckByToken } from "@/lib/data/offertecheck";
+import { cancelSequence } from "@/lib/email";
 import { hasValidSignature, storeProjectFile } from "@/lib/uploads";
 import { aiSummarySchema, intakeProjectSchema, parseForm, parseJsonField, scopeListSchema } from "@/lib/validation";
 import type { ActionResult } from "@/lib/forms/types";
@@ -97,6 +99,8 @@ export async function createProjectFromIntakeAction(fd: FormData): Promise<Actio
     if (!photos.ok) return { ok: false, fieldErrors: { photos: [photos.message] }, message: photos.message };
     const d = parsed.data;
     const name = d.name ?? `${d.property_type} ${d.location} — ${d.renovation_type.toLowerCase()}`;
+    const token = String(fd.get("offertecheck_token") ?? "");
+    const check = token ? await getCheckByToken(token) : null;
     const db = await getDb();
     projectId = await transaction(async (tx) => {
       const [row] = await tx.query<{ id: string }>(
@@ -114,13 +118,19 @@ export async function createProjectFromIntakeAction(fd: FormData): Promise<Actio
         "update ai_usage set project_id = $2 where user_id = $1 and project_id is null and created_at > now() - interval '2 hours'",
         [user.id, row.id],
       );
-      await logEvent("teamvoorstel_gestart", { subjectType: "project", subjectId: row.id, userId: user.id, metadata: { via_ai: viaAi } }, tx);
+      await logEvent("teamvoorstel_gestart", { subjectType: "project", subjectId: row.id, userId: user.id, metadata: { via_ai: viaAi, offertecheck_id: check?.id ?? null } }, tx);
+      if (check) {
+        // Doorklik uit de Offertecheck: koppelen (alleen de eerste keer)
+        await tx.query("update offerte_checks set project_id = $2, user_id = $3 where id = $1 and project_id is null", [check.id, row.id, user.id]);
+      }
       return row.id;
     });
     for (const p of photos.photos) {
       await storeProjectFile(db, { projectId, userId: user.id, kind: "foto", fileName: p.name, type: p.type, buffer: p.buffer });
     }
     if (photos.photos.length) await addProjectEvent(null, projectId, user.id, "bijlage", `${photos.photos.length} foto('s) toegevoegd via intake`);
+    // Wie een teamvoorstel start, krijgt geen opvolgmails over de check meer
+    if (check) await cancelSequence(`offertecheck:${check.id}`, "Teamvoorstel gestart");
   } catch (err) {
     return handle(err);
   }

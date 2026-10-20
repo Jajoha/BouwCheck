@@ -109,6 +109,6 @@ export const FLIPPER_ROLES: UserRole[] = ["flipper", "investeerder", "beheerder"
 export async function requireFlipper(next?: string): Promise<SessionUser> {
   const user = await requireUser(next);
   if (user.role === "aannemer") redirect("/portaal");
-  if (!user.onboarded_at) redirect("/onboarding");
+  if (!user.onboarded_at) redirect(next ? `/onboarding?next=${encodeURIComponent(next)}` : "/onboarding");
   return user;
 }

@@ -5,8 +5,9 @@ import { RegisterForm } from "@/components/auth/register-form";
 
 export const metadata: Metadata = { title: "Registreren" };
 
-export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ rol?: string }> }) {
-  const { rol } = await searchParams;
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ rol?: string; next?: string; email?: string }> }) {
+  const { rol, next, email } = await searchParams;
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
   return (
     <AuthCard
       title={rol === "aannemer" ? "Aanmelden als uitvoerder" : "Account aanmaken"}
@@ -18,13 +19,13 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
       footer={
         <>
           Al een account?{" "}
-          <Link href="/inloggen" className="font-medium text-brand-700 hover:underline">
+          <Link href={safeNext ? `/inloggen?next=${encodeURIComponent(safeNext)}` : "/inloggen"} className="font-medium text-brand-700 hover:underline">
             Inloggen
           </Link>
         </>
       }
     >
-      <RegisterForm role={rol} />
+      <RegisterForm role={rol} next={safeNext} email={email?.slice(0, 200)} />
     </AuthCard>
   );
 }

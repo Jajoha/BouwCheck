@@ -21,23 +21,45 @@ function isRedirect(err: unknown) {
   return Boolean(err && typeof err === "object" && "digest" in err && String((err as { digest: unknown }).digest).startsWith("NEXT_"));
 }
 
+export type IntakePrefill = {
+  /** Token van de Offertecheck waaruit de scope komt; wordt aan het project gekoppeld. */
+  offertecheckToken: string;
+  description: string;
+  province: string | null;
+  scope: { specialty_id: string; description: string; quantity: number | null; unit: string | null }[];
+};
+
 export function IntakeWizard({
   aiEnabled,
   maxPhotos,
   defaultProvince,
   usage,
+  prefill,
 }: {
   aiEnabled: boolean;
   maxPhotos: number;
   defaultProvince: string;
   usage: { costUsd: number; limitUsd: number };
+  prefill?: IntakePrefill;
 }) {
   const formRef = React.useRef<HTMLFormElement>(null);
   const [step, setStep] = React.useState<1 | 2>(1);
   const [photos, setPhotos] = React.useState<PickedPhoto[]>([]);
   const [errors, setErrors] = React.useState<Errors>({});
   const [formError, setFormError] = React.useState<string | null>(null);
-  const [rows, setRows] = React.useState<ScopeDraft[]>([]);
+  const [rows, setRows] = React.useState<ScopeDraft[]>(() =>
+    (prefill?.scope ?? []).map((i) =>
+      newScopeRow({
+        specialty_id: i.specialty_id,
+        description: i.description,
+        quantity: i.quantity === null ? "" : String(i.quantity).replace(".", ","),
+        unit: i.unit ?? "",
+        confidence: "middel",
+        source: "ai",
+        basis: "Uit je Offertecheck",
+      }),
+    ),
+  );
   const [findings, setFindings] = React.useState<Findings | null>(null);
   const [analysis, setAnalysis] = React.useState<Pick<AnalyzeData, "model" | "costUsd" | "monthCostUsd" | "monthLimitUsd"> | null>(null);
   const [pending, setPending] = React.useState<"analyse" | "opslaan" | null>(null);
@@ -175,6 +197,15 @@ export function IntakeWizard({
       </ol>
 
       {formError ? <Notice tone="danger">{formError}</Notice> : null}
+      {prefill ? (
+        <>
+          <input type="hidden" name="offertecheck_token" value={prefill.offertecheckToken} />
+          <Notice tone="info" title="Scope uit je Offertecheck">
+            De {prefill.scope.length} werkzaamheden uit je Offertecheck staan klaar. Vul hieronder de locatie en het type woning en renovatie in en controleer in de volgende stap de
+            werkzaamheden. Teams offreren dan op deze ene scope.
+          </Notice>
+        </>
+      ) : null}
 
       {/* Stap 1 — blijft in de DOM zodat de waarden behouden blijven */}
       <section className={cn("flex flex-col gap-5", step !== 1 && "hidden")} aria-label="Beschrijf je project">
@@ -189,6 +220,7 @@ export function IntakeWizard({
             id="description"
             name="description"
             rows={7}
+            defaultValue={prefill?.description}
             placeholder="Bijv.: Jaren-30 tussenwoning van ca. 110 m². Badkamer en keuken volledig vervangen, nieuwe groepenkast, alle wanden opnieuw stucen en schilderen, nieuwe PVC-vloer beneden. Dak lekt bij de dakkapel."
             aria-invalid={Boolean(err("description"))}
           />
@@ -204,7 +236,7 @@ export function IntakeWizard({
             <Input id="location" name="location" autoComplete="address-level2" aria-invalid={Boolean(err("location"))} />
           </Field>
           <Field label="Provincie" htmlFor="province" required error={err("province")} hint="Alleen aannemers die in deze provincie werken komen in aanmerking.">
-            <Select id="province" name="province" defaultValue={defaultProvince} aria-invalid={Boolean(err("province"))}>
+            <Select id="province" name="province" defaultValue={prefill?.province ?? defaultProvince} aria-invalid={Boolean(err("province"))}>
               <option value="">Kies provincie</option>
               {PROVINCES.map((p) => (
                 <option key={p}>{p}</option>
@@ -260,14 +292,14 @@ export function IntakeWizard({
             <p className="text-sm text-ink-700">AI-analyse is in deze omgeving niet geconfigureerd. Je vult de werkzaamheden in de volgende stap zelf in.</p>
           )}
           <div className="flex flex-col gap-2 sm:flex-row">
-            {aiEnabled ? (
+            {aiEnabled && !prefill ? (
               <Button type="button" onClick={analyse} disabled={pending !== null || limitReached} aria-busy={pending === "analyse"}>
                 {pending === "analyse" ? <Loader2 className="animate-spin" aria-hidden /> : <Sparkles aria-hidden />}
                 {pending === "analyse" ? "Analyseren… (kan tot een minuut duren)" : "Analyseer met AI"}
               </Button>
             ) : null}
-            <Button type="button" variant={aiEnabled ? "outline" : "primary"} onClick={manual} disabled={pending !== null}>
-              <PencilLine aria-hidden /> Werkzaamheden zelf invullen
+            <Button type="button" variant={aiEnabled && !prefill ? "outline" : "primary"} onClick={manual} disabled={pending !== null}>
+              <PencilLine aria-hidden /> {prefill ? "Verder met de scope uit je check" : "Werkzaamheden zelf invullen"}
             </Button>
           </div>
           {limitReached ? <p className="text-xs text-warn-700">Je AI-tegoed voor deze maand is op. Vul de werkzaamheden zelf in.</p> : null}
