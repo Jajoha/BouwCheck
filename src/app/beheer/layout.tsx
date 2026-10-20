@@ -4,6 +4,7 @@ import { NavLink } from "@/components/layout/nav-link";
 const NAV = [
   { href: "/beheer", label: "Overzicht" },
   { href: "/beheer/offertechecks", label: "Offertechecks" },
+  { href: "/beheer/founding-members", label: "Founding members" },
   { href: "/beheer/aannemers", label: "Uitvoerders" },
   { href: "/beheer/aanmeldingen", label: "Aanmeldingen" },
   { href: "/beheer/verificaties", label: "Verificaties" },
@@ -15,6 +16,7 @@ const NAV = [
   { href: "/beheer/gebruikers", label: "Gebruikers" },
   { href: "/beheer/ai-gebruik", label: "AI-gebruik" },
   { href: "/beheer/funnel", label: "Funnel" },
+  { href: "/beheer/cases", label: "Cases" },
   { href: "/beheer/e-mail", label: "E-mail" },
   { href: "/beheer/demo-data", label: "Demo-data" },
 ];

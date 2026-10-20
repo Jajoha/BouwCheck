@@ -316,6 +316,24 @@ export const offertecheckSchema = z.object({
   website: z.preprocess((v) => (typeof v === "string" ? v : ""), z.string().max(0, "Ongeldige invoer.")),
 });
 
+export const foundingMemberSchema = z.object({
+  naam: text(2, 120, "Naam"),
+  email,
+  regio: z.enum(PROVINCE_VALUES, { error: "Kies je regio." }),
+  projecten_per_jaar: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() !== "" ? Number(v) : undefined),
+    z.number({ error: "Vul het aantal projecten per jaar in." }).int("Vul een heel getal in.").min(0, "Minimaal 0.").max(500, "Maximaal 500."),
+  ),
+  consent: checkbox.refine((v) => v, "Geef toestemming om contact met je op te nemen."),
+});
+
+export const caseSchema = z.object({
+  titel: text(3, 160, "Titel"),
+  regio: optionalText(80),
+  samenvatting: text(10, 2000, "Samenvatting"),
+  resultaat: optionalText(300),
+});
+
 export const flagSchema = z.object({
   entity_type: z.enum(["aannemer", "review", "projectresultaat"]),
   entity_id: uuid,
