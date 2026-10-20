@@ -9,6 +9,7 @@ import { analyzeIntake, type IntakeResult } from "@/lib/ai/intake";
 import { checkUsageAllowed, getUserUsageThisMonth, recordUsage } from "@/lib/data/ai-usage";
 import { addProjectEvent, getProjectForUser } from "@/lib/data/projects";
 import { replaceScope } from "@/lib/data/scope";
+import { logEvent } from "@/lib/events";
 import { hasValidSignature, storeProjectFile } from "@/lib/uploads";
 import { aiSummarySchema, intakeProjectSchema, parseForm, parseJsonField, scopeListSchema } from "@/lib/validation";
 import type { ActionResult } from "@/lib/forms/types";
@@ -113,6 +114,7 @@ export async function createProjectFromIntakeAction(fd: FormData): Promise<Actio
         "update ai_usage set project_id = $2 where user_id = $1 and project_id is null and created_at > now() - interval '2 hours'",
         [user.id, row.id],
       );
+      await logEvent("teamvoorstel_gestart", { subjectType: "project", subjectId: row.id, userId: user.id, metadata: { via_ai: viaAi } }, tx);
       return row.id;
     });
     for (const p of photos.photos) {

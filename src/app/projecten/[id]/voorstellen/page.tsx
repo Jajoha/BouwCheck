@@ -13,6 +13,7 @@ import { formatDate, formatMoney, formatNumber } from "@/lib/format";
 import { specialtyName, PROVIDER_TYPES } from "@/lib/domain/constants";
 import type { Priority } from "@/lib/domain/teams";
 import { site } from "@/config/site";
+import { logEventOnce } from "@/lib/events";
 
 export const metadata: Metadata = { title: "Teamvoorstellen" };
 
@@ -67,6 +68,9 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
     scope.map((s) => ({ specialty_id: s.specialty_id, description: s.description, quantity: s.quantity, unit: s.unit })),
     { province: p.province, area_m2: p.area_m2, budget_amount: p.budget_amount, desired_start_date: p.desired_start_date },
   );
+  if (proposals.some((x) => x.ranked.length > 0)) {
+    await logEventOnce("teamvoorstel_ontvangen", { subjectType: "project", subjectId: p.id, userId: user.id });
+  }
   const ctx = { budget: p.budget_amount, desiredStart: p.desired_start_date };
   const best = Object.fromEntries(proposals.map((x) => [x.priority, x.ranked[0] ?? null])) as Record<Priority, (typeof proposals)[number]["ranked"][number] | null>;
   const noScopeQuantities = scope.every((s) => s.quantity === null);

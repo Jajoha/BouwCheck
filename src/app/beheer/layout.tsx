@@ -13,6 +13,8 @@ const NAV = [
   { href: "/beheer/offerteaanvragen", label: "Offerteaanvragen" },
   { href: "/beheer/gebruikers", label: "Gebruikers" },
   { href: "/beheer/ai-gebruik", label: "AI-gebruik" },
+  { href: "/beheer/funnel", label: "Funnel" },
+  { href: "/beheer/e-mail", label: "E-mail" },
   { href: "/beheer/demo-data", label: "Demo-data" },
 ];
 
