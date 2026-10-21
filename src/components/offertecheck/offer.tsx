@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
  * wijzig ze hier en nergens anders.
  */
 export const OFFER = {
-  title: "Gratis Offertecheck: zie het meerwerk vóórdat je tekent",
+  eyebrow: "Voor vastgoedondernemers en projectontwikkelaars die renoveren",
+  title: "Zie het meerwerk vóórdat het je marge opeet.",
   intro:
-    "Een offerte die goedkoop lijkt, kan je duizenden euro's aan meerwerk kosten. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Dan teken je pas als je weet wat je koopt.",
+    "Je hebt het pand, nu moet de renovatie gegund worden. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Zo blijft je rendement op de bouwplaats overeind.",
   benefitsTitle: "Wat je krijgt",
   benefits: [
     "Alle offertes op één scope. Elke post naast elkaar, zodat je appels met appels vergelijkt.",
@@ -25,8 +26,11 @@ export const OFFER = {
   promise: "Je rapport binnen 48 uur, anders krijg je je teamvoorstel met voorrang. Vinden we niets? Dan zeggen we dat eerlijk, en teken je met een gerust hart.",
   privacy: "Je offertes worden niet gedeeld met aannemers. Je kunt ze op elk moment laten verwijderen.",
   limited: (max: number) => `Elke check wordt door een mens nagekeken. Daarom nemen we er maximaal ${max} per week aan.`,
-  cta: "Upload je offertes – gratis",
+  cta: "Gratis Offertecheck",
   ctaHref: "/offertecheck#upload",
+  proNote: "Werk je met meerdere panden per jaar?",
+  proLink: "Bekijk BouwCheck Pro.",
+  proHref: "/prijzen#pro",
 } as const;
 
 /** Splitst "Kop. Uitleg." zodat de eerste zin vet kan; de tekst zelf blijft ongewijzigd. */
@@ -42,6 +46,18 @@ export function OfferCta({ className }: { className?: string }) {
         {OFFER.cta} <ArrowRight aria-hidden />
       </Link>
     </Button>
+  );
+}
+
+/** Regel onder de knop op de homepage, voor wie meerdere panden per jaar doet. */
+export function OfferProNote({ className }: { className?: string }) {
+  return (
+    <p className={cn("text-sm text-ink-600", className)}>
+      {OFFER.proNote}{" "}
+      <Link href={OFFER.proHref} className="font-medium text-ink-900 underline underline-offset-2 hover:text-brand-800">
+        {OFFER.proLink}
+      </Link>
+    </p>
   );
 }
 
@@ -72,6 +88,7 @@ export function OfferBenefits({ className }: { className?: string }) {
 export function OfferIntro({ as: Heading = "h1" }: { as?: "h1" | "h2" }) {
   return (
     <>
+      <p className="mb-3 text-sm font-semibold text-brand-800 sm:text-base">{OFFER.eyebrow}</p>
       <Heading className="text-3xl font-semibold leading-[1.15] tracking-tight text-ink-950 sm:text-5xl sm:leading-[1.1]">{OFFER.title}</Heading>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">{OFFER.intro}</p>
     </>
