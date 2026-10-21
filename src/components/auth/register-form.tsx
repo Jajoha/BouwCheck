@@ -6,16 +6,17 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { registerAction } from "@/actions/auth";
 import { useServerForm } from "@/lib/forms/use-server-form";
 
-export function RegisterForm({ role }: { role?: string }) {
+export function RegisterForm({ role, next, email }: { role?: string; next?: string; email?: string }) {
   const { pending, onSubmit, errors } = useServerForm(registerAction);
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       {role === "aannemer" ? <input type="hidden" name="rol" value="aannemer" /> : null}
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <Field label="Naam" htmlFor="name" required error={errors("name")}>
         <Input id="name" name="name" autoComplete="name" aria-invalid={Boolean(errors("name"))} />
       </Field>
       <Field label="E-mailadres" htmlFor="email" required error={errors("email")}>
-        <Input id="email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(errors("email"))} />
+        <Input id="email" name="email" type="email" defaultValue={email} autoComplete="email" aria-invalid={Boolean(errors("email"))} />
       </Field>
       <Field label="Wachtwoord" htmlFor="password" required error={errors("password")} hint="Minimaal 10 tekens.">
         <Input id="password" name="password" type="password" autoComplete="new-password" aria-invalid={Boolean(errors("password"))} />

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { sql, sqlOne } from "@/lib/db";
 import { assertUser, AuthError, FLIPPER_ROLES, getCurrentUser } from "@/lib/auth/session";
+import { logEvent } from "@/lib/events";
 import { flagSchema, leadSchema, parseForm } from "@/lib/validation";
 import type { ActionResult } from "@/lib/forms/types";
 
@@ -39,6 +40,8 @@ export async function submitLeadAction(fd: FormData): Promise<ActionResult> {
     "insert into interest_leads (lead_type, name, email, company, phone, message, user_id) values ($1,$2,$3,$4,$5,$6,$7)",
     [d.lead_type, d.name, d.email, d.company ?? null, d.phone ?? null, d.message ?? null, user?.id ?? null],
   );
+  if (d.lead_type === "pro") await logEvent("pro_interesse", { subjectType: "lead", userId: user?.id ?? null });
+  if (d.lead_type === "projectpas") await logEvent("projectpas_interesse", { subjectType: "lead", userId: user?.id ?? null });
   redirect(`/bedankt?type=${d.lead_type}`);
 }
 

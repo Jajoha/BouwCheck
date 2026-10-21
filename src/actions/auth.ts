@@ -52,7 +52,8 @@ export async function loginAction(fd: FormData): Promise<ActionResult> {
   }
   attempts.delete(email);
   await createSession(user.id);
-  redirect(user.onboarded_at ? safeNext(next, homeFor(user.role)) : "/onboarding");
+  const target = safeNext(next, "");
+  redirect(user.onboarded_at ? target || homeFor(user.role) : target ? `/onboarding?next=${encodeURIComponent(target)}` : "/onboarding");
 }
 
 /** Alleen beschikbaar in demo-modus: inloggen als vooraf aangemaakt demo-account. */
@@ -72,7 +73,7 @@ export async function demoLoginAction(role: "flipper" | "admin" | "contractor"):
 export async function registerAction(fd: FormData): Promise<ActionResult> {
   const parsed = parseForm(registerSchema, fd);
   if (!parsed.ok) return { ok: false, fieldErrors: parsed.fieldErrors };
-  const { name, email, password } = parsed.data;
+  const { name, email, password, next } = parsed.data;
   const exists = await sqlOne("select 1 from users where email = $1", [email]);
   if (exists) return { ok: false, fieldErrors: { email: ["Er bestaat al een account met dit e-mailadres."] } };
   const [user] = await sql<{ id: string }>(
@@ -80,7 +81,8 @@ export async function registerAction(fd: FormData): Promise<ActionResult> {
     [email, name, await hashPassword(password)],
   );
   await createSession(user.id);
-  redirect(fd.get("rol") === "aannemer" ? "/onboarding?rol=aannemer" : "/onboarding");
+  const target = safeNext(next, "");
+  redirect(fd.get("rol") === "aannemer" ? "/onboarding?rol=aannemer" : target ? `/onboarding?next=${encodeURIComponent(target)}` : "/onboarding");
 }
 
 export async function logoutAction() {
@@ -101,7 +103,8 @@ export async function onboardingAction(fd: FormData): Promise<ActionResult> {
     [user.id, d.name, d.company_name ?? null, role, d.region ?? null, d.project_types],
   );
   if (user.onboarded_at && role === user.role) return { ok: true, message: "Profiel opgeslagen." };
-  redirect(`${homeFor(role)}?melding=welkom`);
+  const next = role === "aannemer" ? "" : safeNext(d.next, "");
+  redirect(next || `${homeFor(role)}?melding=welkom`);
 }
 
 export async function requestPasswordResetAction(fd: FormData): Promise<ActionResult<{ devLink?: string }>> {

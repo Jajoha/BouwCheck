@@ -8,13 +8,13 @@ export async function recordUsage(
   projectId: string | null,
   imageCount: number,
   u: UsageRecord & { web_search_requests?: number },
-  opts: { feature?: "intake" | "registercontrole"; contractorId?: string | null } = {},
+  opts: { feature?: "intake" | "registercontrole" | "offertecheck"; contractorId?: string | null; offerteCheckId?: string | null } = {},
 ) {
   await sql(
-    `insert into ai_usage (user_id, project_id, feature, model, status, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, image_count, cost_usd, error_message, web_search_requests, contractor_id)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+    `insert into ai_usage (user_id, project_id, feature, model, status, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, image_count, cost_usd, error_message, web_search_requests, contractor_id, offerte_check_id)
+     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
     [userId, projectId, opts.feature ?? "intake", u.model, u.status, u.input_tokens, u.output_tokens, u.cache_read_tokens, u.cache_creation_tokens, imageCount,
-      u.cost_usd, u.error_message, u.web_search_requests ?? 0, opts.contractorId ?? null],
+      u.cost_usd, u.error_message, u.web_search_requests ?? 0, opts.contractorId ?? null, opts.offerteCheckId ?? null],
   );
 }
 

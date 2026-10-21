@@ -38,6 +38,19 @@ export async function saveFile(key: string, buffer: Buffer, contentType: string)
   return key;
 }
 
+/** storage_path voor een bestand dat de browser rechtstreeks naar Vercel Blob heeft geüpload. */
+export function blobStoragePath(pathname: string) {
+  return BLOB_PREFIX + pathname;
+}
+
+/** Leest een opgeslagen bestand volledig in het geheugen; null als het niet (meer) bestaat. */
+export async function readFileBuffer(storagePath: string): Promise<Buffer | null> {
+  const data = await readFile(storagePath);
+  if (!data) return null;
+  if (data instanceof Uint8Array) return Buffer.from(data);
+  return Buffer.from(await new Response(data).arrayBuffer());
+}
+
 /** Leest een opgeslagen bestand; null als het niet (meer) bestaat. */
 export async function readFile(storagePath: string): Promise<ReadableStream<Uint8Array> | Uint8Array<ArrayBuffer> | null> {
   if (storagePath.startsWith(BLOB_PREFIX)) {

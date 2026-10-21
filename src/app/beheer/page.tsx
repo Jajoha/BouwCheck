@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHeader, TableWrap, td, th } from "@/components/ui/misc";
+import { Notice, PageHeader, TableWrap, td, th } from "@/components/ui/misc";
+import { getDb } from "@/lib/db";
+import { pendingMigrations } from "@/lib/db/migrate";
 import { getAdminCounts, listAdminActions } from "@/lib/data/admin";
 import { formatDateTime } from "@/lib/format";
 import { requireAdmin } from "@/lib/auth/session";
@@ -9,7 +11,7 @@ export const metadata: Metadata = { title: "Beheer" };
 
 export default async function AdminHome() {
   await requireAdmin("/beheer");
-  const [c, actions] = await Promise.all([getAdminCounts(), listAdminActions(25)]);
+  const [c, actions, pending] = await Promise.all([getAdminCounts(), listAdminActions(25), getDb().then(pendingMigrations)]);
   const tiles = [
     { label: "Actieve aannemers", value: c.contractors, href: "/beheer/aannemers" },
     { label: "Aanmeldingen te beoordelen", value: c.pending_contractors, href: "/beheer/aanmeldingen", attention: c.pending_contractors > 0 },
@@ -25,6 +27,12 @@ export default async function AdminHome() {
   return (
     <>
       <PageHeader title="Beheer" description="Werkvoorraad en recente beheeracties. Alle acties worden gelogd." />
+      {pending.length ? (
+        <Notice tone="danger" className="mt-6" title={`Database niet bijgewerkt: ${pending.length} ${pending.length === 1 ? "migratie ontbreekt" : "migraties ontbreken"}`}>
+          Nieuwe onderdelen (zoals Offertecheck, founding members of e-mail) werken pas na migreren. Ontbrekend: {pending.join(", ")}. Op Vercel migreren preview-deploys alleen
+          met <code>MIGRATE_ON_PREVIEW=true</code>; anders <code>npm run db:migrate</code> met de databaseverbinding van deze omgeving.
+        </Notice>
+      ) : null}
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5">
         {tiles.map((t) => (
           <Link key={t.label} href={t.href} className={`rounded-[var(--radius-card)] border bg-white p-4 hover:border-ink-300 ${t.attention ? "border-warn-700/40" : "border-ink-200"}`}>

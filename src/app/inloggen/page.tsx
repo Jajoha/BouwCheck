@@ -20,7 +20,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       footer={
         <>
           Nog geen account?{" "}
-          <Link href="/registreren" className="font-medium text-brand-700 hover:underline">
+          <Link href={safeNext ? `/registreren?next=${encodeURIComponent(safeNext)}` : "/registreren"} className="font-medium text-brand-700 hover:underline">
             Registreren
           </Link>
         </>

@@ -13,6 +13,7 @@ BouwCheck is een bèta van een onafhankelijk platform voor Nederlandse vastgoedf
 - [Snel starten](#snel-starten)
 - [Wat zit erin](#wat-zit-erin)
 - [AI-intake en teamvoorstellen](#ai-intake-en-teamvoorstellen)
+- [Offertecheck](#offertecheck)
 - [Uitvoerders en openbare registers](#uitvoerders-en-openbare-registers)
 - [Technologie en architectuur](#technologie-en-architectuur)
 - [Configuratie](#configuratie)
@@ -119,6 +120,18 @@ Kandidaten zijn actieve aannemers die in de provincie werken. Er worden twee soo
 
 ---
 
+## Offertecheck
+
+Achter `FEATURE_OFFERTECHECK`. Bezoekers uploaden zonder account 1–5 offertes (pdf/jpg/png, max. 15 MB) op `/offertecheck`; binnen 48 uur ontvangen ze een rapport.
+
+1. **Upload.** Met Vercel Blob uploadt de browser rechtstreeks naar Blob (privé, via een kortlevend token uit `/api/offertecheck/upload`), zodat grote bestanden niet door de serverfunctie gaan; de server controleert daarna type, grootte en bestandssignatuur. Zonder Blob gaat de upload via `/api/offertecheck/bestand` (lokaal en in tests).
+2. **Analyse** (`src/lib/ai/offertecheck.ts`, op de achtergrond na indienen): pdf's met een tekstlaag gaan als tekst naar het model, nadat e-mailadressen, telefoonnummers, IBAN's, postcodes en straat + huisnummer zijn verwijderd; scans en foto's gaan als document of afbeelding. Per offerte haalt het model de regels eruit (post, stelpost, uitsluiting, voorwaarde; zelfde vakgebieden als de intake); een tweede aanroep zet alle regels op één scope. Het rapport (ontbrekende posten, stelposten en uitsluitingen, prijsverschillen, vragen) wordt daarna **zonder AI** berekend in `src/lib/domain/offertecheck.ts`. Kosten staan per aanroep in `ai_usage` (feature `offertecheck`); boven het dagbudget start de analyse niet automatisch.
+3. **Beoordeling.** **Beheer → Offertechecks** toont status en tijd tot de deadline. Een beheerder past het rapport aan, keurt het goed en verstuurt het; pas dan krijgt de klant een mail met een niet te raden link (`/rapport/<token>`). Aannemersnamen zijn alleen in beheer zichtbaar.
+4. **Doorklik.** Onder het rapport start de klant een teamvoorstel; de scope uit de check staat dan klaar in de intake (na registreren of inloggen).
+5. **Privacy.** Verwijderen kan door de klant (onder het rapport) en door beheer: bestanden, regels, rapport en contactgegevens gaan weg. Geanonimiseerde prijsbenchmarks (`benchmark_regels`: vakgebied, eenheid, prijs per eenheid, provincie, maand) worden alleen met toestemming vastgelegd, bij goedkeuring. Concepten die nooit zijn ingediend, ruimt de dagelijkse cron op.
+
+---
+
 ## Uitvoerders en openbare registers
 
 **Niet alleen aannemers.** Elk profiel heeft een soort: *aannemersbedrijf*, *zelfstandig vakman (zzp)* of *klusser*. Er is een vakgebied ‘Allround klusser (kleine klussen)’ met uurtarieven; de AI-intake zet kleine, losse klussen daar onder. Klussers en zzp'ers worden net als bedrijven in teams opgenomen; de soort staat bij elk teamlid.
@@ -171,7 +184,7 @@ tests/unit, tests/e2e
 
 ### Datamodel (kern)
 
-`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects` (incl. `ai_summary`), `project_scope_items` (werkzaamheden), `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites` · `ai_usage` · `register_checks`, `register_signals` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
+`users`, `sessions`, `password_reset_tokens` · `specialties` · `contractors` (openbaar) + `contractor_private` (alleen beheer) · `contractor_specialties`, `contractor_service_areas`, `contractor_rates`, `contractor_references` · `projects` (incl. `ai_summary`), `project_scope_items` (werkzaamheden), `project_specialties`, `project_contractors` (shortlist), `project_events` (tijdlijn), `project_attachments` · `quote_requests`, `quote_request_attachments`, `quotes` · `project_outcomes`, `reviews` · `favorites` · `ai_usage` · `offerte_checks`, `offerte_bestanden`, `offerte_regels`, `benchmark_regels` · `funnel_events` · `email_messages`, `email_unsubscribes` · `register_checks`, `register_signals` · `verification_events` · `flags` · `admin_actions` · `interest_leads`.
 
 - Bedragen: `numeric(12,2)` + expliciete valuta (`EUR`) + btw-status per bedrag. Datums als `date`, doorlooptijden in kalenderdagen.
 - Prijs-typen gescheiden: `indicatief` / `offerte` / `overeengekomen`; indicatieve tarieven staan apart in `contractor_rates` (bron altijd *zelf opgegeven*).
@@ -203,6 +216,12 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `AI_MONTHLY_LIMIT_USD` | Max. AI-kosten per account per kalendermaand, standaard 5. |
 | `AI_HOURLY_LIMIT` | Max. analyses per account per uur, standaard 10. |
 | `AI_MAX_PHOTOS` | Max. foto's per analyse, standaard 8. |
+| `RESEND_API_KEY`, `EMAIL_FROM` | E-mail via Resend. Beide nodig; `EMAIL_FROM` op een bij Resend geverifieerd domein. Leeg = mails blijven in de outbox als *niet geconfigureerd*. |
+| `EMAIL_REPLY_TO` | Optioneel antwoordadres. |
+| `FEATURE_OFFERTECHECK`, `FEATURE_FOUNDING_MEMBERS`, `FEATURE_DEPOSIT_PAYMENTS` | Feature flags voor de funnel, standaard uit. |
+| `OFFERTECHECK_DAILY_BUDGET_USD` | Max. AI-kosten voor alle Offertechecks samen per dag, standaard 25. |
+| `OFFERTECHECK_MAX_PER_EMAIL` | Max. checks per e-mailadres per 24 uur, standaard 3. |
+| `OFFERTECHECK_AGENDA_URL` | Optionele agendalink op de bedankpagina van de Offertecheck. |
 
 Er staan geen geheimen in de client-code; databaseverbinding, Blob-token en API-sleutel worden uitsluitend server-side gebruikt.
 
@@ -327,7 +346,7 @@ Zie ook `/transparantie` en `src/lib/domain/metrics.ts`.
 
 | Onderwerp | Huidige situatie | Nodig voor productie |
 | --- | --- | --- |
-| E-mail (offerteaanvragen, wachtwoordherstel, bevestigingen) | Niet geïmplementeerd; nergens gesimuleerd | E-mailprovider (bijv. Resend/Postmark) + templates |
+| E-mail | Outbox + Resend-koppeling (`src/lib/email`), testmail en status in **Beheer → E-mail**; geplande mails via de cron `/api/cron/e-mail`. Wachtwoordherstel en offerteaanvragen gebruiken nog geen e-mail | Domein bij Resend verifiëren, `RESEND_API_KEY` + `EMAIL_FROM` zetten |
 | Betalingen | Niet geïmplementeerd; CTA's leiden naar een interesseformulier | Betaalprovider (bijv. Mollie/Stripe) |
 | Bestandsopslag | Vercel Blob (privé) als gekoppeld, anders lokaal bestandssysteem | Vercel Blob koppelen |
 | Auth | App-eigen e-mail/wachtwoord | Eventueel Supabase Auth/SSO, e-mailverificatie, 2FA |

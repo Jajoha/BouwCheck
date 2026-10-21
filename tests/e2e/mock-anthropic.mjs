@@ -83,6 +83,72 @@ function handleRegister(body, res) {
   return json(res, msg([{ type: "tool_use", id: "toolu_mock", name: "rapporteer_registercontrole", input: REGISTER_REPORT }], "tool_use", 1));
 }
 
+/** Offertecheck stap 1: regels uit één offerte. Herkent de testoffertes aan "OFFERTE ALFA" / "OFFERTE BETA". */
+function handleExtract(body, res) {
+  const text = (body.messages?.[0]?.content ?? []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
+  if (/@voorbeeld\.nl|Kerkstraat 12|06-12345678/.test(text)) return fail(res, "persoonsgegevens zijn niet verwijderd");
+  const line = (omschrijving, vakgebied, bedrag, type = "post", extra = {}) => ({
+    omschrijving, vakgebied, hoeveelheid: null, eenheid: null, bedrag_excl_btw: bedrag, type, zekerheid: "hoog", toelichting: null, ...extra,
+  });
+  let result;
+  if (text.includes("OFFERTE ALFA")) {
+    result = {
+      is_offerte: true, aannemer_naam: "Bouwbedrijf Alfa", offerte_datum: "1 oktober 2026", totaal_excl_btw: 6500,
+      regels: [
+        line("Schilderwerk wanden en plafonds", "schilder", 2000, "post", { hoeveelheid: 100, eenheid: "m2" }),
+        line("Tegelwerk badkamer", "tegelzetter", 3000),
+        line("Sanitair", "badkamerinstallateur", 1500, "stelpost", { toelichting: "Keuze sanitair ligt nog niet vast; het bedrag kan hoger uitvallen." }),
+        line("Betaling in drie termijnen", "hoofdaannemer", null, "voorwaarde"),
+      ],
+      opmerkingen: [],
+    };
+  } else if (text.includes("OFFERTE BETA")) {
+    result = {
+      is_offerte: true, aannemer_naam: "Klusbedrijf Beta", offerte_datum: null, totaal_excl_btw: 3600,
+      regels: [
+        line("Schilderen wanden en plafonds", "schilder", 3600),
+        line("Tegelwerk", "tegelzetter", null, "uitsluiting", { toelichting: "Tegelwerk zit niet in de prijs; je moet dit apart regelen." }),
+      ],
+      opmerkingen: [],
+    };
+  } else {
+    result = { is_offerte: false, aannemer_naam: null, offerte_datum: null, totaal_excl_btw: null, regels: [], opmerkingen: ["Geen offerte"] };
+  }
+  console.log(`[mock-anthropic] offertecheck extractie ok: ${result.aannemer_naam ?? "geen offerte"}`);
+  return message(res, result, 1800);
+}
+
+/** Offertecheck stap 2: koppel regels op vakgebied (genoeg voor de test). */
+function handleAlign(body, res) {
+  const input = JSON.parse(body.messages[0].content[0].text);
+  const posts = new Map();
+  for (const o of input.offertes) {
+    for (const r of o.regels) {
+      if (r.type === "voorwaarde") continue;
+      if (!posts.has(r.vakgebied)) posts.set(r.vakgebied, { omschrijving: r.omschrijving, vakgebied: r.vakgebied, regels: [] });
+      posts.get(r.vakgebied).regels.push({ offerte: o.offerte, regel: r.regel });
+    }
+  }
+  console.log(`[mock-anthropic] offertecheck koppeling ok: ${posts.size} posten`);
+  return message(res, {
+    scope_posten: [...posts.values()],
+    open_vragen: [{ offerte: 1, vraag: "Is het tegelwerk elders begroot, of moet je dit apart laten offreren?" }],
+    samenvatting: "Twee offertes voor schilder- en tegelwerk; ze verschillen vooral in wat er wel en niet in de prijs zit.",
+  }, 600);
+}
+
+function message(res, result, inputTokens) {
+  res.writeHead(200, { "content-type": "application/json", "request-id": "req_mock" });
+  res.end(
+    JSON.stringify({
+      id: "msg_mock", type: "message", role: "assistant", model: "claude-opus-5-5",
+      content: [{ type: "text", text: JSON.stringify(result) }],
+      stop_reason: "end_turn", stop_sequence: null, stop_details: null,
+      usage: { input_tokens: inputTokens, output_tokens: 700, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, iterations: null },
+    }),
+  );
+}
+
 function fail(res, message) {
   res.writeHead(400, { "content-type": "application/json" });
   res.end(JSON.stringify({ type: "error", error: { type: "invalid_request_error", message } }));
@@ -100,12 +166,26 @@ http
       try {
         const body = JSON.parse(raw);
         const beta = String(req.headers["anthropic-beta"] ?? "");
+        // Nep-Resend (RESEND_BASE_URL wijst ook naar deze server)
+        if (req.url === "/resend/emails") {
+          if (req.headers.authorization !== "Bearer test-resend") return fail(res, "Resend-sleutel ontbreekt");
+          if (!body.from || !body.to?.length || !body.subject || !body.html || !body.text) return fail(res, "onvolledige mail");
+          if (body.to[0].includes("weiger")) {
+            res.writeHead(422, { "content-type": "application/json" }).end(JSON.stringify({ message: "ongeldig adres" }));
+            return;
+          }
+          console.log(`[mock-resend] ok: ${body.to[0]} – ${body.subject}`);
+          return json(res, { id: `re_${Date.now()}` });
+        }
         if (!req.url.startsWith("/v1/messages")) return fail(res, `onverwacht pad ${req.url}`);
         if (!req.headers["x-api-key"]) return fail(res, "x-api-key ontbreekt");
         if (body.model !== "claude-opus-5-5") return fail(res, `onverwacht model ${body.model}`);
         if (body.fallbacks !== "default" || !beta.includes("server-side-fallback-2026-07-01")) return fail(res, "fallbacks/beta ontbreekt");
         if ((body.tools ?? []).length) return handleRegister(body, res);
         if (body.output_config?.format?.type !== "json_schema") return fail(res, "structured output ontbreekt");
+        const props = body.output_config.format.schema?.properties ?? {};
+        if (props.regels) return handleExtract(body, res);
+        if (props.scope_posten) return handleAlign(body, res);
         if ("budget_tokens" in (body.thinking ?? {})) return fail(res, "budget_tokens is niet toegestaan");
         const content = body.messages?.[0]?.content ?? [];
         const images = content.filter((b) => b.type === "image");

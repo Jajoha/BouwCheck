@@ -17,6 +17,7 @@ const MESSAGES: Record<string, string> = {
   "demo-hersteld": "De demo-data is teruggezet. Log opnieuw in.",
   opgeslagen: "Opgeslagen.",
   "scope-opgeslagen": "Werkzaamheden opgeslagen. De teamvoorstellen zijn opnieuw berekend.",
+  "check-verwijderd": "Offertecheck verwijderd, inclusief bestanden.",
 };
 
 /** Toont een bevestiging na een redirect (?melding=...) en verwijdert de parameter weer. */

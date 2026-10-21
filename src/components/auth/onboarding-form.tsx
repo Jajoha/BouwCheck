@@ -6,10 +6,11 @@ import { onboardingAction } from "@/actions/auth";
 import { useServerForm } from "@/lib/forms/use-server-form";
 import { PROVINCES, RENOVATION_TYPES } from "@/lib/domain/constants";
 
-export function OnboardingForm({ defaults }: { defaults: { name: string; company: string; role: string; region: string; types: string[]; isAdmin: boolean } }) {
+export function OnboardingForm({ defaults }: { defaults: { name: string; company: string; role: string; region: string; types: string[]; isAdmin: boolean; next?: string } }) {
   const { pending, onSubmit, errors } = useServerForm(onboardingAction);
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5" noValidate>
+      {defaults.next ? <input type="hidden" name="next" value={defaults.next} /> : null}
       <Field label="Naam" htmlFor="name" required error={errors("name")}>
         <Input id="name" name="name" defaultValue={defaults.name} autoComplete="name" />
       </Field>

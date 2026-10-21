@@ -7,7 +7,15 @@ import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/actions/auth";
 
-export function MobileMenu({ items, loggedIn }: { items: { href: string; label: string }[]; loggedIn: boolean }) {
+export function MobileMenu({
+  items,
+  loggedIn,
+  cta = { href: "/projecten/nieuw", label: "Start je project" },
+}: {
+  items: { href: string; label: string }[];
+  loggedIn: boolean;
+  cta?: { href: string; label: string };
+}) {
   const [open, setOpen] = React.useState(false);
   const pathname = usePathname();
   const [last, setLast] = React.useState(pathname);
@@ -42,7 +50,7 @@ export function MobileMenu({ items, loggedIn }: { items: { href: string; label: 
                   <Link href="/inloggen">Inloggen</Link>
                 </Button>
                 <Button asChild>
-                  <Link href="/projecten/nieuw">Start je project</Link>
+                  <Link href={cta.href}>{cta.label}</Link>
                 </Button>
               </>
             )}

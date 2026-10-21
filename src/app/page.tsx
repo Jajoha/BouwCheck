@@ -18,10 +18,18 @@ import {
   BadgeCheck,
   UserCheck,
   FileCheck2,
+  Upload,
+  KeyRound,
+  Crown,
+  Quote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { site } from "@/config/site";
+import { ladderPrices, site } from "@/config/site";
+import { env } from "@/lib/env";
+import { listPublishedCases, type CaseRow } from "@/lib/data/founding";
+import { CheckExample } from "@/components/marketing/check-example";
+import { OfferBenefits, OfferCta, OfferIntro } from "@/components/offertecheck/offer";
 import { sqlOne } from "@/lib/db";
 import { getScope } from "@/lib/data/scope";
 import { proposalsFor } from "@/lib/data/teams";
@@ -101,7 +109,30 @@ const FAQ = [
   },
 ];
 
+const FAQ_OFFERTECHECK = [
+  {
+    q: "Wat gebeurt er met mijn offertes?",
+    a: "We zetten ze op één scope en een medewerker controleert het rapport voordat je het krijgt. Voordat tekst naar het AI-model gaat, halen we e-mailadressen, telefoonnummers, adressen en IBAN's eruit waar dat technisch kan. Je offertes delen we nooit met aannemers. Verwijderen kan altijd, met één knop onder je rapport.",
+  },
+  {
+    q: "Ziet de aannemer dat ik een check doe?",
+    a: "Nee. BouwCheck neemt geen contact op met de aannemers uit je offertes en deelt niets met hen.",
+  },
+  {
+    q: "Wat doen jullie met prijsdata?",
+    a: "Alleen als je dat aanvinkt, bewaren we geanonimiseerde prijzen per eenheid (vakgebied, eenheid, provincie, maand) voor benchmarks. Nooit namen, adressen of aannemers.",
+  },
+];
+
+const LADDER_STEPS = [
+  { icon: Upload, title: "Offertecheck", text: "Upload je offertes. Binnen 48 uur zie je wat er ontbreekt, wat is uitgesloten en waar prijzen uiteenlopen.", note: "Gratis" },
+  { icon: Users, title: "Teamvoorstel", text: "Teams van aannemers, zzp-vakmensen en klussers die offreren op die ene scope, binnen 72 uur.", note: "Gratis" },
+  { icon: KeyRound, title: "Projectpas", text: "Eén renovatie van start tot oplevering: offertes, planning en tijdlijn op één plek.", note: `€ ${ladderPrices.projectpas} per project` },
+  { icon: Crown, title: "Pro", text: "Onbeperkt projecten, favoriete vakmensen, prijsbenchmarks en een vervanger binnen 72 uur.", note: `€ ${ladderPrices.proMonthly} per maand` },
+];
+
 export default async function HomePage() {
+  if (env.features.offertecheck) return <OffertecheckHome />;
   const preview = await getPreview();
   return (
     <>
@@ -130,22 +161,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Probleem */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Je rendement wordt op de bouwplaats bepaald</h2>
-          <p className="mt-3 text-ink-600">Herkenbaar? De aankoop is doorgerekend, maar de renovatie blijft de grootste onzekere factor.</p>
-        </div>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {PROBLEMS.map((p) => (
-            <div key={p.title} className="rounded-xl border border-ink-200 bg-white p-5">
-              <p.icon className="size-5 text-ink-700" aria-hidden />
-              <h3 className="mt-3 font-semibold text-ink-950">{p.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{p.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ProblemsSection />
 
       {/* Hoe het werkt */}
       <section id="hoe-het-werkt" className="scroll-mt-20 border-y border-ink-100 bg-ink-950 text-white">
@@ -174,7 +190,59 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Voordelen */}
+      <BenefitsSection />
+
+      <LevelsSection />
+
+      <ContractorsSection />
+
+      <FaqSection items={FAQ} />
+
+      {/* CTA */}
+      <section className="bg-brand-800 text-white">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight">Probeer de bèta met je volgende project</h2>
+            <p className="mt-2 text-brand-100">Beschrijf je project en zie binnen enkele minuten welke teams het kunnen uitvoeren.</p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg" className="bg-white text-brand-900 hover:bg-brand-50">
+              <Link href="/projecten/nieuw">Start een renovatieproject</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="border-white/40 bg-transparent text-white hover:bg-white/10">
+              <Link href="/transparantie">Hoe wij selecteren</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function ProblemsSection() {
+  return (
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+        <div className="max-w-2xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Je rendement wordt op de bouwplaats bepaald</h2>
+          <p className="mt-3 text-ink-600">Herkenbaar? De aankoop is doorgerekend, maar de renovatie blijft de grootste onzekere factor.</p>
+        </div>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {PROBLEMS.map((p) => (
+            <div key={p.title} className="rounded-xl border border-ink-200 bg-white p-5">
+              <p.icon className="size-5 text-ink-700" aria-hidden />
+              <h3 className="mt-3 font-semibold text-ink-950">{p.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{p.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    
+      
+  );
+}
+
+function BenefitsSection() {
+  return (
       <section id="voor-vastgoedflippers" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-[1fr_2fr]">
           <div>
@@ -198,8 +266,13 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+    
+      
+  );
+}
 
-      {/* Transparantie */}
+function LevelsSection() {
+  return (
       <section className="border-y border-ink-100 bg-ink-50">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
           <div className="max-w-2xl">
@@ -236,9 +309,14 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+    
+      
+  );
+}
 
-      {/* Aannemers */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+function ContractorsSection({ promise = false }: { promise?: boolean }) {
+  return (
+      <section id="voor-vakmensen" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="flex flex-col gap-6 rounded-2xl border border-ink-200 p-8 md:flex-row md:items-center md:justify-between md:p-10">
           <div className="max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-tight text-ink-950">Aannemer, zzp-vakman of klusser?</h2>
@@ -246,14 +324,22 @@ export default async function HomePage() {
               BouwCheck is niet alleen voor aannemersbedrijven: ook zelfstandige vakmensen en klussers worden in teams opgenomen. Maak een profiel aan, vul tarieven,
               werkgebied en beschikbaarheid in en ontvang offerteaanvragen van vastgoedinvesteerders. Nieuwe profielen starten als &lsquo;Zelf opgegeven&rsquo;; verificatie vraag je aan in het portaal.
             </p>
+            {promise ? (
+              <p className="mt-3 font-medium text-ink-950">Geen leadkosten, en elke aanvraag op een duidelijke scope.</p>
+            ) : null}
           </div>
           <Button asChild variant="dark" size="lg">
             <Link href="/registreren?rol=aannemer">Aanmelden als uitvoerder</Link>
           </Button>
         </div>
       </section>
+    
+      
+  );
+}
 
-      {/* FAQ */}
+function FaqSection({ items }: { items: { q: string; a: string }[] }) {
+  return (
       <section className="border-t border-ink-100">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_2fr]">
           <div>
@@ -263,7 +349,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="divide-y divide-ink-200 border-y border-ink-200">
-            {FAQ.map((f) => (
+            {items.map((f) => (
               <details key={f.q} className="group py-4">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-ink-950 [&::-webkit-details-marker]:hidden">
                   {f.q}
@@ -275,25 +361,164 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+    
+      
+  );
+}
 
-      {/* CTA */}
-      <section className="bg-brand-800 text-white">
-        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between">
+/** Homepage rond de Offertecheck (FEATURE_OFFERTECHECK). Hergebruikt de bestaande blokken in een nieuwe volgorde. */
+async function OffertecheckHome() {
+  const [preview, cases] = await Promise.all([getPreview(), listPublishedCases()]);
+  return (
+    <>
+      <section className="border-b border-ink-100 bg-gradient-to-b from-ink-50/80 to-white">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-14 lg:pb-24 lg:pt-20">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight">Probeer de bèta met je volgende project</h2>
-            <p className="mt-2 text-brand-100">Beschrijf je project en zie binnen enkele minuten welke teams het kunnen uitvoeren.</p>
+            <OfferIntro />
+            <OfferCta className="mt-7" />
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="bg-white text-brand-900 hover:bg-brand-50">
-              <Link href="/projecten/nieuw">Start een renovatieproject</Link>
+          <OfferBenefits className="rounded-2xl border border-ink-200 bg-white p-5 shadow-[var(--shadow-raised)] sm:p-7" />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-4 pt-16 sm:px-6" aria-labelledby="voorbeeld-check">
+        <h2 id="voorbeeld-check" className="text-2xl font-semibold tracking-tight text-ink-950">
+          Zo ziet een check eruit
+        </h2>
+        <div className="mt-6">
+          <CheckExample />
+        </div>
+      </section>
+
+      <ProblemsSection />
+
+      <section id="hoe-het-werkt" className="scroll-mt-20 border-y border-ink-100 bg-ink-950 text-white">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+          <h2 className="text-3xl font-semibold tracking-tight">Hoe het werkt</h2>
+          <p className="mt-3 max-w-2xl text-ink-300">Begin gratis met je offertes. Neem pas de volgende stap als die je iets oplevert.</p>
+          <ol className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {LADDER_STEPS.map((s, i) => (
+              <li key={s.title} className="relative rounded-xl border border-white/10 bg-white/[0.03] p-6">
+                <div className="flex items-center gap-3">
+                  <span className="tabular flex size-8 items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white">{i + 1}</span>
+                  <s.icon className="size-5 text-ink-300" aria-hidden />
+                </div>
+                <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-300">{s.text}</p>
+                <p className="mt-3 text-xs font-medium text-brand-200">{s.note}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg">
+              <Link href="/offertecheck">
+                Gratis Offertecheck <ArrowRight aria-hidden />
+              </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/40 bg-transparent text-white hover:bg-white/10">
-              <Link href="/transparantie">Hoe wij selecteren</Link>
+            <Button asChild size="lg" variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10">
+              <Link href="/prijzen">Bekijk de prijzen</Link>
             </Button>
           </div>
         </div>
       </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Daarna: teams op diezelfde scope</h2>
+            <p className="mt-3 text-ink-600">
+              Uit je Offertecheck stelt BouwCheck teams samen, geordend op budget, kwaliteit of snelheid. Teams die op één scope offreren, kun je wél naast elkaar leggen.
+            </p>
+          </div>
+          <HeroPreview {...preview} />
+        </div>
+      </section>
+
+      <BenefitsSection />
+      <FounderStory />
+      <LevelsSection />
+      {cases.length ? <CasesSection cases={cases} /> : null}
+      {env.features.foundingMembers ? <FoundingBlock /> : null}
+      <ContractorsSection promise />
+      <FaqSection items={[...FAQ_OFFERTECHECK, ...FAQ]} />
+
+      <section className="bg-brand-800 text-white">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight">Laat je volgende offertes checken</h2>
+            <p className="mt-2 text-brand-100">Binnen 48 uur weet je wat ze je niet vertellen. Gratis tijdens de bèta.</p>
+          </div>
+          <Button asChild size="lg" className="bg-white text-brand-900 hover:bg-brand-50">
+            <Link href="/offertecheck">Gratis Offertecheck</Link>
+          </Button>
+        </div>
+      </section>
     </>
+  );
+}
+
+function FounderStory() {
+  const paragraphs = site.founderStory.split(/\n\s*\n/).filter(Boolean);
+  return (
+    <section className="border-t border-ink-100">
+      <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
+        <Quote className="size-6 text-brand-600" aria-hidden />
+        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-ink-950">Waarom BouwCheck</h2>
+        {paragraphs.length ? (
+          <div className="mt-4 space-y-4 text-lg leading-relaxed text-ink-700">
+            {paragraphs.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+            {site.founderName ? <p className="text-base font-medium text-ink-950">— {site.founderName}</p> : null}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-xl border-2 border-dashed border-demo-700/40 bg-demo-100 p-5 text-sm text-demo-700">
+            <strong className="font-semibold">Placeholder — oprichtersverhaal.</strong> Hier komt het verhaal van de oprichter: waarom BouwCheck bestaat, welke flip er misging
+            en wat er anders moet. Tekst volgt (in te vullen in <code>src/config/site.ts</code>, veld <code>founderStory</code>).
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function CasesSection({ cases }: { cases: CaseRow[] }) {
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+      <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Uit de praktijk</h2>
+      <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {cases.map((c) => (
+          <article key={c.id} className="rounded-xl border border-ink-200 bg-white p-5">
+            <h3 className="font-semibold text-ink-950">{c.titel}</h3>
+            {c.regio ? <p className="text-xs text-ink-500">{c.regio}</p> : null}
+            <p className="mt-2 text-sm leading-relaxed text-ink-600">{c.samenvatting}</p>
+            {c.resultaat ? <p className="mt-3 text-sm font-semibold text-brand-800">{c.resultaat}</p> : null}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FoundingBlock() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+      <div className="flex flex-col gap-6 rounded-2xl bg-ink-950 p-8 text-white md:flex-row md:items-center md:justify-between md:p-10">
+        <div className="max-w-2xl">
+          <Badge tone="dark" className="border-white/20">
+            Founding members
+          </Badge>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight">25 plekken per regio, prijs blijvend vast</h2>
+          <p className="mt-2 text-ink-300">
+            BouwCheck Pro voor € {ladderPrices.proFoundingMonthly} per maand in plaats van € {ladderPrices.proMonthly}, met standaardcontracten, meerwerkprotocol,
+            opleverchecklist en prijsbenchmarks.
+          </p>
+        </div>
+        <Button asChild size="lg" className="bg-white text-ink-950 hover:bg-ink-100">
+          <Link href="/founding-members">Bekijk het aanbod</Link>
+        </Button>
+      </div>
+    </section>
   );
 }
 
