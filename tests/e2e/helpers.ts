@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
-export async function loginAs(page: Page, role: "vastgoedflipper" | "aannemer" | "beheerder") {
+export async function loginAs(page: Page, role: "vastgoedondernemer" | "aannemer" | "beheerder") {
   await page.goto("/inloggen");
   await page.getByRole("button", { name: new RegExp(`Demo als ${role}`, "i") }).click();
   await expect(page).not.toHaveURL(/inloggen/);
@@ -28,7 +28,8 @@ export async function expectNoHorizontalScroll(page: Page) {
 
 /** Teksten van het Offertecheck-aanbod, letterlijk zoals aangeleverd. */
 export const OFFER_INTRO =
-  "Een offerte die goedkoop lijkt, kan je duizenden euro's aan meerwerk kosten. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Dan teken je pas als je weet wat je koopt.";
+  "Je hebt het pand, nu moet de renovatie gegund worden. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Zo blijft je rendement op de bouwplaats overeind.";
+export const OFFER_EYEBROW = "Voor vastgoedondernemers en projectontwikkelaars die renoveren";
 export const OFFER_BENEFITS = [
   "Alle offertes op één scope. Elke post naast elkaar, zodat je appels met appels vergelijkt.",
   "Ontbrekende posten in euro's. Wat in de ene offerte zit en in de andere niet, met een indicatie van wat het je later kost.",

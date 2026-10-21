@@ -23,7 +23,7 @@ export function OnboardingForm({ defaults }: { defaults: { name: string; company
         <Fieldset legend="Ik ben…" error={errors("role")}>
           <div className="grid gap-2 sm:grid-cols-3">
             {[
-              ["flipper", "Vastgoedflipper"],
+              ["flipper", "Vastgoedondernemer of projectontwikkelaar"],
               ["investeerder", "Vastgoedinvesteerder"],
               ["aannemer", "Aannemer, zzp'er of klusser"],
             ].map(([v, l]) => (

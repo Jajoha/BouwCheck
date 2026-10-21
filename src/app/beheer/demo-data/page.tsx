@@ -31,7 +31,7 @@ export default async function AdminDemo() {
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <Notice tone="info" title="Demo-accounts">
           <ul className="mt-1 space-y-0.5">
-            <li>Vastgoedflipper: {DEMO_ACCOUNTS.flipper}</li>
+            <li>Vastgoedondernemer: {DEMO_ACCOUNTS.flipper}</li>
             <li>Aannemer: {DEMO_ACCOUNTS.contractor}</li>
             <li>Beheerder: {DEMO_ACCOUNTS.admin}</li>
             <li>Wachtwoord (alle): {env.demoMode ? DEMO_PASSWORD : "verborgen buiten demo-modus"}</li>

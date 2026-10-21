@@ -7,7 +7,7 @@ test.describe("Rollen, beheer en aannemersportaal", () => {
     await page.goto("/beheer");
     await expect(page).toHaveURL(/\/inloggen/);
     // Flipper krijgt geen beheerinhoud
-    await loginAs(page, "vastgoedflipper");
+    await loginAs(page, "vastgoedondernemer");
     for (const path of ["/beheer", "/beheer/gebruikers", "/beheer/moderatie", "/portaal"]) {
       await page.goto(path);
       await expect(page.getByText("Pagina niet gevonden")).toBeVisible();
