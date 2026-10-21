@@ -1,40 +1,18 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  FileQuestion,
-  TrendingUp,
-  CalendarX2,
-  Handshake,
-  Scale,
-  Sparkles,
-  Users,
-  ClipboardList,
-  CheckCircle2,
-  Receipt,
-  CalendarRange,
-  ShieldAlert,
-  FileText,
-  CircleDashed,
-  BadgeCheck,
-  UserCheck,
-  FileCheck2,
-  Upload,
-  KeyRound,
-  Crown,
-  Quote,
-} from "lucide-react";
+import { ArrowRight, Check, FileQuestion, TrendingUp, CalendarX2, Handshake, Scale, Sparkles, Users, ClipboardList, CheckCircle2, Receipt, CalendarRange, ShieldAlert, ShieldCheck, FileText, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ladderPrices, site } from "@/config/site";
+import { site } from "@/config/site";
+import { homepage, OFFERTECHECK_CTA, VERZONNEN_VAKMENSEN, VOORBEELD_LABEL } from "@/content/homepage";
 import { env } from "@/lib/env";
 import { listPublishedCases, type CaseRow } from "@/lib/data/founding";
 import { CheckExample } from "@/components/marketing/check-example";
-import { OfferBenefits, OfferCta, OfferIntro, OfferProNote } from "@/components/offertecheck/offer";
+import { AanbodKaarten } from "@/components/marketing/aanbod-kaarten";
 import { sqlOne } from "@/lib/db";
 import { getScope } from "@/lib/data/scope";
 import { proposalsFor } from "@/lib/data/teams";
-import { DemoBadge } from "@/components/domain/badges";
 import { formatDate, formatEuro, formatNumber } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { Priority, TeamOption } from "@/lib/domain/teams";
 
 /** Live voorbeeld: teamvoorstellen voor het demoproject, berekend met dezelfde motor als in de app. */
@@ -75,13 +53,6 @@ const BENEFITS = [
   { icon: FileText, title: "Van keuze naar offerteaanvraag", text: "Kies een team; de offerteaanvraag op één gestandaardiseerde scope staat klaar. Shortlist, offertes en tijdlijn per project." },
 ];
 
-const LEVELS = [
-  { icon: CircleDashed, title: "Zelf opgegeven", text: "Informatie die het bedrijf zelf heeft ingevuld, zoals tarieven, werkgebied en beschikbaarheid. Niet gecontroleerd." },
-  { icon: BadgeCheck, title: "Bedrijfsgegevens gecontroleerd", text: "Administratieve controle van bijvoorbeeld de KvK-inschrijving. Zegt niets over de kwaliteit van het werk." },
-  { icon: UserCheck, title: "Opdrachtgever bevestigd", text: "Een projectresultaat dat door de opdrachtgever is bevestigd." },
-  { icon: FileCheck2, title: "Projectgegevens gecontroleerd", text: "Begroting, eindafrekening en opleverdata gecontroleerd aan de hand van projectdocumentatie." },
-];
-
 const FAQ = [
   {
     q: "Wat doet de AI precies?",
@@ -97,7 +68,7 @@ const FAQ = [
   },
   {
     q: "Waar komen de gegevens over uitvoerders vandaan?",
-    a: "Uit wat de uitvoerder zelf opgeeft (tarieven, werkgebied, beschikbaarheid), administratieve controles door BouwCheck, projectresultaten die opdrachtgevers registreren en openbare registers (faillissementen, KvK, rechtspraak), gecontroleerd door een AI-agent en beoordeeld door BouwCheck. In deze bèta zijn alle profielen fictieve demo-data.",
+    a: "Uit wat de uitvoerder zelf opgeeft (tarieven, werkgebied, beschikbaarheid), administratieve controles door BouwCheck, projectresultaten die opdrachtgevers registreren en openbare registers (faillissementen, KvK, rechtspraak), gecontroleerd door een AI-agent en beoordeeld door BouwCheck. Zolang er verzonnen voorbeeldprofielen tussen staan, zie je dat bij het profiel.",
   },
   {
     q: "Kunnen aannemers betalen voor een plek in een voorstel?",
@@ -105,30 +76,8 @@ const FAQ = [
   },
   {
     q: "Worden offerteaanvragen echt verstuurd?",
-    a: "Alleen naar aannemers met een eigen BouwCheck-account; die zien de aanvraag in hun portaal. E-mailverzending is in deze bèta nog niet actief. Waar een aanvraag niet echt is verstuurd, staat dat er duidelijk bij.",
+    a: "Alleen naar aannemers met een eigen BouwCheck-account. Zij zien de aanvraag in hun portaal. Is een aanvraag niet verstuurd, dan staat dat erbij.",
   },
-];
-
-const FAQ_OFFERTECHECK = [
-  {
-    q: "Wat gebeurt er met mijn offertes?",
-    a: "We zetten ze op één scope en een medewerker controleert het rapport voordat je het krijgt. Voordat tekst naar het AI-model gaat, halen we e-mailadressen, telefoonnummers, adressen en IBAN's eruit waar dat technisch kan. Je offertes delen we nooit met aannemers. Verwijderen kan altijd, met één knop onder je rapport.",
-  },
-  {
-    q: "Ziet de aannemer dat ik een check doe?",
-    a: "Nee. BouwCheck neemt geen contact op met de aannemers uit je offertes en deelt niets met hen.",
-  },
-  {
-    q: "Wat doen jullie met prijsdata?",
-    a: "Alleen als je dat aanvinkt, bewaren we geanonimiseerde prijzen per eenheid (vakgebied, eenheid, provincie, maand) voor benchmarks. Nooit namen, adressen of aannemers.",
-  },
-];
-
-const LADDER_STEPS = [
-  { icon: Upload, title: "Offertecheck", text: "Upload je offertes. Binnen 48 uur zie je wat er ontbreekt, wat is uitgesloten en waar prijzen uiteenlopen.", note: "Gratis" },
-  { icon: Users, title: "Teamvoorstel", text: "Teams van aannemers, zzp-vakmensen en klussers die offreren op die ene scope, binnen 72 uur.", note: "Gratis" },
-  { icon: KeyRound, title: "Projectpas", text: "Eén renovatie van start tot oplevering: offertes, planning en tijdlijn op één plek.", note: `€ ${ladderPrices.projectpas} per project` },
-  { icon: Crown, title: "Pro", text: "Onbeperkt projecten, favoriete vakmensen, prijsbenchmarks en een vervanger binnen 72 uur.", note: `€ ${ladderPrices.proMonthly} per maand` },
 ];
 
 export default async function HomePage() {
@@ -141,7 +90,7 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:pb-24 lg:pt-20">
           <div>
             <Badge tone="neutral" className="mb-5">
-              Bèta voor vastgoedondernemers en projectontwikkelaars
+              Voor vastgoedondernemers en projectontwikkelaars
             </Badge>
             <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-ink-950 sm:text-5xl">{site.hero.title}</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-600">{site.hero.subtitle}</p>
@@ -192,8 +141,6 @@ export default async function HomePage() {
 
       <BenefitsSection />
 
-      <LevelsSection />
-
       <ContractorsSection />
 
       <FaqSection items={FAQ} />
@@ -202,7 +149,7 @@ export default async function HomePage() {
       <section className="bg-brand-800 text-white">
         <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight">Probeer de bèta met je volgende project</h2>
+            <h2 className="text-3xl font-semibold tracking-tight">Start met je volgende project</h2>
             <p className="mt-2 text-brand-100">Beschrijf je project en zie binnen enkele minuten welke teams het kunnen uitvoeren.</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -271,50 +218,7 @@ function BenefitsSection() {
   );
 }
 
-function LevelsSection() {
-  return (
-      <section className="border-y border-ink-100 bg-ink-50">
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Niet alle informatie is even hard</h2>
-            <p className="mt-3 text-ink-600">
-              Daarom label we elk gegeven met zijn bron en verificatieniveau. Een status wordt alleen toegekend als er een passende controle aan voorafgaat — en is niet te koop.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {LEVELS.map((l, i) => (
-              <div key={l.title} className="rounded-xl border border-ink-200 bg-white p-5">
-                <div className="flex items-center justify-between">
-                  <l.icon className={i === 0 ? "size-5 text-ink-500" : "size-5 text-brand-600"} aria-hidden />
-                  <span className="text-xs text-ink-400">Niveau {i}</span>
-                </div>
-                <h3 className="mt-3 font-semibold text-ink-950">{l.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{l.text}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 grid gap-4 text-sm text-ink-700 md:grid-cols-3">
-            <p className="rounded-lg border border-ink-200 bg-white p-4">
-              <strong className="font-semibold text-ink-950">Minimaal {site.minSampleSize} projecten</strong> voordat we een percentage of gemiddelde tonen.
-            </p>
-            <p className="rounded-lg border border-ink-200 bg-white p-4">
-              <strong className="font-semibold text-ink-950">Eén resultaat per aannemer per project</strong>, gemodereerd voordat het meetelt.
-            </p>
-            <p className="rounded-lg border border-ink-200 bg-white p-4">
-              <strong className="font-semibold text-ink-950">Ruimte voor bezwaar</strong>: aannemers kunnen reageren en betwiste resultaten tellen niet mee.
-            </p>
-          </div>
-          <Link href="/transparantie" className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
-            Lees hoe we gegevens beoordelen <ArrowRight className="size-4" aria-hidden />
-          </Link>
-        </div>
-      </section>
-    
-      
-  );
-}
-
-function ContractorsSection({ promise = false }: { promise?: boolean }) {
+function ContractorsSection() {
   return (
       <section id="voor-vakmensen" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="flex flex-col gap-6 rounded-2xl border border-ink-200 p-8 md:flex-row md:items-center md:justify-between md:p-10">
@@ -322,14 +226,11 @@ function ContractorsSection({ promise = false }: { promise?: boolean }) {
             <h2 className="text-2xl font-semibold tracking-tight text-ink-950">Aannemer, zzp-vakman of klusser?</h2>
             <p className="mt-2 text-ink-600">
               BouwCheck is niet alleen voor aannemersbedrijven: ook zelfstandige vakmensen en klussers worden in teams opgenomen. Maak een profiel aan, vul tarieven,
-              werkgebied en beschikbaarheid in en ontvang offerteaanvragen van vastgoedinvesteerders. Nieuwe profielen starten als &lsquo;Zelf opgegeven&rsquo;; verificatie vraag je aan in het portaal.
+              werkgebied en beschikbaarheid in en ontvang offerteaanvragen van vastgoedondernemers en projectontwikkelaars. Nieuwe profielen starten als &lsquo;Zelf opgegeven&rsquo;; verificatie vraag je aan in het portaal.
             </p>
-            {promise ? (
-              <p className="mt-3 font-medium text-ink-950">Geen leadkosten, en elke aanvraag op een duidelijke scope.</p>
-            ) : null}
           </div>
           <Button asChild variant="dark" size="lg">
-            <Link href="/registreren?rol=aannemer">Aanmelden als uitvoerder</Link>
+            <Link href="/registreren?rol=aannemer">Aanmelden als vakman</Link>
           </Button>
         </div>
       </section>
@@ -366,118 +267,185 @@ function FaqSection({ items }: { items: { q: string; a: string }[] }) {
   );
 }
 
-/** Homepage rond de Offertecheck (FEATURE_OFFERTECHECK). Hergebruikt de bestaande blokken in een nieuwe volgorde. */
+/** Homepage rond de Offertecheck (FEATURE_OFFERTECHECK). Alle teksten staan in src/content/homepage.ts. */
 async function OffertecheckHome() {
-  const [preview, cases] = await Promise.all([getPreview(), listPublishedCases()]);
+  const cases = await listPublishedCases();
+  const { hero, voorbeeld, herkenning, aanbod, vertrouwen, eersteKlanten, vakmensen, vragen, slot } = homepage;
   return (
     <>
       <section className="border-b border-ink-100 bg-gradient-to-b from-ink-50/80 to-white">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-14 lg:pb-24 lg:pt-20">
-          <div>
-            <OfferIntro />
-            <OfferCta className="mt-7" />
-            <OfferProNote className="mt-4" />
-          </div>
-          <OfferBenefits className="rounded-2xl border border-ink-200 bg-white p-5 shadow-[var(--shadow-raised)] sm:p-7" />
+        <div className="mx-auto max-w-3xl px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-14 lg:pb-20 lg:pt-20">
+          <p className="mb-3 text-sm font-semibold text-brand-800 sm:text-base">{hero.label}</p>
+          <h1 className="text-3xl font-semibold leading-[1.15] tracking-tight text-ink-950 sm:text-5xl sm:leading-[1.1]">{hero.titel}</h1>
+          <p className="mt-4 text-lg leading-relaxed text-ink-700">{hero.intro}</p>
+          <ul className="mt-2 flex flex-col gap-1.5 text-lg leading-relaxed text-ink-700">
+            {hero.punten.map((p) => (
+              <li key={p} className="flex gap-2.5">
+                <span className="mt-1.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white" aria-hidden>
+                  <Check className="size-3.5" strokeWidth={3} />
+                </span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-lg leading-relaxed text-ink-700">{hero.slot}</p>
+          <OffertecheckButton className="mt-6" />
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl px-4 pt-16 sm:px-6" aria-labelledby="voorbeeld-check">
-        <h2 id="voorbeeld-check" className="text-2xl font-semibold tracking-tight text-ink-950">
-          Zo ziet een check eruit
+      <section id="hoe-het-werkt" className="mx-auto max-w-4xl scroll-mt-20 px-4 pt-14 sm:px-6 sm:pt-20" aria-labelledby="voorbeeld-titel">
+        <h2 id="voorbeeld-titel" className="text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl">
+          {voorbeeld.titel}
         </h2>
+        <p className="mt-3 max-w-2xl text-ink-700">{voorbeeld.tekst}</p>
         <div className="mt-6">
           <CheckExample />
         </div>
       </section>
 
-      <ProblemsSection />
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20" aria-labelledby="herkenning-titel">
+        <h2 id="herkenning-titel" className="text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl">
+          {herkenning.titel}
+        </h2>
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {herkenning.punten.map((p) => (
+            <li key={p.kop} className="rounded-xl border border-ink-200 bg-white p-5 text-ink-700">
+              <strong className="block font-semibold text-ink-950">{p.kop}</strong> {p.tekst}
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <section id="hoe-het-werkt" className="scroll-mt-20 border-y border-ink-100 bg-ink-950 text-white">
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <h2 className="text-3xl font-semibold tracking-tight">Hoe het werkt</h2>
-          <p className="mt-3 max-w-2xl text-ink-300">Begin gratis met je offertes. Neem pas de volgende stap als die je iets oplevert.</p>
-          <ol className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {LADDER_STEPS.map((s, i) => (
-              <li key={s.title} className="relative rounded-xl border border-white/10 bg-white/[0.03] p-6">
-                <div className="flex items-center gap-3">
-                  <span className="tabular flex size-8 items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white">{i + 1}</span>
-                  <s.icon className="size-5 text-ink-300" aria-hidden />
-                </div>
-                <h3 className="mt-5 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-300">{s.text}</p>
-                <p className="mt-3 text-xs font-medium text-brand-200">{s.note}</p>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href="/offertecheck">
-                Gratis Offertecheck <ArrowRight aria-hidden />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10">
-              <Link href="/prijzen">Bekijk de prijzen</Link>
-            </Button>
-          </div>
+      <section id="aanbod" className="scroll-mt-20 border-y border-ink-100 bg-ink-50" aria-labelledby="aanbod-titel">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
+          <h2 id="aanbod-titel" className="text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl">
+            {aanbod.titel}
+          </h2>
+          <AanbodKaarten className="mt-8" />
+          <p className="mt-6 text-ink-700">{aanbod.onderKaarten}</p>
+          <OffertecheckButton className="mt-6" />
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20" aria-labelledby="vertrouwen-titel">
+        <h2 id="vertrouwen-titel" className="text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl">
+          {vertrouwen.titel}
+        </h2>
+        <ul className="mt-6 grid gap-3 md:grid-cols-2">
+          {vertrouwen.punten.map((p) => (
+            <li key={p} className="flex gap-3 text-ink-700">
+              <ShieldCheck className="mt-0.5 size-5 shrink-0 text-brand-700" aria-hidden />
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
+        <Link href={vertrouwen.link.href} className="mt-6 inline-flex items-center gap-1 font-medium text-brand-800 hover:underline">
+          {vertrouwen.link.label} <ArrowRight className="size-4" aria-hidden />
+        </Link>
+      </section>
+
+      <FounderStory />
+      {cases.length ? <CasesSection cases={cases} /> : null}
+
+      {env.features.foundingMembers ? (
+        <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 sm:pb-20" aria-labelledby="eerste-klanten-titel">
+          <div className="flex flex-col gap-6 rounded-2xl bg-ink-950 p-6 text-white sm:p-8 md:flex-row md:items-center md:justify-between md:p-10">
+            <div className="max-w-2xl">
+              <h2 id="eerste-klanten-titel" className="text-2xl font-semibold tracking-tight">
+                {eersteKlanten.titel}
+              </h2>
+              <p className="mt-2 text-ink-200">{eersteKlanten.tekst}</p>
+            </div>
+            <Button asChild size="lg" className="bg-white text-ink-950 hover:bg-ink-100">
+              <Link href={eersteKlanten.knop.href}>{eersteKlanten.knop.label}</Link>
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="voor-vakmensen" className="mx-auto max-w-7xl scroll-mt-20 px-4 pb-14 sm:px-6 sm:pb-20" aria-labelledby="vakmensen-titel">
+        <div className="flex flex-col gap-6 rounded-2xl border border-ink-200 p-6 sm:p-8 md:flex-row md:items-center md:justify-between md:p-10">
+          <div className="max-w-2xl">
+            <h2 id="vakmensen-titel" className="text-2xl font-semibold tracking-tight text-ink-950">
+              {vakmensen.titel}
+            </h2>
+            <p className="mt-2 text-ink-700">{vakmensen.tekst}</p>
+          </div>
+          <Button asChild variant="dark" size="lg">
+            <Link href={vakmensen.knop.href}>{vakmensen.knop.label}</Link>
+          </Button>
+        </div>
+      </section>
+
+      <section className="border-t border-ink-100" aria-labelledby="vragen-titel">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1fr_2fr]">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Daarna: teams op diezelfde scope</h2>
-            <p className="mt-3 text-ink-600">
-              Uit je Offertecheck stelt BouwCheck teams samen, geordend op budget, kwaliteit of snelheid. Teams die op één scope offreren, kun je wél naast elkaar leggen.
+            <h2 id="vragen-titel" className="text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl">
+              {vragen.titel}
+            </h2>
+            <p className="mt-3 text-ink-700">
+              {vragen.link.tekst}{" "}
+              <Link href={vragen.link.href} className="font-medium text-brand-800 underline">
+                {vragen.link.label}
+              </Link>
             </p>
           </div>
-          <HeroPreview {...preview} />
+          <ul className="divide-y divide-ink-200 border-y border-ink-200">
+            {vragen.items.map((f) => (
+              <li key={f.vraag}>
+                <details className="group py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-ink-950 [&::-webkit-details-marker]:hidden">
+                    {f.vraag}
+                    <span aria-hidden className="text-xl leading-none text-ink-400 group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-2 text-ink-700">{f.antwoord}</p>
+                </details>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      <BenefitsSection />
-      <FounderStory />
-      <LevelsSection />
-      {cases.length ? <CasesSection cases={cases} /> : null}
-      {env.features.foundingMembers ? <FoundingBlock /> : null}
-      <ContractorsSection promise />
-      <FaqSection items={[...FAQ_OFFERTECHECK, ...FAQ]} />
-
-      <section className="bg-brand-800 text-white">
-        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-16 sm:px-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-3xl font-semibold tracking-tight">Laat je volgende offertes checken</h2>
-            <p className="mt-2 text-brand-100">Binnen 48 uur weet je wat ze je niet vertellen. Gratis tijdens de bèta.</p>
-          </div>
-          <Button asChild size="lg" className="bg-white text-brand-900 hover:bg-brand-50">
-            <Link href="/offertecheck">Gratis Offertecheck</Link>
-          </Button>
+      <section className="bg-brand-800 text-white" aria-labelledby="slot-titel">
+        <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-14 sm:px-6 sm:py-16 md:flex-row md:items-center md:justify-between">
+          <h2 id="slot-titel" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {slot.titel}
+          </h2>
+          <OffertecheckButton className="bg-white text-brand-900 hover:bg-brand-50" />
         </div>
       </section>
     </>
   );
 }
 
+/** De primaire knop naar het uploadformulier van de Offertecheck. */
+function OffertecheckButton({ className }: { className?: string }) {
+  return (
+    <Button asChild size="lg" className={cn("w-full sm:w-auto", className)}>
+      <Link href={OFFERTECHECK_CTA.href}>
+        {OFFERTECHECK_CTA.label} <ArrowRight aria-hidden />
+      </Link>
+    </Button>
+  );
+}
+
+/** Oprichtersverhaal; verschijnt pas als site.founderStory is ingevuld. */
 function FounderStory() {
   const paragraphs = site.founderStory.split(/\n\s*\n/).filter(Boolean);
+  if (!paragraphs.length) return null;
   return (
     <section className="border-t border-ink-100">
-      <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
+      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20">
         <Quote className="size-6 text-brand-600" aria-hidden />
         <h2 className="mt-3 text-3xl font-semibold tracking-tight text-ink-950">Waarom BouwCheck</h2>
-        {paragraphs.length ? (
-          <div className="mt-4 space-y-4 text-lg leading-relaxed text-ink-700">
-            {paragraphs.map((p) => (
-              <p key={p}>{p}</p>
-            ))}
-            {site.founderName ? <p className="text-base font-medium text-ink-950">— {site.founderName}</p> : null}
-          </div>
-        ) : (
-          <div className="mt-4 rounded-xl border-2 border-dashed border-demo-700/40 bg-demo-100 p-5 text-sm text-demo-700">
-            <strong className="font-semibold">Placeholder — oprichtersverhaal.</strong> Hier komt het verhaal van de oprichter: waarom BouwCheck bestaat, welke flip er misging
-            en wat er anders moet. Tekst volgt (in te vullen in <code>src/config/site.ts</code>, veld <code>founderStory</code>).
-          </div>
-        )}
+        <div className="mt-4 space-y-4 text-lg leading-relaxed text-ink-700">
+          {paragraphs.map((p) => (
+            <p key={p}>{p}</p>
+          ))}
+          {site.founderName ? <p className="text-base font-medium text-ink-950">— {site.founderName}</p> : null}
+        </div>
       </div>
     </section>
   );
@@ -501,28 +469,6 @@ function CasesSection({ cases }: { cases: CaseRow[] }) {
   );
 }
 
-function FoundingBlock() {
-  return (
-    <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
-      <div className="flex flex-col gap-6 rounded-2xl bg-ink-950 p-8 text-white md:flex-row md:items-center md:justify-between md:p-10">
-        <div className="max-w-2xl">
-          <Badge tone="dark" className="border-white/20">
-            Founding members
-          </Badge>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight">25 plekken per regio, prijs blijvend vast</h2>
-          <p className="mt-2 text-ink-300">
-            BouwCheck Pro voor € {ladderPrices.proFoundingMonthly} per maand in plaats van € {ladderPrices.proMonthly}, met standaardcontracten, meerwerkprotocol,
-            opleverchecklist en prijsbenchmarks.
-          </p>
-        </div>
-        <Button asChild size="lg" className="bg-white text-ink-950 hover:bg-ink-100">
-          <Link href="/founding-members">Bekijk het aanbod</Link>
-        </Button>
-      </div>
-    </section>
-  );
-}
-
 const PREVIEW_LABEL: Record<Priority, string> = { budget: "Budget", kwaliteit: "Kwaliteit", snelheid: "Snelheid" };
 
 function HeroPreview({ project, best }: Awaited<ReturnType<typeof getPreview>>) {
@@ -533,16 +479,19 @@ function HeroPreview({ project, best }: Awaited<ReturnType<typeof getPreview>>) 
       </div>
     );
   }
+  const fictief = best.some(({ option }) => option?.members.some((m) => m.contractor.is_demo));
   return (
     <figure className="overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[var(--shadow-raised)]" aria-label="Voorbeeld van teamvoorstellen">
       <div className="flex items-center justify-between gap-2 border-b border-ink-100 bg-ink-50 px-4 py-2.5">
         <span className="truncate text-xs font-medium text-ink-600">Teamvoorstellen · {project.name}</span>
-        {project.is_demo ? <DemoBadge compact /> : null}
+        {project.is_demo || fictief ? <Badge tone="demo">{VOORBEELD_LABEL}</Badge> : null}
       </div>
       <ul className="divide-y divide-ink-100">
         {best.map(({ priority, option }) => (
-          <li key={priority} className="grid grid-cols-[88px_1fr] gap-3 px-4 py-3.5 sm:grid-cols-[100px_1fr_auto]">
-            <span className="text-xs font-semibold uppercase tracking-wide text-brand-700">{PREVIEW_LABEL[priority]}</span>
+          <li key={priority} className="flex flex-col gap-1.5 px-4 py-3.5 sm:grid sm:grid-cols-[1fr_auto] sm:gap-x-4">
+            <span className="sm:col-span-2">
+              <Badge tone="positive">{PREVIEW_LABEL[priority]}</Badge>
+            </span>
             {option ? (
               <>
                 <span className="text-sm font-medium text-ink-950">
@@ -551,22 +500,25 @@ function HeroPreview({ project, best }: Awaited<ReturnType<typeof getPreview>>) 
                     {option.structure === "hoofdaannemer" ? "Hoofdaannemer" : `${option.members.length} vakspecialisten`}
                   </span>
                 </span>
-                <span className="col-span-2 flex gap-4 text-xs text-ink-600 sm:col-span-1 sm:flex-col sm:gap-0.5 sm:text-right">
+                <span className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-ink-600 sm:flex-col sm:text-right">
                   <span className="tabular font-semibold text-ink-900">
-                    {formatEuro(option.cost.min)} – {formatEuro(option.cost.max)}
+                    {formatEuro(option.cost.min)} – {formatEuro(option.cost.max)} excl. btw
                   </span>
                   <span>vanaf {option.start ? formatDate(option.start) : "onbekend"}</span>
-                  <span>{option.qualitySufficient && option.weakest ? `zwakste ${formatNumber(option.weakest.quality.rating, 1)}/5` : "kwaliteit: te weinig data"}</span>
+                  <span>
+                    {option.qualitySufficient && option.weakest ? `zwakste schakel: ${formatNumber(option.weakest.quality.rating, 1)}/5` : "kwaliteit: te weinig gegevens"}
+                  </span>
                 </span>
               </>
             ) : (
-              <span className="text-sm text-ink-500">Onvoldoende gegevens voor dit criterium</span>
+              <span className="text-sm text-ink-500">Te weinig gegevens voor dit criterium</span>
             )}
           </li>
         ))}
       </ul>
-      <figcaption className="border-t border-ink-100 px-4 py-2.5 text-xs text-ink-500">
-        Live berekend uit de demo-database. Bedragen excl. btw, indicatief op basis van opgegeven tarieven. Per prioriteit het best passende team.
+      <figcaption className="space-y-1 border-t border-ink-100 px-4 py-2.5 text-xs text-ink-500">
+        {fictief ? <p className="font-medium text-demo-700">{VERZONNEN_VAKMENSEN}</p> : null}
+        <p>Per prioriteit het best passende team. Bedragen excl. btw, op basis van de tarieven die vakmensen zelf opgeven.</p>
       </figcaption>
     </figure>
   );

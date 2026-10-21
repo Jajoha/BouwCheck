@@ -255,8 +255,8 @@ export function OffertecheckForm({ uploadMode }: { uploadMode: "blob" | "server"
         <Checkbox
           name="consent_benchmark"
           disabled={locked}
-          label="Mijn offertes mogen geanonimiseerd worden gebruikt voor prijsbenchmarks (optioneel)."
-          description="Alleen prijs per eenheid, vakgebied, provincie en maand. Nooit namen, adressen of aannemers."
+          label="Mijn prijzen mogen zonder namen worden gebruikt om prijzen te vergelijken (optioneel)."
+          description="We bewaren dan alleen de prijs per eenheid, het soort werk, de provincie en de maand. Nooit namen, adressen of aannemers."
         />
       </div>
       <div>

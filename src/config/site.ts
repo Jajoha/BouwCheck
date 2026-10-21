@@ -21,9 +21,10 @@ export const site = {
     primaryCta: "Start je project",
     secondaryCta: "Bekijk hoe het werkt",
   },
-  demoLabel: "Demo-data — niet geverifieerd",
+  /** Label bij verzonnen voorbeeldprofielen en -projecten. */
+  demoLabel: "Voorbeeld — verzonnen gegevens",
   /**
-   * Oprichtersverhaal op de homepage (met de Offertecheck). Leeg = een duidelijk gemarkeerde placeholder.
+   * Oprichtersverhaal op de homepage (met de Offertecheck). Leeg = het blok wordt niet getoond.
    * De opdrachtgever levert deze tekst; alinea's scheiden met een lege regel.
    */
   founderStory: "" as string,
@@ -91,107 +92,13 @@ export const pricingPlans: PricingPlan[] = [
   },
 ];
 
-// ── Value ladder (met de Offertecheck) ──────────────────────
+// ── Prijzen (met de Offertecheck) ───────────────────────────
+// De teksten van de aanbodkaarten staan in src/content/homepage.ts.
 
-export type LadderStep = {
-  id: "offertecheck" | "teamvoorstel" | "projectpas" | "pro" | "portfolio";
-  name: string;
-  /** Prijs na validatie. */
-  price: string;
-  priceNote: string;
-  /** Wat de klant in de pilot betaalt. */
-  pilotNote: string;
-  summary: string;
-  delivers: string[];
-  guarantees: string[];
-  bonuses: string[];
-  cta: { label: string; href: string };
-  highlighted?: boolean;
-};
-
-/** Prijzen in euro's excl. btw; het rekenvoorbeeld op /prijzen wordt hieruit berekend. */
+/** Prijzen in euro's excl. btw. */
 export const ladderPrices = {
   projectpas: 299,
   proMonthly: 199,
-  /** Founding members: Pro tegen deze prijs, blijvend vast. */
+  /** Eerste klanten (founding members): Pro tegen deze prijs, blijvend vast. */
   proFoundingMonthly: 149,
-  portfolioMonthly: 595,
 } as const;
-
-const PILOT_FREE = "Nu gratis, alleen werkelijke kosten";
-const eurPrice = (n: number) => `€ ${n.toLocaleString("nl-NL")}`;
-
-export const FOUNDING_BONUSES = [
-  "Standaardcontracten voor vakmensen",
-  "Meerwerkprotocol",
-  "Opleverchecklist",
-  "Prijsbenchmarks per regio",
-];
-
-/** Garanties gelden alleen voor de dienst van BouwCheck, nooit voor het bouwwerk. */
-export const GUARANTEE_72H = "Geen passend teamvoorstel binnen 72 uur? Dan is die maand of projectpas gratis.";
-export const GUARANTEE_MONEY_BACK = "Is de projectpas na oplevering zijn geld niet waard? Geld terug.";
-
-export const ladder: LadderStep[] = [
-  {
-    id: "offertecheck",
-    name: "Offertecheck",
-    price: "Gratis",
-    priceNote: "altijd",
-    pilotNote: "Gratis",
-    summary: "Je offertes binnen 48 uur op één scope.",
-    delivers: ["Alle posten van je offertes naast elkaar", "Ontbrekende posten, stelposten en uitsluitingen", "Grote prijsverschillen en vragen voor de aannemers"],
-    guarantees: [],
-    bonuses: [],
-    cta: { label: "Check starten", href: "/offertecheck" },
-  },
-  {
-    id: "teamvoorstel",
-    name: "Teamvoorstel",
-    price: "Gratis",
-    priceNote: "per project",
-    pilotNote: "Gratis",
-    summary: "Teams die offreren op één scope, binnen 72 uur.",
-    delivers: ["Werkzaamheden uit je beschrijving, foto's of Offertecheck", "Teams van aannemers, zzp-vakmensen en klussers", "Geordend op budget, kwaliteit of snelheid, met onderbouwing"],
-    guarantees: [],
-    bonuses: [],
-    cta: { label: "Teamvoorstel starten", href: "/projecten/nieuw" },
-  },
-  {
-    id: "projectpas",
-    name: "Projectpas",
-    price: eurPrice(ladderPrices.projectpas),
-    priceNote: "per project, excl. btw",
-    pilotNote: PILOT_FREE,
-    summary: "Eén renovatie van start tot oplevering.",
-    delivers: ["Teamvoorstel en offerteaanvragen op één scope", "Offertes, planning en tijdlijn per project op één plek", "Projectresultaat vastleggen na oplevering"],
-    guarantees: [GUARANTEE_72H, GUARANTEE_MONEY_BACK],
-    bonuses: ["Opleverchecklist"],
-    cta: { label: "Interesse tonen", href: "/prijzen?plan=projectpas#aanvragen" },
-  },
-  {
-    id: "pro",
-    name: "BouwCheck Pro",
-    price: eurPrice(ladderPrices.proMonthly),
-    priceNote: "per maand, excl. btw",
-    pilotNote: PILOT_FREE,
-    summary: "Voor vastgoedondernemers en projectontwikkelaars met meerdere projecten per jaar.",
-    delivers: ["Onbeperkt projecten en teamvoorstellen", "Favoriete vakmensen per regio", "Prijsbenchmarks uit echte offertes", "Vervanger binnen 72 uur"],
-    guarantees: [GUARANTEE_72H],
-    bonuses: FOUNDING_BONUSES,
-    cta: { label: "Interesse tonen", href: "/prijzen?plan=pro#aanvragen" },
-    highlighted: true,
-  },
-  {
-    id: "portfolio",
-    name: "Portfolio",
-    price: eurPrice(ladderPrices.portfolioMonthly),
-    priceNote: "per maand, excl. btw",
-    pilotNote: PILOT_FREE,
-    summary: "Voor teams met meerdere gebruikers en regio's.",
-    delivers: ["Meerdere gebruikers en regio's", "Overzicht van je hele portefeuille", "Analyse per project en per vakman"],
-    guarantees: [GUARANTEE_72H],
-    bonuses: FOUNDING_BONUSES,
-    cta: { label: "Interesse tonen", href: "/prijzen?plan=portfolio#aanvragen" },
-  },
-];

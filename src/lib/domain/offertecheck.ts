@@ -327,7 +327,7 @@ export const POST_STATUS_LABELS: Record<PostStatus, string> = {
   geprijsd: "Geprijsd",
   inbegrepen: "Inbegrepen",
   stelpost: "Stelpost",
-  uitgesloten: "Uitgesloten",
+  uitgesloten: "Zit er niet in",
   ontbreekt: "Ontbreekt",
 };
 

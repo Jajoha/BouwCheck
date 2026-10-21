@@ -20,7 +20,7 @@ export default async function StartTeamFromCheckPage({ params }: { params: Promi
     <div className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center">
       <h1 className="text-2xl font-semibold text-ink-950">Nog één stap: een gratis account</h1>
       <p className="mt-2 text-ink-600">
-        Met een account bewaren we je project en de scope uit je check, en zie je de teamvoorstellen. Je zit nergens aan vast en er is geen betaling.
+        Met een account bewaren we je project en het werk uit je check. Daarna zie je je Teamvoorstel. Je zit nergens aan vast. Het is gratis.
       </p>
       <div className="mt-6 flex flex-col gap-2 sm:flex-row">
         <Button asChild size="lg">

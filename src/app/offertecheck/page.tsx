@@ -8,14 +8,14 @@ import { getWeeklyCapacity, WEEK_FULL_MESSAGE } from "@/lib/data/offertecheck";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Gratis Offertecheck",
+  title: "Offertecheck",
   description: OFFER.intro,
 };
 
 const ASSURANCES = [
-  { Icon: EyeOff, title: "Niet gedeeld met aannemers", text: "Je offertes blijven tussen jou en BouwCheck. Aannemers zien niet dat je een check doet." },
-  { Icon: ShieldCheck, title: "Geanonimiseerd alleen met toestemming", text: "Prijsbenchmarks gebruiken we alleen als jij dat aanvinkt, zonder namen of adressen." },
-  { Icon: Trash2, title: "Verwijderen kan altijd", text: "Onder je rapport staat een knop waarmee je de check en je bestanden direct verwijdert." },
+  { Icon: EyeOff, title: "Niet gedeeld met aannemers", text: "Je offertes blijven tussen jou en BouwCheck. Aannemers weten niet dat je een check doet." },
+  { Icon: ShieldCheck, title: "Prijzen alleen met toestemming", text: "We gebruiken je prijzen alleen als jij dat aanvinkt. Altijd zonder namen of adressen." },
+  { Icon: Trash2, title: "Verwijderen kan altijd", text: "Onder je rapport staat een knop. Daarmee verwijder je de check en je bestanden direct." },
 ];
 
 /** Landingspagina met één doel: offertes uploaden. Geen hoofdmenu (zie FunnelHidden in de header). */
@@ -47,7 +47,7 @@ export default async function OffertecheckPage() {
         ))}
       </ul>
       <p className="mt-8 text-xs text-ink-500">
-        De Offertecheck is geen offerte en geen advies. Een medewerker van BouwCheck controleert elk rapport voordat je het ontvangt. Lees ook de{" "}
+        De Offertecheck is geen offerte en geen advies. Een medewerker van BouwCheck kijkt elk rapport na voordat je het krijgt. Lees ook de{" "}
         <a href="/privacy" className="underline hover:text-ink-800">
           privacyverklaring
         </a>

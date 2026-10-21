@@ -21,6 +21,7 @@ import { OUTCOME_VERIFICATION, PROVIDER_TYPES, RATE_UNITS, specialtyName, type O
 import { VERIFICATION_LEVELS } from "@/lib/domain/verification";
 import { formatDate, formatDays, formatEuro, formatMoney, formatPercent } from "@/lib/format";
 import { site } from "@/config/site";
+import { VERZONNEN_VAKMENSEN } from "@/content/homepage";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -82,9 +83,8 @@ export default async function ContractorPage({ params }: Props) {
       </div>
 
       {c.is_demo ? (
-        <Notice tone="demo" className="mt-6" title={site.demoLabel}>
-          Dit is een fictief profiel voor demonstratiedoeleinden. Bedrijfsnaam, KvK-nummer, contactgegevens, tarieven, projectresultaten, beoordelingen én
-          verificatiestatussen zijn verzonnen. Er heeft geen echte controle plaatsgevonden.
+        <Notice tone="demo" className="mt-6">
+          {VERZONNEN_VAKMENSEN}
         </Notice>
       ) : null}
 

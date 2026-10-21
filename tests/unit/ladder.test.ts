@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { freeSeats, nextIntakeDate, proBreakEvenProjects, yearlyCosts } from "@/lib/domain/ladder";
-import { ladder, ladderPrices } from "@/config/site";
+import { ladderPrices } from "@/config/site";
 
 describe("prijzen", () => {
   it("berekent vanaf hoeveel projecten Pro goedkoper is", () => {
@@ -9,14 +9,8 @@ describe("prijzen", () => {
     expect(yearlyCosts(7, 299, 199).projectpassen).toBeLessThan(yearlyCosts(7, 299, 199).pro);
   });
 
-  it("heeft vijf treden in de volgorde van het plan, Pro aanbevolen", () => {
-    expect(ladder.map((s) => s.id)).toEqual(["offertecheck", "teamvoorstel", "projectpas", "pro", "portfolio"]);
-    expect(ladder.find((s) => s.highlighted)?.id).toBe("pro");
+  it("eerste klanten betalen minder voor Pro", () => {
     expect(ladderPrices.proFoundingMonthly).toBeLessThan(ladderPrices.proMonthly);
-  });
-
-  it("garanties gaan alleen over de dienst, nooit over het bouwwerk", () => {
-    for (const g of ladder.flatMap((s) => s.guarantees)) expect(g).not.toMatch(/bouwwerk|uitvoering|vakmanschap/i);
   });
 });
 

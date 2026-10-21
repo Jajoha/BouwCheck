@@ -29,14 +29,14 @@ export function FoundingForm({ regions, name = "", email = "" }: { regions: { re
         <Input id="fm-projecten" name="projecten_per_jaar" inputMode="numeric" placeholder="Bijv. 3" />
       </Field>
       <div className="sm:col-span-2">
-        <Checkbox name="consent" label="Ik geef BouwCheck toestemming om contact met mij op te nemen over het founding-member-aanbod." />
+        <Checkbox name="consent" label="Ik geef BouwCheck toestemming om contact met mij op te nemen over het aanbod voor eerste klanten." />
         {errors("consent") ? <p role="alert" className="mt-1 text-xs font-medium text-danger-700">{errors("consent")![0]}</p> : null}
       </div>
       <div className="sm:col-span-2">
         <SubmitButton pending={pending} pendingText="Versturen…" size="lg">
           Plek aanvragen
         </SubmitButton>
-        <p className="mt-2 text-xs text-ink-500">Vrijblijvend: er wordt geen betaling gestart. We nemen contact op vóór de volgende instroom.</p>
+        <p className="mt-2 text-xs text-ink-500">Je zit nergens aan vast. Er wordt nu niets afgerekend. We nemen contact op vóór het volgende kwartaal.</p>
       </div>
     </form>
   );

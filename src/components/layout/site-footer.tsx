@@ -5,32 +5,26 @@ import { env } from "@/lib/env";
 
 const PRODUCT_LINKS = env.features.offertecheck
   ? [
-      { href: "/offertecheck", label: "Gratis Offertecheck" },
+      { href: "/offertecheck#upload", label: "Offertecheck" },
       { href: "/projecten/nieuw", label: "Teamvoorstel aanvragen" },
-      ...(env.features.foundingMembers ? [{ href: "/founding-members", label: "Founding members" }] : []),
+      ...(env.features.foundingMembers ? [{ href: "/founding-members", label: "Eerste klanten" }] : []),
       { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
       { href: "/prijzen", label: "Prijzen" },
     ]
   : [
       { href: "/projecten/nieuw", label: "Start je project" },
       { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-      { href: "/prijzen", label: "Prijzen (testfase)" },
+      { href: "/prijzen", label: "Prijzen" },
     ];
 
 const COLUMNS = [
   {
     title: "Product",
-    links: [
-      ...PRODUCT_LINKS,
-      { href: "/transparantie", label: "Hoe wij selecteren en beoordelen" },
-    ],
+    links: [...PRODUCT_LINKS, { href: "/transparantie", label: "Zo controleren wij" }],
   },
   {
-    title: "Voor aannemers",
-    links: [
-      { href: "/registreren?rol=aannemer", label: "Aanmelden als uitvoerder" },
-      { href: "/inloggen", label: "Inloggen aannemersportaal" },
-    ],
+    title: "Voor vakmensen",
+    links: [{ href: "/registreren?rol=aannemer", label: "Aanmelden als vakman" }],
   },
   {
     title: "BouwCheck",
@@ -39,6 +33,7 @@ const COLUMNS = [
       { href: "/privacy", label: "Privacyverklaring (concept)" },
       { href: "/voorwaarden", label: "Gebruiksvoorwaarden (concept)" },
       { href: "/disclaimer", label: "Disclaimer (concept)" },
+      // Klanten en vakmensen loggen op hetzelfde scherm in.
       { href: "/inloggen", label: "Inloggen" },
     ],
   },
@@ -51,9 +46,6 @@ export function SiteFooter() {
         <div>
           <Logo />
           <p className="mt-3 max-w-xs text-sm text-ink-600">{site.tagline}</p>
-          <p className="mt-4 text-xs leading-relaxed text-ink-500">
-            Bèta. Aannemersprofielen, cijfers en beoordelingen in deze omgeving zijn fictieve demo-data en zeggen niets over bestaande bedrijven.
-          </p>
         </div>
         {COLUMNS.map((col) => (
           <div key={col.title}>
@@ -72,8 +64,8 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-ink-200">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-xs text-ink-500 sm:flex-row sm:justify-between sm:px-6">
-          <p>© {new Date().getFullYear()} {site.name} — bèta. Prijzen in euro; btw-status staat bij ieder bedrag vermeld.</p>
-          <p>BouwCheck rangschikt aannemers nooit op basis van betaling.</p>
+          <p>© {new Date().getFullYear()} {site.name}. Bedragen zijn excl. btw, tenzij er iets anders staat.</p>
+          <p>Aannemers kunnen niet betalen om bovenaan te staan.</p>
         </div>
       </div>
     </footer>

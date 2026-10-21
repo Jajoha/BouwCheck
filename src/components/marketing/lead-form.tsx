@@ -46,7 +46,7 @@ export function LeadForm({
         <Input id="lead-phone" name="phone" type="tel" autoComplete="tel" />
       </Field>
       <Field label="Bericht" htmlFor="lead-message" error={errors("message")} className="sm:col-span-2">
-        <Textarea id="lead-message" name="message" rows={4} placeholder={messagePlaceholder ?? "Bijv. aantal projecten per jaar, regio, type renovaties"} />
+        <Textarea id="lead-message" name="message" rows={4} placeholder={messagePlaceholder ?? "Bijvoorbeeld: hoeveel verbouwingen per jaar, en in welke regio"} />
       </Field>
       <div className="sm:col-span-2">
         <Checkbox name="consent" label="Ik geef BouwCheck toestemming om contact met mij op te nemen over deze aanvraag." />

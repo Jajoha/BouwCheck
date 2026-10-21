@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarClock, Coins, Award, Users, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { DemoBadge, VerificationBadge } from "@/components/domain/badges";
+import { VerificationBadge } from "@/components/domain/badges";
 import { ChooseTeamButton } from "./choose-team-button";
 import { summarizeVerification } from "@/lib/domain/verification";
 import type { Priority, TeamOption } from "@/lib/domain/teams";
@@ -41,7 +41,7 @@ export function costLabel(o: TeamOption) {
 }
 
 function registerStatus(c: TeamOption["members"][number]["contractor"], today: string): { text: string; warn: boolean } {
-  if (c.is_demo) return { text: "registers: demo, niet gecontroleerd", warn: false };
+  if (c.is_demo) return { text: "registers: verzonnen profiel, niet gecontroleerd", warn: false };
   const last = c.register?.lastCheckedAt ?? null;
   const age = checkAgeDays(last, today);
   if (age === null) return { text: "registers: nog niet gecontroleerd", warn: true };
@@ -102,7 +102,6 @@ export function TeamCard({
               <Users aria-hidden />
               {option.structure === "hoofdaannemer" ? "Hoofdaannemer" : `${option.members.length} vakspecialist${option.members.length === 1 ? "" : "en"}`}
             </Badge>
-            {option.members.some((m) => m.contractor.is_demo) ? <DemoBadge compact /> : null}
           </div>
           <p className="mt-2 text-sm text-ink-700">{explain(priority, option, ctx)}</p>
         </div>

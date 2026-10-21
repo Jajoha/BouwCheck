@@ -4,7 +4,7 @@
 
 BouwCheck is een bèta van een onafhankelijk platform voor Nederlandse vastgoedflippers en -investeerders. De flipper beschrijft het project (en voegt eventueel foto's toe); AI zet dat om in een lijst werkzaamheden met hoeveelheden; BouwCheck stelt daarna **teams van uitvoerders** samen — aannemersbedrijven, zelfstandige vakmensen (zzp) én klussers — geordend per prioriteit: **Budget**, **Kwaliteit** en **Snelheid**. Handmatig aannemers vergelijken is bewust geen onderdeel van het product: BouwCheck levert wie wat kan doen, met uitleg waarom.
 
-> **Demo-data.** Alle aannemers, KvK-nummers, contactgegevens, tarieven, projectresultaten, beoordelingen en verificatiestatussen in de seed zijn fictief. Ze zijn gemarkeerd met `is_demo = true` en worden in de interface getoond als **“Demo-data — niet geverifieerd”**.
+> **Demo-data.** Alle aannemers, KvK-nummers, contactgegevens, tarieven, projectresultaten, beoordelingen en verificatiestatussen in de seed zijn fictief. Ze zijn gemarkeerd met `is_demo = true` en worden in de interface getoond met het label **“Voorbeeld”** en de regel *“Dit voorbeeld bevat nog verzonnen vakmensen.”* (bij profielen en teamvoorstellen met zulke vakmensen).
 
 ---
 
@@ -206,7 +206,7 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `CRON_SECRET` | Geheim voor de dagelijkse registercontrole (Vercel Cron). Leeg = geplande controle uit. |
 | `REGISTER_CRON_BATCH` | Uitvoerders per geplande run (1–5, standaard 2). |
 | `DATABASE_POOL_SIZE` | Max. verbindingen per serverproces (standaard 5). |
-| `DEMO_MODE` | Demo-inlogknoppen, demo-verzending en demo-banner. Standaard aan zonder en uit mét `DATABASE_URL`. |
+| `DEMO_MODE` | Demo-inlogknoppen en demo-verzending. Standaard aan zonder en uit mét `DATABASE_URL`. |
 | `BOUWCHECK_DATA_DIR` | Map voor PGlite en uploads (standaard `.data`; op Vercel/serverless automatisch `/tmp/bouwcheck`). |
 | `APP_URL` | Publieke URL; bij `https://` krijgen sessiecookies de `Secure`-vlag. Op Vercel standaard `https://$VERCEL_URL`. |
 | `ADMIN_PASSWORD` | Alleen voor `npm run db:create-admin`. |
@@ -266,9 +266,9 @@ Een beheerder voor een niet-demo-omgeving maak je vanaf je eigen computer: `verc
 
 **Let op met `DEMO_MODE=true` op een openbare URL:** iedereen kan dan met de demo-knoppen inloggen, ook als demo-*beheerder*, en ziet daarmee alle projecten van alle accounts. Gebruik demo-modus dus niet zodra echte gebruikers echte projecten invoeren. Ook delen alle bezoekers die als demo-flipper inloggen één AI-limiet.
 
-**Zonder database** start BouwCheck op Vercel een tijdelijke demo-database in `/tmp` (banner *“Tijdelijke opslag”*). Elke serverinstantie heeft dan een eigen database: inloggen, een project aanmaken en de teamvoorstellen openen kunnen op verschillende instanties terechtkomen, waardoor je ineens uitgelogd bent of een project ‘niet gevonden’ wordt. Alleen geschikt om rond te kijken.
+**Zonder database** start BouwCheck op Vercel een tijdelijke demo-database in `/tmp` (de site toont hier geen melding meer over; koppel een database vóór echt gebruik). Elke serverinstantie heeft dan een eigen database: inloggen, een project aanmaken en de teamvoorstellen openen kunnen op verschillende instanties terechtkomen, waardoor je ineens uitgelogd bent of een project ‘niet gevonden’ wordt. Alleen geschikt om rond te kijken.
 
-**Zonder Blob** staan foto's en bijlagen in `/tmp` en verdwijnen ze bij een herstart (banner *“Tijdelijke bestandsopslag”*).
+**Zonder Blob** staan foto's en bijlagen in `/tmp` en verdwijnen ze bij een herstart.
 
 ---
 
@@ -285,7 +285,6 @@ Elke PostgreSQL 15+ werkt via `DATABASE_URL` (bij serverless hosting de gepoolde
 
 Actief zonder `DATABASE_URL` (of met `DEMO_MODE=true`):
 
-- paarse banner bovenaan iedere pagina;
 - inlogknoppen voor drie fictieve demo-accounts (alleen in demo-modus);
 - **offerteaanvragen aan aannemers zonder BouwCheck-account** worden gemarkeerd als *“Demo-verzending — niet daadwerkelijk verstuurd”*. Er wordt nooit gedaan alsof een e-mail is verzonden. Buiten demo-modus blijven zulke aanvragen op *“Klaar om te verzenden”* staan;
 - wachtwoordherstel toont de herstellink op het scherm met de vermelding dat e-mail niet geconfigureerd is. Buiten demo-modus wordt geen link aangemaakt en verwijst de app naar de beheerder;

@@ -13,6 +13,7 @@ import { formatDate, formatMoney, formatNumber } from "@/lib/format";
 import { specialtyName, PROVIDER_TYPES } from "@/lib/domain/constants";
 import type { Priority } from "@/lib/domain/teams";
 import { site } from "@/config/site";
+import { VERZONNEN_VAKMENSEN } from "@/content/homepage";
 import { logEventOnce } from "@/lib/events";
 
 export const metadata: Metadata = { title: "Teamvoorstellen" };
@@ -74,11 +75,14 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
   const ctx = { budget: p.budget_amount, desiredStart: p.desired_start_date };
   const best = Object.fromEntries(proposals.map((x) => [x.priority, x.ranked[0] ?? null])) as Record<Priority, (typeof proposals)[number]["ranked"][number] | null>;
   const noScopeQuantities = scope.every((s) => s.quantity === null);
+  // Eén regel zolang er verzonnen vakmensen in de voorstellen staan; verdwijnt vanzelf zodra ze er niet meer in zitten.
+  const fictief = proposals.some((x) => [...x.ranked, ...x.unranked.map((u) => u.option)].some((o) => o.members.some((m) => m.contractor.is_demo)));
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 pb-28 sm:px-6">
       {header}
       <div className="mt-6 flex flex-col gap-3">
+        {fictief ? <Notice tone="demo">{VERZONNEN_VAKMENSEN}</Notice> : null}
         <Notice tone="info" title="Hoe deze voorstellen tot stand komen">
           BouwCheck stelt per prioriteit teams samen uit uitvoerders die in {p.province ?? "je regio"} werken en de benodigde vakgebieden uitvoeren: één hoofdaannemer, of
           losse vakspecialisten — aannemersbedrijven, zzp-vakmensen en klussers. Elke prioriteit ordent op één criterium — er is geen verborgen totaalscore. Teams met te weinig gegevens voor een criterium staan apart,

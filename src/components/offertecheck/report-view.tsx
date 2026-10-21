@@ -40,7 +40,8 @@ export function ReportView({ report, showContractor = false }: { report: Report;
         <div className="mt-5 rounded-[var(--radius-card)] border border-brand-200 bg-brand-50 p-4 sm:p-5">
           <h2 className="text-sm font-semibold text-brand-800">We vonden niets opvallends</h2>
           <p className="mt-1 text-sm text-ink-700">
-            In deze offertes vonden we geen ontbrekende posten, stelposten, uitsluitingen of grote prijsverschillen. Lees wel de voorwaarden en eventuele vragen hieronder.
+            We vonden geen ontbrekende posten en geen grote prijsverschillen. Ook geen bedragen die nog kunnen veranderen, of werk dat er niet in zit. Lees wel de voorwaarden en
+            vragen hieronder.
           </p>
         </div>
       ) : null}
@@ -69,7 +70,7 @@ export function ReportView({ report, showContractor = false }: { report: Report;
         ))}
       </ul>
 
-      <Section icon={Scale} title="Alle posten op één scope" description="Per onderdeel van het werk: wat elke offerte wel en niet bevat. Bedragen excl. btw.">
+      <Section icon={Scale} title="Alle posten naast elkaar" description="Per onderdeel van het werk zie je wat elke offerte wel en niet bevat. Bedragen excl. btw.">
         <TableWrap>
           <table className="w-full" style={{ minWidth: `${280 + report.offertes.length * 140}px` }}>
             <thead>
@@ -101,13 +102,13 @@ export function ReportView({ report, showContractor = false }: { report: Report;
           </table>
         </TableWrap>
         <p className="mt-2 text-xs text-ink-500">
-          <strong>Inbegrepen</strong> = genoemd, maar zonder eigen bedrag. <strong>Stelpost</strong> = voorlopig bedrag, kan hoger uitvallen. <strong>Uitgesloten</strong> = staat
-          uitdrukkelijk niet in de prijs.
+          <strong>Inbegrepen</strong>: genoemd, maar zonder eigen bedrag. <strong>Stelpost</strong>: een bedrag dat nog kan veranderen, vaak omhoog.{" "}
+          <strong>Zit er niet in</strong>: de offerte zegt dat dit niet in de prijs zit.
         </p>
       </Section>
 
       {report.ontbrekend.length ? (
-        <Section icon={FileWarning} title="Ontbrekende posten" description="Posten die een andere offerte wel noemt, met wat die offertes ervoor rekenen: een indicatie van wat het je later kan kosten. Vraag na of dit werk elders zit of echt ontbreekt.">
+        <Section icon={FileWarning} title="Ontbrekende posten" description="Een andere offerte noemt deze posten wel. Je ziet wat die offerte ervoor rekent. Zo weet je ongeveer wat het je later kan kosten. Vraag na of dit werk ergens anders in zit.">
           <div className="grid gap-3 sm:grid-cols-2">
             {report.ontbrekend.map((m) => (
               <div key={m.offerte} className="rounded-[var(--radius-card)] border border-danger-100 bg-danger-50/40 p-4">
@@ -134,7 +135,7 @@ export function ReportView({ report, showContractor = false }: { report: Report;
       ) : null}
 
       {report.stelposten.length || report.uitsluitingen.length ? (
-        <Section icon={AlertTriangle} title="Stelposten en uitsluitingen" description="Hier zit het risico op meerwerk: het bedrag ligt nog niet vast, of het werk zit niet in de prijs.">
+        <Section icon={AlertTriangle} title="Bedragen die nog kunnen veranderen, en wat er niet in zit" description="Hier komen extra kosten vaak vandaan. Het bedrag ligt nog niet vast, of het werk zit niet in de prijs.">
           <ul className="flex flex-col gap-2">
             {report.stelposten.map((s, i) => (
               <li key={`s${i}`} className="rounded-lg border border-warn-100 bg-warn-50/50 p-3 text-sm">
@@ -151,7 +152,7 @@ export function ReportView({ report, showContractor = false }: { report: Report;
               <li key={`u${i}`} className="rounded-lg border border-danger-100 bg-danger-50/40 p-3 text-sm">
                 <span className="flex flex-wrap items-center gap-2">
                   <Badge tone="danger">
-                    <Ban aria-hidden /> Uitgesloten
+                    <Ban aria-hidden /> Zit er niet in
                   </Badge>
                   <span className="font-medium text-ink-950">{s.omschrijving}</span>
                   <span className="text-ink-500">· {label(s.offerte)}</span>
@@ -164,7 +165,7 @@ export function ReportView({ report, showContractor = false }: { report: Report;
       ) : null}
 
       {report.prijsverschillen.length ? (
-        <Section icon={Scale} title="Grote prijsverschillen" description="Posten waar de hoogste prijs minstens anderhalf keer de laagste is. Bij de hoogste prijs betaal je mogelijk te veel; een opvallend lage prijs kan betekenen dat er werk ontbreekt. Vaak zit het verschil in hoeveelheden of kwaliteit.">
+        <Section icon={Scale} title="Grote prijsverschillen" description="Bij deze posten is de hoogste prijs minstens anderhalf keer de laagste. Bij de hoogste prijs betaal je misschien te veel. Een heel lage prijs kan betekenen dat er werk mist. Vaak zit het verschil in hoeveelheid of kwaliteit.">
           <ul className="flex flex-col gap-2">
             {report.prijsverschillen.map((g) => (
               <li key={g.post} className="flex flex-col gap-0.5 rounded-lg border border-ink-200 bg-white p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
@@ -179,7 +180,7 @@ export function ReportView({ report, showContractor = false }: { report: Report;
       ) : null}
 
       {report.open_vragen.length ? (
-        <Section icon={CircleHelp} title="Je onderhandelingslijst" description="De vragen die je aan elke aannemer stelt voordat je tekent.">
+        <Section icon={CircleHelp} title="Je lijst met vragen" description="Stel deze vragen aan elke aannemer voordat je tekent.">
           <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-sm text-ink-800">
             {report.open_vragen.map((q, i) => (
               <li key={i}>

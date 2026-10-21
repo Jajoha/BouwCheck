@@ -10,11 +10,11 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
   return (
     <AuthCard
-      title={rol === "aannemer" ? "Aanmelden als uitvoerder" : "Account aanmaken"}
+      title={rol === "aannemer" ? "Aanmelden als vakman" : "Account aanmaken"}
       description={
         rol === "aannemer"
-          ? "Voor aannemersbedrijven, zzp-vakmensen en klussers. Maak eerst een account aan; daarna vul je je profiel in."
-          : "Registreer je om je project te beschrijven en teamvoorstellen te ontvangen."
+          ? "Voor aannemers, zzp'ers en klussers. Maak eerst een account. Daarna vul je je profiel in. Het is gratis."
+          : "Maak een account. Dan kun je je project beschrijven en een Teamvoorstel krijgen."
       }
       footer={
         <>

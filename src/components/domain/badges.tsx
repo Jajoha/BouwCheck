@@ -1,15 +1,15 @@
-import { BadgeCheck, FileCheck2, FlaskConical, UserCheck, CircleDashed, CalendarClock } from "lucide-react";
+import { BadgeCheck, FileCheck2, UserCheck, CircleDashed, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { site } from "@/config/site";
+import { VOORBEELD_LABEL } from "@/content/homepage";
 import { AVAILABILITY, PRICE_LEVELS, type AvailabilityStatus, type PriceLevel } from "@/lib/domain/constants";
 import { VERIFICATION_LEVELS, type VerificationLevel } from "@/lib/domain/verification";
 import { formatDate } from "@/lib/format";
 
 export function DemoBadge({ className, compact }: { className?: string; compact?: boolean }) {
   return (
-    <Badge tone="demo" className={className} title="Fictief demoprofiel: alle gegevens, cijfers en statussen zijn verzonnen.">
-      <FlaskConical aria-hidden />
-      {compact ? "Demo-data" : site.demoLabel}
+    <Badge tone="demo" className={className} title="Verzonnen voorbeeld: alle gegevens, cijfers en verificatieniveaus zijn verzonnen.">
+      {compact ? VOORBEELD_LABEL : site.demoLabel}
     </Badge>
   );
 }
@@ -27,7 +27,7 @@ export function VerificationBadge({ level, isDemo, showDescription }: { level: V
   const meta = VERIFICATION_LEVELS[level];
   const tone = level === "zelf_opgegeven" ? "muted" : isDemo ? "demo" : "positive";
   return (
-    <Badge tone={tone} title={`${meta.description}${isDemo ? " Let op: dit is een fictief demoprofiel; er heeft geen echte controle plaatsgevonden." : ""}`}>
+    <Badge tone={tone} title={`${meta.description}${isDemo ? " Let op: dit is een verzonnen voorbeeldprofiel. Er is niets echt gecontroleerd." : ""}`}>
       <Icon aria-hidden />
       {meta.label}
       {isDemo && level !== "zelf_opgegeven" ? <span className="font-normal">(fictief)</span> : null}

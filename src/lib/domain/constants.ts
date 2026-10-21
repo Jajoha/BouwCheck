@@ -213,15 +213,17 @@ export const ATTACHMENT_KINDS = {
 
 /** Alle onderwerpen van interesse-aanvragen, ook die van de oude testprijzen (voor bestaande aanvragen). */
 export const LEAD_TYPES = {
+  offertecheck: "Offertecheck",
+  teamvoorstel: "Teamvoorstel",
   selectie: "Aannemersselectie",
   renovatieselectie: "Complete renovatieselectie",
   projectpas: "Projectpas",
-  pro: "BouwCheck Pro",
+  pro: "Pro",
   portfolio: "Portfolio",
-  contact: "Contactformulier",
+  contact: "Contact",
 } as const;
 export type LeadType = keyof typeof LEAD_TYPES;
 
-/** Onderwerpen in het interesseformulier: de treden van de value ladder (met de Offertecheck) of de oude testprijzen. */
-export const LADDER_LEAD_TYPES: LeadType[] = ["projectpas", "pro", "portfolio", "contact"];
+/** Onderwerpen in het aanvraagformulier op /prijzen (met de Offertecheck) of de oude testprijzen. */
+export const LADDER_LEAD_TYPES: LeadType[] = ["offertecheck", "teamvoorstel", "projectpas", "pro", "contact"];
 export const LEGACY_LEAD_TYPES: LeadType[] = ["selectie", "renovatieselectie", "pro", "contact"];

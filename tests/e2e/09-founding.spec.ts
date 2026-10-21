@@ -4,9 +4,9 @@ import { loginAs, logout } from "./helpers";
 test.describe("Founding members en cases", () => {
   test("aanvraag, plekken per regio uit de database en reservering door beheer", async ({ page }) => {
     await page.goto("/founding-members");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("BouwCheck Flip Control: je team binnen 72 uur, je renovatie onder controle.");
-    await expect(page.getByText("Geen passend teamvoorstel binnen 72 uur? Dan is die maand of projectpas gratis.")).toBeVisible();
-    await expect(page.getByText(/volgende instroom:/)).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Doe als een van de eersten mee en betaal minder");
+    await expect(page.getByText("€ 149 per maand")).toBeVisible();
+    await expect(page.getByText(/De volgende start is op/)).toBeVisible();
     const seats = page.getByRole("list", { name: "Vrije plekken per regio" });
     await expect(seats.getByRole("listitem").filter({ hasText: "Zeeland" })).toContainText("25/25");
 
@@ -20,7 +20,7 @@ test.describe("Founding members en cases", () => {
     await page.getByLabel(/toestemming/).check();
     await page.getByRole("button", { name: "Plek aanvragen" }).click();
     await expect(page).toHaveURL(/\/founding-members\/bedankt/);
-    await expect(page.getByText("geen betaling gestart", { exact: false })).toBeVisible();
+    await expect(page.getByText("Er wordt nu niets afgerekend.", { exact: false })).toBeVisible();
 
     await loginAs(page, "beheerder");
     await page.goto("/beheer/founding-members");
@@ -44,6 +44,7 @@ test.describe("Founding members en cases", () => {
     await page.getByLabel(/toestemming/).check();
     await page.getByRole("button", { name: "Aanvraag versturen" }).click();
     await expect(page).toHaveURL(/\/bedankt\?type=projectpas/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bedankt. We nemen binnen 1 werkdag contact met je op om te starten.");
     await loginAs(page, "beheerder");
     await page.goto("/beheer/funnel");
     await expect(page.getByRole("row").filter({ hasText: "projectpas_interesse" }).getByRole("cell").last()).not.toHaveText("0");

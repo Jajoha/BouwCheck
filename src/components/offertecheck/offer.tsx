@@ -5,32 +5,27 @@ import type { WeeklyCapacity } from "@/lib/domain/offertecheck";
 import { cn } from "@/lib/utils";
 
 /**
- * Het Offertecheck-aanbod. Teksten letterlijk zoals aangeleverd door de opdrachtgever;
- * wijzig ze hier en nergens anders.
+ * Het Offertecheck-aanbod op /offertecheck. Wijzig de teksten hier en nergens anders.
+ * Korte zinnen, één boodschap per zin; geen vaktaal zonder uitleg.
  */
 export const OFFER = {
-  eyebrow: "Voor vastgoedondernemers en projectontwikkelaars die renoveren",
-  title: "Zie het meerwerk vóórdat het je marge opeet.",
-  intro:
-    "Je hebt het pand, nu moet de renovatie gegund worden. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Zo blijft je rendement op de bouwplaats overeind.",
+  eyebrow: "Voor vastgoedondernemers en projectontwikkelaars die verbouwen",
+  title: "Laat je offertes gratis checken voordat je tekent",
+  intro: "Je stuurt ons je offertes. Binnen 48 uur hoor je wat er mist, wat er niet in zit en waar je te veel betaalt.",
   benefitsTitle: "Wat je krijgt",
   benefits: [
-    "Alle offertes op één scope. Elke post naast elkaar, zodat je appels met appels vergelijkt.",
-    "Ontbrekende posten in euro's. Wat in de ene offerte zit en in de andere niet, met een indicatie van wat het je later kost.",
-    "Stelposten en uitsluitingen uitgelicht. De plekken waar meerwerk vandaan komt, met uitleg waarom.",
-    "Prijsverschillen per post. Waar je mogelijk te veel betaalt, en waar een lage prijs verdacht laag is.",
-    "Je onderhandelingslijst. De vragen die je aan elke aannemer stelt voordat je tekent.",
+    "Alle offertes naast elkaar. Elke post staat op één regel, dus je vergelijkt hetzelfde werk.",
+    "Wat er mist, in euro's. Je ziet wat een andere offerte er wel voor rekent.",
+    "Bedragen die nog kunnen veranderen. En wat er niet in de prijs zit. Daar komen extra kosten vaak vandaan.",
+    "Grote prijsverschillen per post. Zo zie je waar je te veel betaalt. Of waar een prijs verdacht laag is.",
+    "Je lijst met vragen. Die stel je aan elke aannemer voordat je tekent.",
   ],
-  bonus:
-    "Wil je teams die op deze ene scope offreren? Je krijgt binnen 72 uur een gratis teamvoorstel van aannemers, zzp-vakmensen en klussers, geordend op budget, kwaliteit of snelheid.",
-  promise: "Je rapport binnen 48 uur, anders krijg je je teamvoorstel met voorrang. Vinden we niets? Dan zeggen we dat eerlijk, en teken je met een gerust hart.",
-  privacy: "Je offertes worden niet gedeeld met aannemers. Je kunt ze op elk moment laten verwijderen.",
-  limited: (max: number) => `Elke check wordt door een mens nagekeken. Daarom nemen we er maximaal ${max} per week aan.`,
-  cta: "Gratis Offertecheck",
+  bonus: "Wil je vakmensen die allemaal voor hetzelfde werk een prijs geven? Vraag dan een gratis Teamvoorstel aan.",
+  promise: "Je rapport komt binnen 48 uur. Vinden we niets? Dan zeggen we dat eerlijk.",
+  privacy: "We delen je offertes niet met aannemers. Je kunt ze altijd laten verwijderen.",
+  limited: (max: number) => `Een medewerker kijkt elke check na. Daarom doen we er maximaal ${max} per week.`,
+  cta: "Check mijn offertes – gratis",
   ctaHref: "/offertecheck#upload",
-  proNote: "Werk je met meerdere panden per jaar?",
-  proLink: "Bekijk BouwCheck Pro.",
-  proHref: "/prijzen#pro",
 } as const;
 
 /** Splitst "Kop. Uitleg." zodat de eerste zin vet kan; de tekst zelf blijft ongewijzigd. */
@@ -46,18 +41,6 @@ export function OfferCta({ className }: { className?: string }) {
         {OFFER.cta} <ArrowRight aria-hidden />
       </Link>
     </Button>
-  );
-}
-
-/** Regel onder de knop op de homepage, voor wie meerdere panden per jaar doet. */
-export function OfferProNote({ className }: { className?: string }) {
-  return (
-    <p className={cn("text-sm text-ink-600", className)}>
-      {OFFER.proNote}{" "}
-      <Link href={OFFER.proHref} className="font-medium text-ink-900 underline underline-offset-2 hover:text-brand-800">
-        {OFFER.proLink}
-      </Link>
-    </p>
   );
 }
 
@@ -133,7 +116,7 @@ export function OfferFull({ capacity }: { capacity: WeeklyCapacity | null }) {
         <OfferBlock icon={Users} title="Bonus">
           {OFFER.bonus}
         </OfferBlock>
-        <OfferBlock icon={Gift} title="Onze belofte">
+        <OfferBlock icon={Gift} title="Binnen 48 uur">
           {OFFER.promise}
         </OfferBlock>
         <OfferBlock icon={EyeOff} title="Privé">
