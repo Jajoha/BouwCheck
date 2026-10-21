@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectNoHorizontalScroll, OFFER_BENEFITS, OFFER_INTRO } from "./helpers";
+import { expectNoHorizontalScroll, OFFER_BENEFITS, OFFER_EYEBROW, OFFER_INTRO } from "./helpers";
 
 test.describe("Publieke site", () => {
   test("homepage rond de Offertecheck: propositie, navigatie en werkende CTA's", async ({ page }) => {
@@ -7,11 +7,14 @@ test.describe("Publieke site", () => {
     page.on("pageerror", (e) => errors.push(String(e)));
     await page.goto("/");
     await expect(page).toHaveTitle(/BouwCheck/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Gratis Offertecheck: zie het meerwerk vóórdat je tekent");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Zie het meerwerk vóórdat het je marge opeet.");
+    await expect(page.getByText(OFFER_EYEBROW, { exact: true })).toBeVisible();
     await expect(page.getByText(OFFER_INTRO, { exact: true })).toBeVisible();
     const benefits = page.getByRole("heading", { name: "Wat je krijgt", level: 2 }).locator("xpath=following-sibling::ul[1]");
     await expect(benefits.getByRole("listitem")).toHaveText(OFFER_BENEFITS);
-    await expect(page.getByRole("main").getByRole("link", { name: "Upload je offertes – gratis" })).toHaveAttribute("href", "/offertecheck#upload");
+    await expect(page.getByRole("main").getByRole("link", { name: "Gratis Offertecheck" }).first()).toHaveAttribute("href", "/offertecheck#upload");
+    await expect(page.getByText("Werk je met meerdere panden per jaar?")).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link", { name: "Bekijk BouwCheck Pro." })).toHaveAttribute("href", "/prijzen#pro");
     await expect(page.getByText("Demo-modus:")).toBeVisible();
     // statische voorbeeldcheck, als demo gelabeld
     const example = page.getByRole("figure", { name: "Voorbeeld van een Offertecheck" });
@@ -35,7 +38,7 @@ test.describe("Publieke site", () => {
     // CTA's
     await nav.getByRole("link", { name: "Hoe het werkt" }).click();
     await expect(page.getByRole("heading", { name: "Hoe het werkt" })).toBeInViewport();
-    await page.getByRole("main").getByRole("link", { name: "Upload je offertes – gratis" }).click();
+    await page.getByRole("main").getByRole("link", { name: "Gratis Offertecheck" }).first().click();
     await expect(page).toHaveURL(/\/offertecheck#upload$/);
     await expect(page.getByRole("heading", { name: "Upload je offertes", level: 2 })).toBeInViewport();
     expect(errors).toEqual([]);
