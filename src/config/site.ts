@@ -49,7 +49,7 @@ export const pricingPlans: PricingPlan[] = [
     price: "€ 199",
     priceNote: "per selectie, excl. btw",
     description:
-      "Voor vastgoedflippers die voor één specifiek project een shortlist van passende aannemers willen ontvangen.",
+      "Voor vastgoedondernemers en projectontwikkelaars die voor één specifiek project een shortlist van passende aannemers willen ontvangen.",
     features: [
       "Teamvoorstel voor één vakgebied",
       "Geordend op budget, kwaliteit of snelheid",
@@ -80,7 +80,7 @@ export const pricingPlans: PricingPlan[] = [
     price: "€ 99",
     priceNote: "per maand, excl. btw",
     description:
-      "Voor actieve vastgoedflippers met meerdere renovatieprojecten per jaar.",
+      "Voor actieve vastgoedondernemers en projectontwikkelaars met meerdere renovatieprojecten per jaar.",
     features: [
       "Onbeperkt projecten en teamvoorstellen",
       "Projectresultaten en ervaringen vastleggen",
@@ -175,7 +175,7 @@ export const ladder: LadderStep[] = [
     price: eurPrice(ladderPrices.proMonthly),
     priceNote: "per maand, excl. btw",
     pilotNote: PILOT_FREE,
-    summary: "Voor flippers met meerdere projecten per jaar.",
+    summary: "Voor vastgoedondernemers en projectontwikkelaars met meerdere projecten per jaar.",
     delivers: ["Onbeperkt projecten en teamvoorstellen", "Favoriete vakmensen per regio", "Prijsbenchmarks uit echte offertes", "Vervanger binnen 72 uur"],
     guarantees: [GUARANTEE_72H],
     bonuses: FOUNDING_BONUSES,

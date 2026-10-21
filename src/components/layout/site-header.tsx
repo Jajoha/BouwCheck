@@ -12,7 +12,7 @@ type NavItem = { href: string; label: string };
 
 const PUBLIC_NAV: NavItem[] = [
   { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "/#voor-vastgoedflippers", label: "Voor vastgoedondernemers en projectontwikkelaars" },
+  { href: "/#voor-vastgoedondernemers", label: "Voor vastgoedondernemers en projectontwikkelaars" },
   { href: "/transparantie", label: "Hoe wij selecteren" },
   { href: "/prijzen", label: "Prijzen" },
 ];

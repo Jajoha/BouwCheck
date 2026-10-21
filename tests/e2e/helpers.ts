@@ -1,6 +1,6 @@
 import { expect, type Page } from "@playwright/test";
 
-export async function loginAs(page: Page, role: "vastgoedflipper" | "aannemer" | "beheerder") {
+export async function loginAs(page: Page, role: "vastgoedondernemer" | "aannemer" | "beheerder") {
   await page.goto("/inloggen");
   await page.getByRole("button", { name: new RegExp(`Demo als ${role}`, "i") }).click();
   await expect(page).not.toHaveURL(/inloggen/);
