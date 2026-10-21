@@ -15,7 +15,7 @@ test.describe.serial("Uitvoerders (klussers/zzp) en openbare registers", () => {
   });
 
   test("teamvoorstellen tonen uitgesloten uitvoerders apart, met reden en bron", async ({ page }) => {
-    await loginAs(page, "vastgoedflipper");
+    await loginAs(page, "vastgoedondernemer");
     await page.goto("/projecten");
     await page.getByRole("link", { name: /Tussenwoning Amersfoort/ }).first().click();
     await page.getByRole("link", { name: "Teamvoorstellen" }).first().click();

@@ -30,7 +30,8 @@ export function LadderPricing({ selected, user, foundingMembers }: { selected: L
         {ladder.map((step) => (
           <div
             key={step.id}
-            className={cn("flex flex-col rounded-xl border bg-white p-5", step.highlighted ? "border-ink-900 shadow-[var(--shadow-raised)] xl:-my-2 xl:py-7" : "border-ink-200")}
+            id={step.id}
+            className={cn("flex scroll-mt-24 flex-col rounded-xl border bg-white p-5", step.highlighted ? "border-ink-900 shadow-[var(--shadow-raised)] xl:-my-2 xl:py-7" : "border-ink-200")}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold text-ink-950">{step.name}</h2>

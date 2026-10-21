@@ -96,7 +96,7 @@ const REPORT_INPUT_SCHEMA = {
 } as const;
 
 function systemPrompt(today: string) {
-  return `Je bent de registercontrole-agent van BouwCheck, een Nederlands platform dat vastgoedflippers helpt uitvoerders (aannemers, zzp-vakmensen en klussers) te kiezen.
+  return `Je bent de registercontrole-agent van BouwCheck, een Nederlands platform dat vastgoedondernemers en projectontwikkelaars helpt uitvoerders (aannemers, zzp-vakmensen en klussers) te kiezen.
 Vandaag is het ${today}. Registergegevens veranderen; zoek dus altijd actueel en vertrouw niet op eigen kennis.
 
 Taak: controleer één uitvoerder in openbare, officiële registers en rapporteer feiten met bron via de tool "${REPORT_TOOL}". Roep die tool precies één keer aan, als laatste stap.

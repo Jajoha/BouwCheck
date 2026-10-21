@@ -625,7 +625,7 @@ async function insertAll(tx: Queryable) {
        values ($1,$2,$3,$4,$5,$6,$7, now(), true) returning id`,
       [email, name, pw, role, company, region, types],
     );
-  const flipper = await user(DEMO_ACCOUNTS.flipper, "Demo-gebruiker (vastgoedflipper)", "flipper", "Demo Vastgoed B.V. (fictief)", "Utrecht", ["Complete renovatie", "Badkamer en/of keuken", "Verduurzaming"]);
+  const flipper = await user(DEMO_ACCOUNTS.flipper, "Demo-gebruiker (vastgoedondernemer)", "flipper", "Demo Vastgoed B.V. (fictief)", "Utrecht", ["Complete renovatie", "Badkamer en/of keuken", "Verduurzaming"]);
   const admin = await user(DEMO_ACCOUNTS.admin, "Demo-beheerder", "beheerder", "BouwCheck (demo)", null, []);
   const contractorUser = await user(DEMO_ACCOUNTS.contractor, "Demo-aannemer (Kwastenburg)", "aannemer", "Schildersbedrijf Kwastenburg (fictief)", "Gelderland", []);
   const clients: { id: string }[] = [];

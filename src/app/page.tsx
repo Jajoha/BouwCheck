@@ -29,7 +29,7 @@ import { ladderPrices, site } from "@/config/site";
 import { env } from "@/lib/env";
 import { listPublishedCases, type CaseRow } from "@/lib/data/founding";
 import { CheckExample } from "@/components/marketing/check-example";
-import { OfferBenefits, OfferCta, OfferIntro } from "@/components/offertecheck/offer";
+import { OfferBenefits, OfferCta, OfferIntro, OfferProNote } from "@/components/offertecheck/offer";
 import { sqlOne } from "@/lib/db";
 import { getScope } from "@/lib/data/scope";
 import { proposalsFor } from "@/lib/data/teams";
@@ -141,7 +141,7 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:pb-24 lg:pt-20">
           <div>
             <Badge tone="neutral" className="mb-5">
-              Bèta voor vastgoedflippers en -investeerders
+              Bèta voor vastgoedondernemers en projectontwikkelaars
             </Badge>
             <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-ink-950 sm:text-5xl">{site.hero.title}</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-600">{site.hero.subtitle}</p>
@@ -243,10 +243,10 @@ function ProblemsSection() {
 
 function BenefitsSection() {
   return (
-      <section id="voor-vastgoedflippers" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6">
+      <section id="voor-vastgoedondernemers" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-[1fr_2fr]">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Gebouwd voor vastgoedflippers</h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Gebouwd voor vastgoedondernemers en projectontwikkelaars</h2>
             <p className="mt-3 text-ink-600">
               Je vertelt wat er moet gebeuren; BouwCheck levert wie het kan doen, geordend op wat voor jou het zwaarst weegt. Geen bedrijvengids, geen zelf vergelijken.
             </p>
@@ -376,6 +376,7 @@ async function OffertecheckHome() {
           <div>
             <OfferIntro />
             <OfferCta className="mt-7" />
+            <OfferProNote className="mt-4" />
           </div>
           <OfferBenefits className="rounded-2xl border border-ink-200 bg-white p-5 shadow-[var(--shadow-raised)] sm:p-7" />
         </div>

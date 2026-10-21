@@ -3,7 +3,7 @@ import { expectNoHorizontalScroll, loginAs } from "./helpers";
 
 test.describe("Intake en teamvoorstellen", () => {
   test("teamvoorstellen voor het demoproject: drie prioriteiten met onderbouwing", async ({ page }) => {
-    await loginAs(page, "vastgoedflipper");
+    await loginAs(page, "vastgoedondernemer");
     await page.goto("/projecten");
     await page.getByRole("link", { name: /Tussenwoning Amersfoort/ }).first().click();
     await page.getByRole("link", { name: "Teamvoorstellen" }).first().click();
@@ -24,7 +24,7 @@ test.describe("Intake en teamvoorstellen", () => {
   });
 
   test("handmatige intake zonder AI en werkzaamheden aanpassen", async ({ page }) => {
-    await loginAs(page, "vastgoedflipper");
+    await loginAs(page, "vastgoedondernemer");
     await page.goto("/projecten/nieuw");
     await page.getByLabel("Wat wil je laten doen?").fill("Alle wanden en plafonds opnieuw schilderen in een bovenwoning.");
     await page.getByLabel("Locatie (plaats of postcode)").fill("Arnhem");
@@ -55,7 +55,7 @@ test.describe("Intake en teamvoorstellen", () => {
   });
 
   test("mobiel: intake en voorstellen zonder horizontale scroll", async ({ page }) => {
-    await loginAs(page, "vastgoedflipper");
+    await loginAs(page, "vastgoedondernemer");
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/projecten/nieuw");
     await expectNoHorizontalScroll(page);

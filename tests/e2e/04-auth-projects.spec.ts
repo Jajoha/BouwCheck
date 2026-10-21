@@ -37,7 +37,7 @@ test.describe.serial("Registratie, onboarding, projecten en offerteaanvragen", (
 
     await expect(page).toHaveURL(/\/onboarding/);
     await page.getByLabel("Bedrijfsnaam").fill("E2E Vastgoed");
-    await page.getByLabel("Vastgoedflipper").check();
+    await page.getByLabel("Vastgoedondernemer of projectontwikkelaar").check();
     await page.getByLabel("Werkgebied of voorkeursregio").selectOption("Utrecht");
     await page.getByLabel("Complete renovatie").check();
     await page.getByRole("button", { name: "Opslaan en doorgaan" }).click();
