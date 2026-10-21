@@ -50,7 +50,7 @@ export function LoginForm({ next, demoMode }: { next?: string; demoMode: boolean
           <p className="mt-1 text-xs text-demo-700">Log in met een vooraf aangemaakt, fictief demo-account. Dit is geen echte gebruikerssessie van een klant.</p>
           <div className="mt-3 grid gap-2">
             <Button type="button" variant="outline" disabled={demoPending} onClick={() => demo("flipper")}>
-              Demo als vastgoedflipper
+              Demo als vastgoedondernemer
             </Button>
             <Button type="button" variant="outline" disabled={demoPending} onClick={() => demo("contractor")}>
               Demo als aannemer

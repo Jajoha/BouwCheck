@@ -157,7 +157,7 @@ test.describe("Offertecheck", () => {
     await page.getByRole("link", { name: "Start een teamvoorstel met deze scope" }).click();
     await expect(page.getByRole("heading", { name: "Nog één stap: een gratis account" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Account aanmaken" })).toHaveAttribute("href", /email=keten%40voorbeeld\.nl/);
-    await loginAs(page, "vastgoedflipper");
+    await loginAs(page, "vastgoedondernemer");
     await page.goto(`${reportPath}/teamvoorstel`);
     await expect(page).toHaveURL(/\/projecten\/nieuw\?offertecheck=/);
     await expect(page.getByText("Scope uit je Offertecheck")).toBeVisible();

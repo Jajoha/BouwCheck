@@ -189,7 +189,7 @@ export type ProviderType = keyof typeof PROVIDER_TYPES;
 export const PROVIDER_TYPE_IDS = Object.keys(PROVIDER_TYPES) as [ProviderType, ...ProviderType[]];
 
 export const USER_ROLES = {
-  flipper: "Vastgoedflipper",
+  flipper: "Vastgoedondernemer of projectontwikkelaar",
   investeerder: "Vastgoedinvesteerder",
   aannemer: "Uitvoerder (aannemer, zzp of klusser)",
   beheerder: "Beheerder",

@@ -243,7 +243,7 @@ function ProblemsSection() {
 
 function BenefitsSection() {
   return (
-      <section id="voor-vastgoedflippers" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6">
+      <section id="voor-vastgoedondernemers" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-[1fr_2fr]">
           <div>
             <h2 className="text-3xl font-semibold tracking-tight text-ink-950">Gebouwd voor vastgoedondernemers en projectontwikkelaars</h2>
