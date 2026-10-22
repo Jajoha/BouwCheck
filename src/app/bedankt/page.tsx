@@ -18,14 +18,14 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
       <CheckCircle2 className="size-10 text-brand-600" aria-hidden />
       {start ? (
         <>
-          <h1 className="mt-4 text-2xl font-semibold text-ink-950">Bedankt. We nemen binnen 1 werkdag contact met je op om te starten.</h1>
+          <h1 className="mt-4 text-2xl font-semibold text-ink-950">Bedankt. We bellen of mailen je binnen 1 werkdag.</h1>
           <p className="mt-2 text-ink-700">Je aanvraag voor {label} is binnen. Er wordt nu niets afgerekend.</p>
         </>
       ) : (
         <>
           <h1 className="mt-4 text-2xl font-semibold text-ink-950">Bedankt, je aanvraag is binnen</h1>
           <p className="mt-2 text-ink-700">
-            {label && type !== "contact" ? `Je aanvraag voor ${label} is binnen. ` : ""}We nemen contact met je op. Er wordt niets afgerekend.
+            {label && type !== "contact" ? `Je aanvraag voor ${label} is binnen. ` : ""}We nemen contact met je op. Er wordt nu niets afgerekend.
           </p>
         </>
       )}

@@ -23,13 +23,13 @@ export default async function NewQuoteRequestPage({ searchParams }: { searchPara
     const projects = (await listProjects(user.id)).filter((p) => !["opgeleverd", "geannuleerd"].includes(p.status));
     return (
       <div className="mx-auto max-w-2xl px-4 py-8 pb-28 sm:px-6">
-        <PageHeader title="Offerteaanvraag voorbereiden" description="Een offerteaanvraag hoort altijd bij een renovatieproject, zodat alle aannemers dezelfde scope ontvangen." />
+        <PageHeader title="Offerteaanvraag voorbereiden" description="Een offerteaanvraag hoort altijd bij een renovatieproject, zodat alle aannemers een prijs geven voor hetzelfde werk." />
         {projects.length === 0 ? (
           <EmptyState
             className="mt-6"
             icon={FolderKanban}
             title="Maak eerst een renovatieproject aan"
-            description="Daarin leg je de scope, planning en het budget vast die in de aanvraag worden gebruikt."
+            description="Daarin leg je het werk, de gewenste data en het budget vast. Die gebruiken we in de aanvraag."
             action={
               <Button asChild>
                 <Link href="/projecten/nieuw">Project aanmaken</Link>

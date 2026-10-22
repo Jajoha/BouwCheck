@@ -16,7 +16,7 @@ test.describe("Aannemersprofielen (geen zelf zoeken of vergelijken)", () => {
     await expect(page.getByText("Voorbeeld — verzonnen gegevens").first()).toBeVisible();
     await expect(page.getByText("Dit voorbeeld bevat nog verzonnen vakmensen.", { exact: true })).toHaveCount(1);
     await expect(page.getByText("Onvoldoende gegevens voor een betrouwbare vergelijking")).toBeVisible();
-    await expect(page.getByText("Bron: Zelf opgegeven door uitvoerder").first()).toBeVisible();
+    await expect(page.getByText("Bron: Zelf ingevuld door de vakman").first()).toBeVisible();
     await expect(page.getByText("Bron: Ervaringen van opdrachtgevers")).toBeVisible();
 
     await page.goto("/aannemers/lindewaard");

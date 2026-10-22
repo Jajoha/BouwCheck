@@ -30,7 +30,7 @@ export default async function ReportPage({ params }: { params: Promise<{ token: 
         <Users className="size-6 text-brand-200" aria-hidden />
         <h2 className="mt-3 text-xl font-semibold sm:text-2xl">Wil je vakmensen die allemaal voor hetzelfde werk een prijs geven?</h2>
         <p className="mt-2 max-w-2xl text-sm text-ink-200">
-          We zetten de posten uit deze check klaar als werkomschrijving. Daarmee stelt {site.name} teams van vakmensen voor. Je kiest zelf op budget, kwaliteit of snelheid.
+          We zetten de posten uit deze check klaar als werkomschrijving. Daarmee stelt {site.name} teams van vakmensen voor. Je kiest zelf op prijs, betrouwbaarheid of snelheid.
           Zo krijg je offertes die je wel kunt vergelijken. Het Teamvoorstel is gratis.
         </p>
         <Button asChild size="lg" className="mt-5 h-auto w-full whitespace-normal bg-white py-3 text-ink-950 hover:bg-ink-100 sm:w-auto">

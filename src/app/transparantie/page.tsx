@@ -41,7 +41,7 @@ export default function TransparencyPage() {
                   <em>Budget:</em> de laagste geschatte prijs. Die rekenen we uit met de tarieven die vakmensen zelf opgeven, keer de hoeveelheden uit je lijst.
                 </li>
                 <li>
-                  <em>Kwaliteit:</em> het cijfer van de zwakste schakel in het team. Alleen vakmensen met minstens {site.minSampleSize} beoordelingen tellen mee. Is het
+                  <em>Betrouwbaarheid:</em> het cijfer van de zwakste schakel in het team. Alleen vakmensen met minstens {site.minSampleSize} beoordelingen tellen mee. Is het
                   gelijk? Dan gaat minder herstelwerk voor. Daarna meer gecontroleerde projecten.
                 </li>
                 <li>

@@ -6,21 +6,20 @@ import { NavLink } from "./nav-link";
 import { UserMenu } from "./user-menu";
 import { FunnelHidden } from "./funnel-hidden";
 import { getCurrentUser, type SessionUser } from "@/lib/auth/session";
-import { env } from "@/lib/env";
-import { OFFERTECHECK_NAV_CTA } from "@/content/homepage";
+import { VIND_NAV_CTA } from "@/content/homepage";
 
 type NavItem = { href: string; label: string };
 
 /** Voor bezoekers; "Inloggen" en de knop rechtsboven staan ernaast. */
 const PUBLIC_NAV: NavItem[] = [
-  { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "/prijzen", label: "Prijzen" },
+  { href: "/#zo-werkt-het", label: "Hoe het werkt" },
+  { href: "/#prijzen", label: "Prijzen" },
   { href: "/#voor-vakmensen", label: "Voor vakmensen" },
 ];
 
-/** De primaire knop rechtsboven voor bezoekers. */
+/** De primaire knop rechtsboven voor bezoekers: naar het hero-formulier (/#start). */
 export function primaryCta() {
-  return env.features.offertecheck ? { ...OFFERTECHECK_NAV_CTA } : { href: "/projecten/nieuw", label: "Start je project" };
+  return { ...VIND_NAV_CTA };
 }
 
 function navFor(user: SessionUser): NavItem[] {

@@ -88,6 +88,7 @@ export async function analyzeIntakeAction(fd: FormData): Promise<ActionResult<An
 /** Stap 2 → opslaan: project + bevestigde scope + foto's, daarna naar de teamvoorstellen. */
 export async function createProjectFromIntakeAction(fd: FormData): Promise<ActionResult> {
   let projectId: string;
+  let prioriteit: "budget" | "snelheid" | "kwaliteit" | null = null;
   try {
     const user = await assertUser(FLIPPER_ROLES);
     const parsed = parseForm(intakeProjectSchema, fd);
@@ -100,6 +101,9 @@ export async function createProjectFromIntakeAction(fd: FormData): Promise<Actio
     const d = parsed.data;
     const name = d.name ?? `${d.property_type} ${d.location} — ${d.renovation_type.toLowerCase()}`;
     const token = String(fd.get("offertecheck_token") ?? "");
+    // Prioriteit uit het hero-formulier op de homepage (budget, snelheid of kwaliteit); alleen voor de weergave
+    const p = String(fd.get("prioriteit") ?? "");
+    prioriteit = (["budget", "snelheid", "kwaliteit"] as const).find((x) => x === p) ?? null;
     const check = token ? await getCheckByToken(token) : null;
     const db = await getDb();
     projectId = await transaction(async (tx) => {
@@ -118,7 +122,7 @@ export async function createProjectFromIntakeAction(fd: FormData): Promise<Actio
         "update ai_usage set project_id = $2 where user_id = $1 and project_id is null and created_at > now() - interval '2 hours'",
         [user.id, row.id],
       );
-      await logEvent("teamvoorstel_gestart", { subjectType: "project", subjectId: row.id, userId: user.id, metadata: { via_ai: viaAi, offertecheck_id: check?.id ?? null } }, tx);
+      await logEvent("teamvoorstel_gestart", { subjectType: "project", subjectId: row.id, userId: user.id, metadata: { via_ai: viaAi, offertecheck_id: check?.id ?? null, prioriteit, provincie: d.province } }, tx);
       if (check) {
         // Doorklik uit de Offertecheck: koppelen (alleen de eerste keer)
         await tx.query("update offerte_checks set project_id = $2, user_id = $3 where id = $1 and project_id is null", [check.id, row.id, user.id]);
@@ -135,7 +139,7 @@ export async function createProjectFromIntakeAction(fd: FormData): Promise<Actio
     return handle(err);
   }
   revalidatePath("/dashboard");
-  redirect(`/projecten/${projectId}/voorstellen?melding=project-aangemaakt`);
+  redirect(`/projecten/${projectId}/voorstellen?melding=project-aangemaakt${prioriteit ? `&prioriteit=${prioriteit}` : ""}`);
 }
 
 /** Werkzaamheden van een bestaand project aanpassen. */

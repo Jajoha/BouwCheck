@@ -66,12 +66,12 @@ export function OutcomeForm({
         <Field label="Oorspronkelijk begroot / offertebedrag (€)" htmlFor="initial_budget" error={errors("initial_budget")}>
           <Input id="initial_budget" name="initial_budget" inputMode="decimal" defaultValue={defaults.initial_budget} />
         </Field>
-        <Field label="Definitief betaald bedrag (€)" htmlFor="final_cost" error={errors("final_cost")} hint="Inclusief meerwerk.">
+        <Field label="Definitief betaald bedrag (€)" htmlFor="final_cost" error={errors("final_cost")} hint="Inclusief extra werk.">
           <Input id="final_cost" name="final_cost" inputMode="decimal" />
         </Field>
         <Checkbox name="amounts_vat_included" label="Bedragen zijn inclusief btw" />
         <Field label="Toelichting op meerkosten" htmlFor="extra_costs_reason" error={errors("extra_costs_reason")} className="sm:col-span-2">
-          <Textarea id="extra_costs_reason" name="extra_costs_reason" rows={2} placeholder="Bijv. meerwerk door onvoorziene houtrot" />
+          <Textarea id="extra_costs_reason" name="extra_costs_reason" rows={2} placeholder="Bijv. extra werk door houtrot" />
         </Field>
       </section>
 

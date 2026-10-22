@@ -29,8 +29,8 @@ async function fillAndSubmit(page: Page, email: string) {
   await page.getByLabel(/Provincie van het project/).selectOption("Utrecht");
   await page.getByLabel(/^Naam/).fill("Test Flipper");
   await page.getByLabel(/^E-mailadres/).fill(email);
-  await page.getByLabel(/toestemming om contact/).check();
-  await page.getByLabel(/zonder namen worden gebruikt/).check();
+  await page.getByLabel(/contact met mij opnemen/).check();
+  await page.getByLabel(/zonder namen gebruiken/).check();
   await page.getByRole("button", { name: "Offertes laten checken" }).click();
   await expect(page).toHaveURL(/\/offertecheck\/bedankt/);
 }
@@ -38,14 +38,14 @@ async function fillAndSubmit(page: Page, email: string) {
 test.describe("Offertecheck", () => {
   test("aanbod bovenaan, zonder hoofdmenu, en capaciteit berekend uit ingediende checks", async ({ page }) => {
     await page.goto("/offertecheck");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Laat je offertes gratis checken voordat je tekent");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Laat je offertes gratis checken.");
     await expect(page.getByText(OFFER_EYEBROW, { exact: true })).toBeVisible();
     await expect(page.getByText(OFFER_INTRO, { exact: true })).toBeVisible();
     const benefits = page.getByRole("heading", { name: "Wat je krijgt", level: 2 }).locator("xpath=following-sibling::ul[1]");
     await expect(benefits.getByRole("listitem")).toHaveText(OFFER_BENEFITS);
     await expect(page.getByRole("heading", { name: "Bonus", level: 2 })).toBeVisible();
     await expect(
-      page.getByText("Wil je vakmensen die allemaal voor hetzelfde werk een prijs geven? Vraag dan een gratis Teamvoorstel aan.", { exact: true }),
+      page.getByText("Wil je vakmensen die een prijs geven voor hetzelfde werk? Vraag dan een gratis Teamvoorstel aan.", { exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Binnen 48 uur", level: 2 })).toBeVisible();
     await expect(page.getByText("Je rapport komt binnen 48 uur. Vinden we niets? Dan zeggen we dat eerlijk.", { exact: true })).toBeVisible();
@@ -89,10 +89,19 @@ test.describe("Offertecheck", () => {
     await expect(page.getByRole("main").getByRole("link", { name: "Check mijn offertes – gratis" })).toBeInViewport();
     await page.goto("/");
     await expectNoHorizontalScroll(page);
-    // De knop in de hero staat zonder scrollen in beeld
-    await expect(page.getByRole("main").getByRole("link", { name: "Check mijn offertes – gratis" }).first()).toBeInViewport();
+    // Het hero-formulier staat zonder scrollen in beeld
+    await expect(page.getByLabel("Wat ga je verbouwen?")).toBeInViewport();
     const homeH1 = await page.getByRole("heading", { level: 1 }).boundingBox();
     expect(Math.round(homeH1!.x)).toBe(16);
+  });
+
+  test("klik op 'Heb je al offertes?' wordt als funnel-event vastgelegd", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("form#start").getByRole("link", { name: "Heb je al offertes? Laat ze gratis checken →" }).click();
+    await expect(page).toHaveURL(/\/offertecheck\?bron=home-hero#upload$/);
+    await loginAs(page, "beheerder");
+    await page.goto("/beheer/funnel");
+    await expect(page.getByRole("row").filter({ hasText: "offertecheck_link_geklikt" }).getByRole("cell").last()).not.toHaveText("0");
   });
 
   test("volledige keten: upload, analyse, review, rapport, mail, teamvoorstel en verwijderen", async ({ page }) => {
@@ -159,12 +168,12 @@ test.describe("Offertecheck", () => {
     await loginAs(page, "vastgoedondernemer");
     await page.goto(`${reportPath}/teamvoorstel`);
     await expect(page).toHaveURL(/\/projecten\/nieuw\?offertecheck=/);
-    await expect(page.getByText("Scope uit je Offertecheck")).toBeVisible();
+    await expect(page.getByText("Het werk uit je Offertecheck")).toBeVisible();
     await expect(page.getByLabel("Wat wil je laten doen?")).toHaveValue(/schilderwerk en een nieuwe badkamer/);
     await page.getByLabel("Locatie (plaats of postcode)").fill("Amersfoort");
     await page.getByLabel("Type woning").selectOption("Tussenwoning");
     await page.getByLabel("Type renovatie").selectOption("Gedeeltelijke renovatie");
-    await page.getByRole("button", { name: "Verder met de scope uit je check" }).click();
+    await page.getByRole("button", { name: "Verder met het werk uit je check" }).click();
     await expect(page.locator('input[value="Schilderwerk wanden en plafonds"]')).toBeVisible();
     await expect(page.locator('input[value="Tegelwerk badkamer"]')).toBeVisible();
     await page.getByRole("button", { name: "Opslaan en teamvoorstellen bekijken" }).click();

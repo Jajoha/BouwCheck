@@ -9,18 +9,19 @@ import { cn } from "@/lib/utils";
  * Korte zinnen, één boodschap per zin; geen vaktaal zonder uitleg.
  */
 export const OFFER = {
-  eyebrow: "Voor vastgoedondernemers en projectontwikkelaars die verbouwen",
-  title: "Laat je offertes gratis checken voordat je tekent",
-  intro: "Je stuurt ons je offertes. Binnen 48 uur hoor je wat er mist, wat er niet in zit en waar je te veel betaalt.",
+  eyebrow: "Voor vastgoedondernemers en projectontwikkelaars",
+  title: "Laat je offertes gratis checken.",
+  intro: "Binnen 48 uur weet je wat er mist, wat er niet in zit en waar je te veel betaalt.",
   benefitsTitle: "Wat je krijgt",
   benefits: [
-    "Alle offertes naast elkaar. Elke post staat op één regel, dus je vergelijkt hetzelfde werk.",
-    "Wat er mist, in euro's. Je ziet wat een andere offerte er wel voor rekent.",
-    "Bedragen die nog kunnen veranderen. En wat er niet in de prijs zit. Daar komen extra kosten vaak vandaan.",
-    "Grote prijsverschillen per post. Zo zie je waar je te veel betaalt. Of waar een prijs verdacht laag is.",
-    "Je lijst met vragen. Die stel je aan elke aannemer voordat je tekent.",
+    "Alle offertes naast elkaar. Je vergelijkt dan echt hetzelfde werk.",
+    "Wat er mist, in euro's. Je ziet wat een ander ervoor vraagt.",
+    "Bedragen die nog kunnen veranderen. Daar komt extra werk vaak vandaan.",
+    "Wat er niet in zit. Dat betaal je later alsnog.",
+    "Grote prijsverschillen per post. Zo zie je waar je te veel betaalt.",
+    "Je lijst met vragen. Die stel je voordat je tekent.",
   ],
-  bonus: "Wil je vakmensen die allemaal voor hetzelfde werk een prijs geven? Vraag dan een gratis Teamvoorstel aan.",
+  bonus: "Wil je vakmensen die een prijs geven voor hetzelfde werk? Vraag dan een gratis Teamvoorstel aan.",
   promise: "Je rapport komt binnen 48 uur. Vinden we niets? Dan zeggen we dat eerlijk.",
   privacy: "We delen je offertes niet met aannemers. Je kunt ze altijd laten verwijderen.",
   limited: (max: number) => `Een medewerker kijkt elke check na. Daarom doen we er maximaal ${max} per week.`,

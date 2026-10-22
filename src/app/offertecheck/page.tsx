@@ -6,6 +6,7 @@ import { OFFER, OfferFull } from "@/components/offertecheck/offer";
 import { Notice } from "@/components/ui/misc";
 import { getWeeklyCapacity, WEEK_FULL_MESSAGE } from "@/lib/data/offertecheck";
 import { env } from "@/lib/env";
+import { logEvent } from "@/lib/events";
 
 export const metadata: Metadata = {
   title: "Offertecheck",
@@ -13,14 +14,19 @@ export const metadata: Metadata = {
 };
 
 const ASSURANCES = [
-  { Icon: EyeOff, title: "Niet gedeeld met aannemers", text: "Je offertes blijven tussen jou en BouwCheck. Aannemers weten niet dat je een check doet." },
-  { Icon: ShieldCheck, title: "Prijzen alleen met toestemming", text: "We gebruiken je prijzen alleen als jij dat aanvinkt. Altijd zonder namen of adressen." },
-  { Icon: Trash2, title: "Verwijderen kan altijd", text: "Onder je rapport staat een knop. Daarmee verwijder je de check en je bestanden direct." },
+  { Icon: EyeOff, title: "Niet gedeeld met aannemers", text: "Je offertes blijven bij ons. Aannemers weten niet dat je een check doet." },
+  { Icon: ShieldCheck, title: "Prijzen alleen met toestemming", text: "We gebruiken je prijzen alleen als jij dat aanvinkt. Nooit met namen of adressen." },
+  { Icon: Trash2, title: "Verwijderen kan altijd", text: "Onder je rapport staat een knop. Daarmee verwijder je alles direct." },
 ];
 
 /** Landingspagina met één doel: offertes uploaden. Geen hoofdmenu (zie FunnelHidden in de header). */
-export default async function OffertecheckPage() {
+/** Herkomst van een klik op "Heb je al offertes?" op de homepage; andere waarden worden genegeerd. */
+const BRONNEN = ["home-hero", "home-slot"];
+
+export default async function OffertecheckPage({ searchParams }: { searchParams: Promise<{ bron?: string }> }) {
   if (!env.features.offertecheck) notFound();
+  const { bron } = await searchParams;
+  if (bron && BRONNEN.includes(bron)) await logEvent("offertecheck_link_geklikt", { metadata: { bron } });
   const capacity = await getWeeklyCapacity();
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 pb-28 sm:px-6 sm:py-14">
@@ -47,7 +53,7 @@ export default async function OffertecheckPage() {
         ))}
       </ul>
       <p className="mt-8 text-xs text-ink-500">
-        De Offertecheck is geen offerte en geen advies. Een medewerker van BouwCheck kijkt elk rapport na voordat je het krijgt. Lees ook de{" "}
+        De Offertecheck is geen offerte en geen advies. Een medewerker kijkt elk rapport na. Lees ook de{" "}
         <a href="/privacy" className="underline hover:text-ink-800">
           privacyverklaring
         </a>

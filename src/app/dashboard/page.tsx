@@ -17,8 +17,8 @@ import { MetricValue } from "@/components/domain/metric";
 export const metadata: Metadata = { title: "Dashboard" };
 
 const TIPS = [
-  "Vraag offertes aan op basis van dezelfde scope, anders zijn bedragen niet vergelijkbaar.",
-  "Vraag expliciet naar stelposten en uitsluitingen (bijv. afvoer, asbest, onvoorzien).",
+  "Vraag elke aannemer om een prijs voor hetzelfde werk. Anders kun je niet vergelijken.",
+  "Vraag naar bedragen die nog kunnen veranderen. En naar wat er niet in zit, zoals afvoer of asbest.",
   "Kijk bij prestaties naar het aantal projecten: 1 of 2 projecten zeggen weinig.",
   "Leg betalingstermijnen vast op basis van opgeleverde onderdelen, niet op datum.",
   "Controleer de KvK-inschrijving en verzekering (CAR/aansprakelijkheid) vóór opdracht.",
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
                 <EmptyState
                   icon={FolderKanban}
                   title="Nog geen actieve projecten"
-                  description="Beschrijf je eerste renovatieproject en voeg foto's toe. Je krijgt teamvoorstellen op budget, kwaliteit en snelheid."
+                  description="Beschrijf je eerste renovatieproject en voeg foto's toe. Je krijgt teamvoorstellen op prijs, snelheid en betrouwbaarheid."
                   action={
                     <Button asChild>
                       <Link href="/projecten/nieuw">Project aanmaken</Link>

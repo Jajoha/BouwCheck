@@ -9,6 +9,7 @@ export const FUNNEL_EVENTS = [
   "offertecheck_gestart",
   "offertecheck_ingediend",
   "offertecheck_rapport_verstuurd",
+  "offertecheck_link_geklikt",
   "teamvoorstel_gestart",
   "teamvoorstel_ontvangen",
   "founding_member_interesse",

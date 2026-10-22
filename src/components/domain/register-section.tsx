@@ -79,11 +79,11 @@ export function RegisterSection({ state, isDemo, kvkNumber }: { state: RegisterS
             <p className="mt-1 text-xs text-ink-600">
               {s.effect === "uitsluiting"
                 ? "Gevolg: niet opgenomen in teamvoorstellen (wel zichtbaar met deze reden)."
-                : "Gevolg: waarschuwing bij teamvoorstellen; de uitvoerder blijft gerangschikt."}
+                : "Gevolg: waarschuwing bij teamvoorstellen; de vakman blijft gerangschikt."}
             </p>
             {s.contractor_response ? (
               <blockquote className="mt-2 border-l-2 border-ink-300 pl-2 text-xs text-ink-700">
-                <span className="font-medium">Reactie van de uitvoerder{s.responded_at ? ` (${formatDate(s.responded_at)})` : ""}:</span> {s.contractor_response}
+                <span className="font-medium">Reactie van de vakman{s.responded_at ? ` (${formatDate(s.responded_at)})` : ""}:</span> {s.contractor_response}
               </blockquote>
             ) : null}
           </div>

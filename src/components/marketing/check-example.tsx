@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { VOORBEELD_LABEL } from "@/content/homepage";
+import { VOORBEELD_LABEL, ZONDER_BTW } from "@/content/homepage";
 import { formatEuro } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -8,12 +8,12 @@ type Cell = { bedrag: number } | { ontbreekt: number };
 
 /**
  * Statische, verzonnen voorbeeldcheck voor de homepage: drie offertes voor dezelfde woning.
- * Offerte A lijkt het goedkoopst, maar mist afvoer van puin, de meterkast en het egaliseren van de vloer.
+ * Offerte A lijkt het goedkoopst, maar mist puin afvoeren, de meterkast en vloer egaliseren.
  * Het bedrag bij een ontbrekende post is het gemiddelde van de andere twee offertes.
  */
 const ROWS: { post: string; cells: [Cell, Cell, Cell] }[] = [
   { post: "Sloopwerk", cells: [{ bedrag: 3200 }, { bedrag: 3100 }, { bedrag: 3000 }] },
-  { post: "Afvoer van puin", cells: [{ ontbreekt: 1200 }, { bedrag: 1100 }, { bedrag: 1300 }] },
+  { post: "Puin afvoeren", cells: [{ ontbreekt: 1200 }, { bedrag: 1100 }, { bedrag: 1300 }] },
   { post: "Meterkast", cells: [{ ontbreekt: 1900 }, { bedrag: 1800 }, { bedrag: 2000 }] },
   { post: "Stucwerk", cells: [{ bedrag: 6400 }, { bedrag: 6000 }, { bedrag: 6200 }] },
   { post: "Vloer egaliseren", cells: [{ ontbreekt: 1500 }, { bedrag: 1400 }, { bedrag: 1600 }] },
@@ -24,7 +24,8 @@ const COLS = [0, 1, 2] as const;
 const inOfferte = (i: number) => ROWS.reduce((sum, r) => sum + ("bedrag" in r.cells[i] ? r.cells[i].bedrag : 0), 0);
 const metOntbrekend = (i: number) => ROWS.reduce((sum, r) => sum + ("bedrag" in r.cells[i] ? r.cells[i].bedrag : r.cells[i].ontbreekt), 0);
 
-export function CheckExample() {
+/** `caption`: de tekst onder het voorbeeld (uit src/content/homepage.ts). */
+export function CheckExample({ caption }: { caption: string }) {
   return (
     <figure className="overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-[var(--shadow-raised)]" aria-label="Voorbeeld van een Offertecheck">
       <div className="flex items-center justify-between gap-2 border-b border-ink-100 bg-ink-50 px-3 py-2.5 sm:px-4">
@@ -32,7 +33,7 @@ export function CheckExample() {
         <Badge tone="demo">{VOORBEELD_LABEL}</Badge>
       </div>
       <table className="w-full text-xs sm:text-sm">
-        <caption className="sr-only">Drie offertes naast elkaar. Bedragen excl. btw.</caption>
+        <caption className="sr-only">Drie offertes naast elkaar. Bedragen {ZONDER_BTW}.</caption>
         <thead>
           <tr className="text-ink-500">
             <th scope="col" className="px-3 py-2 text-left font-medium sm:px-4">
@@ -89,10 +90,8 @@ export function CheckExample() {
         </tfoot>
       </table>
       <figcaption className="border-t border-ink-100 px-3 py-3 text-xs text-ink-600 sm:px-4">
-        <p>
-          A lijkt met {formatEuro(inOfferte(0))} het goedkoopst. Tel je erbij op wat er mist, dan is A met {formatEuro(metOntbrekend(0))} het duurst.
-        </p>
-        <p className="mt-1 text-ink-500">Verzonnen offertes. Bedragen excl. btw.</p>
+        <p className="text-sm text-ink-800">{caption}</p>
+        <p className="mt-1 text-ink-500">Verzonnen offertes. Bedragen {ZONDER_BTW}.</p>
       </figcaption>
     </figure>
   );

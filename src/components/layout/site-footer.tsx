@@ -3,19 +3,13 @@ import { site } from "@/config/site";
 import { Logo } from "./logo";
 import { env } from "@/lib/env";
 
-const PRODUCT_LINKS = env.features.offertecheck
-  ? [
-      { href: "/offertecheck#upload", label: "Offertecheck" },
-      { href: "/projecten/nieuw", label: "Teamvoorstel aanvragen" },
-      ...(env.features.foundingMembers ? [{ href: "/founding-members", label: "Eerste klanten" }] : []),
-      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-      { href: "/prijzen", label: "Prijzen" },
-    ]
-  : [
-      { href: "/projecten/nieuw", label: "Start je project" },
-      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-      { href: "/prijzen", label: "Prijzen" },
-    ];
+const PRODUCT_LINKS = [
+  { href: "/#start", label: "Vind mijn vakmensen" },
+  ...(env.features.offertecheck ? [{ href: "/offertecheck#upload", label: "Offertecheck" }] : []),
+  ...(env.features.foundingMembers ? [{ href: "/founding-members", label: "Eerste klanten" }] : []),
+  { href: "/#zo-werkt-het", label: "Hoe het werkt" },
+  { href: "/prijzen", label: "Prijzen" },
+];
 
 const COLUMNS = [
   {
@@ -64,7 +58,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-ink-200">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-xs text-ink-500 sm:flex-row sm:justify-between sm:px-6">
-          <p>© {new Date().getFullYear()} {site.name}. Bedragen zijn excl. btw, tenzij er iets anders staat.</p>
+          <p>© {new Date().getFullYear()} {site.name}</p>
           <p>Aannemers kunnen niet betalen om bovenaan te staan.</p>
         </div>
       </div>

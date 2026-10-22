@@ -115,8 +115,8 @@ export const QUOTE_REQUEST_STATUS = {
 export type QuoteRequestStatus = keyof typeof QUOTE_REQUEST_STATUS;
 
 export const PRICE_TYPES = {
-  indicatief: { label: "Indicatieve prijs", description: "Richtprijs zonder bezichtiging of definitieve scope." },
-  offerte: { label: "Offerte", description: "Concrete offerte op basis van de opgegeven scope." },
+  indicatief: { label: "Indicatieve prijs", description: "Richtprijs zonder bezichtiging of vaste werkomschrijving." },
+  offerte: { label: "Offerte", description: "Concrete offerte voor het opgegeven werk." },
   overeengekomen: { label: "Overeengekomen prijs", description: "Definitief afgesproken bedrag." },
 } as const;
 export type PriceType = keyof typeof PRICE_TYPES;
@@ -191,7 +191,7 @@ export const PROVIDER_TYPE_IDS = Object.keys(PROVIDER_TYPES) as [ProviderType, .
 export const USER_ROLES = {
   flipper: "Vastgoedondernemer of projectontwikkelaar",
   investeerder: "Vastgoedinvesteerder",
-  aannemer: "Uitvoerder (aannemer, zzp of klusser)",
+  aannemer: "Vakman (aannemer, zzp'er of klusser)",
   beheerder: "Beheerder",
 } as const;
 export type UserRole = keyof typeof USER_ROLES;
@@ -213,8 +213,8 @@ export const ATTACHMENT_KINDS = {
 
 /** Alle onderwerpen van interesse-aanvragen, ook die van de oude testprijzen (voor bestaande aanvragen). */
 export const LEAD_TYPES = {
-  offertecheck: "Offertecheck",
   teamvoorstel: "Teamvoorstel",
+  offertecheck: "Offertecheck",
   selectie: "Aannemersselectie",
   renovatieselectie: "Complete renovatieselectie",
   projectpas: "Projectpas",
@@ -224,6 +224,5 @@ export const LEAD_TYPES = {
 } as const;
 export type LeadType = keyof typeof LEAD_TYPES;
 
-/** Onderwerpen in het aanvraagformulier op /prijzen (met de Offertecheck) of de oude testprijzen. */
-export const LADDER_LEAD_TYPES: LeadType[] = ["offertecheck", "teamvoorstel", "projectpas", "pro", "contact"];
-export const LEGACY_LEAD_TYPES: LeadType[] = ["selectie", "renovatieselectie", "pro", "contact"];
+/** Onderwerpen in het aanvraagformulier op /prijzen, in deze volgorde. */
+export const PRICING_LEAD_TYPES: LeadType[] = ["teamvoorstel", "offertecheck", "projectpas", "pro", "contact"];

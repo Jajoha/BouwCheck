@@ -29,7 +29,7 @@ export function FoundingForm({ regions, name = "", email = "" }: { regions: { re
         <Input id="fm-projecten" name="projecten_per_jaar" inputMode="numeric" placeholder="Bijv. 3" />
       </Field>
       <div className="sm:col-span-2">
-        <Checkbox name="consent" label="Ik geef BouwCheck toestemming om contact met mij op te nemen over het aanbod voor eerste klanten." />
+        <Checkbox name="consent" label="BouwCheck mag contact met mij opnemen over dit aanbod." />
         {errors("consent") ? <p role="alert" className="mt-1 text-xs font-medium text-danger-700">{errors("consent")![0]}</p> : null}
       </div>
       <div className="sm:col-span-2">

@@ -13,12 +13,12 @@ test.describe("Intake en teamvoorstellen", () => {
       await expect(section.getByText("Criterium:")).toBeVisible();
       await expect(section.getByTestId("team-option").first()).toBeVisible();
     }
-    // De goedkoopste hoofdaannemer heeft te weinig beoordelingen: niet gerangschikt op kwaliteit
+    // De goedkoopste hoofdaannemer heeft te weinig beoordelingen: niet gerangschikt op betrouwbaarheid (intern: kwaliteit)
     const kwaliteit = page.locator("#kwaliteit");
-    await kwaliteit.getByText(/niet gerangschikt op kwaliteit/).click();
+    await kwaliteit.getByText(/niet gerangschikt op betrouwbaarheid/).click();
     await expect(kwaliteit.getByText(/Onvoldoende beoordelingen.*Klusbedrijf De Nieuwe Hoek/)).toBeVisible();
     // Kostenindicatie altijd met btw-vermelding
-    await expect(page.locator("#budget").getByText("excl. btw").first()).toBeVisible();
+    await expect(page.locator("#budget").getByText("(zonder btw)").first()).toBeVisible();
     // Geen vergelijk-UI meer
     await expect(page.getByText(/Vergelijk(en)? /)).toHaveCount(0);
   });

@@ -29,7 +29,7 @@ export function QuoteRequestForm({ d }: { d: QuoteRequestDefaults }) {
     <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
       <input type="hidden" name="project_id" value={d.projectId} />
       {result && !result.ok && result.message ? <Notice tone="danger">{result.message}</Notice> : null}
-      <Fieldset legend="Aan welke aannemers?" description="Er wordt per aannemer een aparte aanvraag aangemaakt met dezelfde scope." error={errors("contractor_ids")}>
+      <Fieldset legend="Aan welke aannemers?" description="Elke aannemer krijgt een eigen aanvraag, voor hetzelfde werk." error={errors("contractor_ids")}>
         {d.contractors.length === 0 ? (
           <p className="text-sm text-ink-500">
             Er is nog geen team gekozen voor dit project. <Link href={`/projecten/${d.projectId}/voorstellen`} className="text-brand-700 underline">Bekijk de teamvoorstellen</Link>.
@@ -42,7 +42,7 @@ export function QuoteRequestForm({ d }: { d: QuoteRequestDefaults }) {
           </div>
         )}
       </Fieldset>
-      <Field label="Gewenste werkzaamheden" htmlFor="work_description" required error={errors("work_description")} hint="Omschrijf de scope zo concreet mogelijk; zo worden offertes vergelijkbaar.">
+      <Field label="Gewenste werkzaamheden" htmlFor="work_description" required error={errors("work_description")} hint="Omschrijf het werk zo precies mogelijk. Dan kun je de offertes vergelijken.">
         <Textarea id="work_description" name="work_description" rows={5} defaultValue={d.work_description} />
       </Field>
       <Fieldset legend="Vakgebieden in deze aanvraag" error={errors("specialty_ids")}>
@@ -65,7 +65,7 @@ export function QuoteRequestForm({ d }: { d: QuoteRequestDefaults }) {
         <Checkbox name="budget_vat_included" label="Budget is inclusief btw" defaultChecked={d.budget_vat_included} className="sm:col-span-3" />
       </div>
       <Field label="Aanvullende toelichting" htmlFor="additional_notes" error={errors("additional_notes")}>
-        <Textarea id="additional_notes" name="additional_notes" rows={3} placeholder="Bijv. bezichtiging mogelijk op werkdagen; graag uitsplitsing per onderdeel en stelposten." />
+        <Textarea id="additional_notes" name="additional_notes" rows={3} placeholder="Bijv. bezichtiging mogelijk op werkdagen; graag een prijs per onderdeel." />
       </Field>
       {d.attachments.length ? (
         <Fieldset legend="Bijlagen meesturen" description="Alleen zichtbaar voor aannemers die de aanvraag via het BouwCheck-portaal ontvangen.">

@@ -76,7 +76,7 @@ Demo terugzetten naar de beginsituatie: **Beheer → Demo-data → Demo-data ter
 
 | Onderdeel | Route(s) | Status |
 | --- | --- | --- |
-| Landingspagina (hero met voorbeeld-teamvoorstellen, hoe het werkt, voordelen, transparantie, aannemers-CTA, FAQ, footer) | `/` | Werkt |
+| Landingspagina: hero-formulier (soort verbouwing, provincie, prioriteit) dat de teamvoorstel-flow vooraf invult, voorbeeldteams, regiomelding, zo werkt het, prijzen, vragen. Alle teksten in `src/content/homepage.ts` | `/` | Werkt |
 | Aannemersprofiel met bronscheiding (zelf opgegeven / administratief gecontroleerd / projectdata / ervaringen) | `/aannemers/[slug]` | Werkt |
 | AI-intake: beschrijving + foto's → werkzaamheden met hoeveelheden, risico's, open vragen; altijd te corrigeren | `/projecten/nieuw`, `/projecten/[id]/werkzaamheden` | Werkt (vereist `ANTHROPIC_API_KEY`; zonder sleutel handmatig invullen) |
 | Teamvoorstellen per prioriteit (Budget / Kwaliteit / Snelheid), team kiezen → offerteaanvraag | `/projecten/[id]/voorstellen` | Werkt |
@@ -219,6 +219,7 @@ Kopieer `.env.example` naar `.env.local` en pas aan. Alle variabelen zijn option
 | `RESEND_API_KEY`, `EMAIL_FROM` | E-mail via Resend. Beide nodig; `EMAIL_FROM` op een bij Resend geverifieerd domein. Leeg = mails blijven in de outbox als *niet geconfigureerd*. |
 | `EMAIL_REPLY_TO` | Optioneel antwoordadres. |
 | `FEATURE_OFFERTECHECK`, `FEATURE_FOUNDING_MEMBERS`, `FEATURE_DEPOSIT_PAYMENTS` | Feature flags voor de funnel, standaard uit. |
+| `MIN_ECHTE_VAKMENSEN` | Minder echte (niet-fictieve) vakmensen in een provincie dan dit aantal: het hero-formulier toont een regiomelding. Standaard 10. |
 | `OFFERTECHECK_DAILY_BUDGET_USD` | Max. AI-kosten voor alle Offertechecks samen per dag, standaard 25. |
 | `OFFERTECHECK_MAX_PER_EMAIL` | Max. checks per e-mailadres per 24 uur, standaard 3. |
 | `OFFERTECHECK_AGENDA_URL` | Optionele agendalink op de bedankpagina van de Offertecheck. |

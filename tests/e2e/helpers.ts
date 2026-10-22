@@ -27,15 +27,17 @@ export async function expectNoHorizontalScroll(page: Page) {
 }
 
 /** Teksten van het Offertecheck-aanbod op /offertecheck (src/components/offertecheck/offer.tsx). */
-export const OFFER_INTRO = "Je stuurt ons je offertes. Binnen 48 uur hoor je wat er mist, wat er niet in zit en waar je te veel betaalt.";
-export const OFFER_EYEBROW = "Voor vastgoedondernemers en projectontwikkelaars die verbouwen";
+export const OFFER_INTRO = "Binnen 48 uur weet je wat er mist, wat er niet in zit en waar je te veel betaalt.";
+export const OFFER_EYEBROW = "Voor vastgoedondernemers en projectontwikkelaars";
 export const OFFER_BENEFITS = [
-  "Alle offertes naast elkaar. Elke post staat op één regel, dus je vergelijkt hetzelfde werk.",
-  "Wat er mist, in euro's. Je ziet wat een andere offerte er wel voor rekent.",
-  "Bedragen die nog kunnen veranderen. En wat er niet in de prijs zit. Daar komen extra kosten vaak vandaan.",
-  "Grote prijsverschillen per post. Zo zie je waar je te veel betaalt. Of waar een prijs verdacht laag is.",
-  "Je lijst met vragen. Die stel je aan elke aannemer voordat je tekent.",
+  "Alle offertes naast elkaar. Je vergelijkt dan echt hetzelfde werk.",
+  "Wat er mist, in euro's. Je ziet wat een ander ervoor vraagt.",
+  "Bedragen die nog kunnen veranderen. Daar komt extra werk vaak vandaan.",
+  "Wat er niet in zit. Dat betaal je later alsnog.",
+  "Grote prijsverschillen per post. Zo zie je waar je te veel betaalt.",
+  "Je lijst met vragen. Die stel je voordat je tekent.",
 ];
 
 /** Woorden die in geen enkele klanttekst mogen staan. */
-export const FORBIDDEN_CUSTOMER_WORDS = /bèta|\bbeta\b|testfase|pilot|demo-database|tijdelijke opslag|werkelijke kosten|vervanger binnen 72 uur/i;
+export const FORBIDDEN_CUSTOMER_WORDS =
+  /bèta|\bbeta\b|testfase|pilot|demo-database|tijdelijke opslag|werkelijke kosten|vervanger binnen 72 uur|scope|offreer|offreren|stelpost|meerwerk|excl\.? btw|uitvoerder/i;

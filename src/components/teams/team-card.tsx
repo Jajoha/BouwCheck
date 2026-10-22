@@ -15,20 +15,21 @@ export const PRIORITY_META: Record<Priority, { label: string; title: string; cri
   budget: {
     label: "Budget",
     title: "Budgetoptie",
-    criterion: "Laagste kostenindicatie (middenwaarde van de bandbreedte), berekend met de opgegeven tarieven van de aannemers × de hoeveelheden uit je werkzaamheden.",
+    criterion: "Laagste geschatte prijs (het midden tussen laagste en hoogste bedrag), berekend met de tarieven die vakmensen opgeven × de hoeveelheden uit je werkzaamheden.",
     icon: Coins,
   },
+  // Intern heet dit criterium "kwaliteit"; klanten zien "betrouwbaarheid".
   kwaliteit: {
-    label: "Kwaliteit",
-    title: "Kwalitatieve optie",
+    label: "Betrouwbaarheid",
+    title: "Meest betrouwbare optie",
     criterion:
-      "Hoogste beoordeling van de zwakste schakel in het team (gepubliceerde, aan projecten gekoppelde beoordelingen, min. 3 per aannemer). Bij gelijke stand: minder herstelwerk, daarna meer gecontroleerde projecten.",
+      "Hoogste beoordeling van de zwakste schakel in het team (gepubliceerde, aan projecten gekoppelde beoordelingen, min. 3 per vakman). Bij gelijke stand: minder herstelwerk, daarna meer gecontroleerde projecten.",
     icon: Award,
   },
   snelheid: {
     label: "Snelheid",
     title: "Snelste optie",
-    criterion: "Vroegste datum waarop het hele team beschikbaar is, op basis van de door aannemers opgegeven beschikbaarheid.",
+    criterion: "Vroegste datum waarop het hele team beschikbaar is, op basis van de beschikbaarheid die vakmensen zelf opgeven.",
     icon: CalendarClock,
   },
 };
@@ -52,7 +53,7 @@ function registerStatus(c: TeamOption["members"][number]["contractor"], today: s
 function explain(priority: Priority, o: TeamOption, ctx: { budget: number | null; desiredStart: string | null }) {
   const parts: string[] = [];
   if (priority === "budget") {
-    parts.push(`Kostenindicatie ${costLabel(o)} excl. btw${o.cost.complete ? "" : " (niet alle onderdelen begroot)"}.`);
+    parts.push(`Kostenindicatie ${costLabel(o)} (zonder btw)${o.cost.complete ? "" : ", niet alle onderdelen begroot"}.`);
     if (ctx.budget && o.cost.complete) {
       if (o.cost.max <= ctx.budget) parts.push("Valt binnen je budget, ook aan de bovenkant van de bandbreedte.");
       else if (o.cost.min <= ctx.budget) parts.push("Kan boven je budget uitkomen (bovenkant van de bandbreedte).");
@@ -75,6 +76,31 @@ function explain(priority: Priority, o: TeamOption, ctx: { budget: number | null
   return parts.join(" ");
 }
 
+/** Teksten voor de compacte variant (homepage); komen uit src/content/homepage.ts. */
+export type TeamCardCompactText = {
+  title: string;
+  price: (van: string, tot: string) => string;
+  start: (datum: string) => string;
+  startUnknown: string;
+  rating: (cijfer: string) => string;
+  ratingUnknown: string;
+};
+
+/** Compacte teamkaart: kopje los van de bedrijfsnamen, met prijs, startdatum en betrouwbaarheid. Geen kiesknop. */
+function CompactTeamCard({ option, text }: { option: TeamOption; text: TeamCardCompactText }) {
+  return (
+    <article className="rounded-[var(--radius-card)] border border-ink-200 bg-white p-4" data-testid="team-option-compact">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-800">{text.title}</h3>
+      <p className="mt-2 text-sm font-medium text-ink-950">{option.members.map((m) => m.contractor.company_name).join(" + ")}</p>
+      <ul className="mt-2 space-y-0.5 text-sm text-ink-700">
+        <li className="tabular">{text.price(formatEuro(option.cost.min), formatEuro(option.cost.max))}</li>
+        <li>{option.start ? text.start(formatDate(option.start)) : text.startUnknown}</li>
+        <li>{option.qualitySufficient && option.weakest ? text.rating(formatNumber(option.weakest.quality.rating, 1)) : text.ratingUnknown}</li>
+      </ul>
+    </article>
+  );
+}
+
 export function TeamCard({
   option,
   priority,
@@ -82,14 +108,18 @@ export function TeamCard({
   recommended,
   ctx,
   compareTo,
+  compact,
 }: {
   option: TeamOption;
   priority: Priority;
-  projectId: string;
+  projectId?: string;
   recommended?: boolean;
-  ctx: { budget: number | null; desiredStart: string | null };
+  ctx?: { budget: number | null; desiredStart: string | null };
   compareTo?: { label: string; option: TeamOption }[];
+  /** Compacte weergave voor de homepage, zonder kiesknop. */
+  compact?: TeamCardCompactText;
 }) {
+  if (compact) return <CompactTeamCard option={option} text={compact} />;
   const meta = PRIORITY_META[priority];
   const today = new Date().toISOString().slice(0, 10);
   return (
@@ -103,16 +133,16 @@ export function TeamCard({
               {option.structure === "hoofdaannemer" ? "Hoofdaannemer" : `${option.members.length} vakspecialist${option.members.length === 1 ? "" : "en"}`}
             </Badge>
           </div>
-          <p className="mt-2 text-sm text-ink-700">{explain(priority, option, ctx)}</p>
+          <p className="mt-2 text-sm text-ink-700">{explain(priority, option, ctx ?? { budget: null, desiredStart: null })}</p>
         </div>
-        <ChooseTeamButton projectId={projectId} label={`${meta.label}${recommended ? "" : " (alternatief)"}`} contractorIds={option.members.map((m) => m.contractor.id)} />
+        <ChooseTeamButton projectId={projectId ?? ""} label={`${meta.label}${recommended ? "" : " (alternatief)"}`} contractorIds={option.members.map((m) => m.contractor.id)} />
       </header>
 
       <dl className="grid grid-cols-3 gap-3 border-b border-ink-100 p-4 text-sm">
         <div>
           <dt className="text-xs text-ink-500">Kostenindicatie</dt>
           <dd className="tabular mt-0.5 font-semibold text-ink-950">{costLabel(option)}</dd>
-          <dd className="text-xs text-ink-500">{option.cost.complete ? "excl. btw" : "deels begroot, excl. btw"}</dd>
+          <dd className="text-xs text-ink-500">{option.cost.complete ? "(zonder btw)" : "deels begroot (zonder btw)"}</dd>
         </div>
         <div>
           <dt className="text-xs text-ink-500">Team beschikbaar</dt>

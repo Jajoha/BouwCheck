@@ -13,7 +13,7 @@ import { todayIso } from "@/lib/today";
 
 export const metadata: Metadata = {
   title: "Eerste klanten",
-  description: "25 plekken per regio. Pro voor € 149 in plaats van € 199 per maand, excl. btw. De prijs blijft altijd zo.",
+  description: "25 plekken per regio. Pro kost dan € 149 in plaats van € 199 per maand (zonder btw).",
 };
 
 export default async function FoundingMembersPage() {
@@ -25,8 +25,8 @@ export default async function FoundingMembersPage() {
       <Badge tone="dark">Eerste klanten · 25 plekken per regio</Badge>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight text-ink-950 sm:text-4xl">Doe als een van de eersten mee en betaal minder</h1>
       <p className="mt-3 max-w-2xl text-lg text-ink-700">
-        Je krijgt Pro voor <strong className="text-ink-950">{formatEuro(ladderPrices.proFoundingMonthly)} per maand</strong> in plaats van{" "}
-        {formatEuro(ladderPrices.proMonthly)}, excl. btw. Die lage prijs houd je voor altijd.
+        Pro kost <strong className="text-ink-950">{formatEuro(ladderPrices.proFoundingMonthly)} per maand</strong> in plaats van{" "}
+        {formatEuro(ladderPrices.proMonthly)} (zonder btw). Die prijs houd je.
       </p>
 
       <section className="mt-10">

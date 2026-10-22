@@ -216,7 +216,7 @@ export function OffertecheckForm({ uploadMode }: { uploadMode: "blob" | "server"
         ) : null}
       </div>
 
-      <Field label="Korte projectomschrijving" htmlFor="oc-omschrijving" hint="Type woning, plaats en wat er moet gebeuren." error={err("projectomschrijving")}>
+      <Field label="Korte projectomschrijving" htmlFor="oc-omschrijving" hint="Soort woning, plaats en wat er moet gebeuren." error={err("projectomschrijving")}>
         <Textarea id="oc-omschrijving" name="projectomschrijving" rows={3} disabled={locked} placeholder="Bijv. tussenwoning uit 1965 in Amersfoort: nieuwe badkamer, stucwerk en schilderwerk, elektra deels vervangen." />
       </Field>
       <Field label="Provincie van het project" htmlFor="oc-provincie" error={err("provincie")}>
@@ -249,14 +249,14 @@ export function OffertecheckForm({ uploadMode }: { uploadMode: "blob" | "server"
       </div>
       <div className="flex flex-col gap-3">
         <div>
-          <Checkbox name="consent_contact" disabled={locked} label="Ik geef BouwCheck toestemming om contact met mij op te nemen over deze check." />
+          <Checkbox name="consent_contact" disabled={locked} label="BouwCheck mag contact met mij opnemen over deze check." />
           {err("consent_contact") ? <p role="alert" className="mt-1 text-xs font-medium text-danger-700">{err("consent_contact")![0]}</p> : null}
         </div>
         <Checkbox
           name="consent_benchmark"
           disabled={locked}
-          label="Mijn prijzen mogen zonder namen worden gebruikt om prijzen te vergelijken (optioneel)."
-          description="We bewaren dan alleen de prijs per eenheid, het soort werk, de provincie en de maand. Nooit namen, adressen of aannemers."
+          label="Jullie mogen mijn prijzen zonder namen gebruiken om te vergelijken (optioneel)."
+          description="We bewaren dan alleen prijs per eenheid, soort werk, provincie en maand. Nooit namen, adressen of aannemers."
         />
       </div>
       <div>

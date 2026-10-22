@@ -2,7 +2,7 @@ import { CircleDashed, BadgeCheck, FileCheck2, MessageSquareQuote, Landmark } fr
 import { cn } from "@/lib/utils";
 
 const SOURCES = {
-  zelf: { label: "Zelf opgegeven door uitvoerder", Icon: CircleDashed, cls: "text-ink-500 border-ink-200 bg-white" },
+  zelf: { label: "Zelf ingevuld door de vakman", Icon: CircleDashed, cls: "text-ink-500 border-ink-200 bg-white" },
   admin: { label: "Administratief gecontroleerd", Icon: BadgeCheck, cls: "text-info-700 border-info-100 bg-info-100/40" },
   project: { label: "Projectgegevens (per regel gelabeld)", Icon: FileCheck2, cls: "text-brand-800 border-brand-200 bg-brand-50" },
   ervaring: { label: "Ervaringen van opdrachtgevers", Icon: MessageSquareQuote, cls: "text-warn-700 border-warn-100 bg-warn-50" },

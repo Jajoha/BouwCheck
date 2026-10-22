@@ -105,7 +105,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                   <EmptyState
                     icon={Users}
                     title="Nog geen team gekozen"
-                    description="Bekijk de teamvoorstellen op budget, kwaliteit en snelheid en kies er één."
+                    description="Bekijk de teamvoorstellen op prijs, snelheid en betrouwbaarheid en kies er één."
                     action={
                       <Button asChild size="sm">
                         <Link href={`/projecten/${p.id}/voorstellen`}>Naar teamvoorstellen</Link>
@@ -171,7 +171,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                 <CardTitle className="flex items-center gap-2">
                   <ListChecks className="size-4" aria-hidden /> Werkzaamheden
                 </CardTitle>
-                <CardDescription>De bevestigde scope waarop teams worden samengesteld en offertes worden aangevraagd.</CardDescription>
+                <CardDescription>Het bevestigde werk. Daarop stellen we teams samen en vraag je offertes aan.</CardDescription>
               </div>
               <Button asChild size="sm" variant="outline">
                 <Link href={`/projecten/${p.id}/werkzaamheden`}>
@@ -225,7 +225,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
                         <th className={th}>Aannemer</th>
                         <th className={th}>Soort</th>
                         <th className={`${th} text-right`}>Bedrag</th>
-                        <th className={th}>Scope</th>
+                        <th className={th}>Werk</th>
                         <th className={th}>Doorlooptijd</th>
                         <th className={th}>
                           <span className="sr-only">Acties</span>

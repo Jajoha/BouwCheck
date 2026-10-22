@@ -18,8 +18,9 @@ import { logEventOnce } from "@/lib/events";
 
 export const metadata: Metadata = { title: "Teamvoorstellen" };
 
-export default async function ProposalsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProposalsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ prioriteit?: string }> }) {
   const { id } = await params;
+  const { prioriteit } = await searchParams;
   const user = await requireFlipper(`/projecten/${id}/voorstellen`);
   const p = await getProjectForUser(id, user);
   if (!p) notFound();
@@ -65,10 +66,13 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
     );
   }
 
-  const { proposals, excluded } = await proposalsFor(
+  const { proposals: computed, excluded } = await proposalsFor(
     scope.map((s) => ({ specialty_id: s.specialty_id, description: s.description, quantity: s.quantity, unit: s.unit })),
     { province: p.province, area_m2: p.area_m2, budget_amount: p.budget_amount, desired_start_date: p.desired_start_date },
   );
+  // De prioriteit uit het hero-formulier staat voorop; de ordening binnen elke prioriteit verandert niet.
+  const chosen = computed.find((x) => x.priority === prioriteit)?.priority ?? null;
+  const proposals = chosen ? [...computed].sort((a, b) => Number(b.priority === chosen) - Number(a.priority === chosen)) : computed;
   if (proposals.some((x) => x.ranked.length > 0)) {
     await logEventOnce("teamvoorstel_ontvangen", { subjectType: "project", subjectId: p.id, userId: user.id });
   }
@@ -84,14 +88,14 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
       <div className="mt-6 flex flex-col gap-3">
         {fictief ? <Notice tone="demo">{VERZONNEN_VAKMENSEN}</Notice> : null}
         <Notice tone="info" title="Hoe deze voorstellen tot stand komen">
-          BouwCheck stelt per prioriteit teams samen uit uitvoerders die in {p.province ?? "je regio"} werken en de benodigde vakgebieden uitvoeren: één hoofdaannemer, of
-          losse vakspecialisten — aannemersbedrijven, zzp-vakmensen en klussers. Elke prioriteit ordent op één criterium — er is geen verborgen totaalscore. Teams met te weinig gegevens voor een criterium staan apart,
-          met de reden. Kosten zijn indicaties op basis van opgegeven tarieven, geen offertes. <Link href="/transparantie">Meer uitleg</Link>
+          Wij zoeken vakmensen die in {p.province ?? "je regio"} werken en het werk doen. Dat is één hoofdaannemer, of een team met per vak één vakman. Per keuze sorteren
+          we op één ding. Er is geen verborgen totaalscore. Te weinig gegevens? Dan staat een team apart, met de reden. Prijzen zijn schattingen op basis van tarieven,
+          geen offertes. <Link href="/transparantie">Meer uitleg</Link>
         </Notice>
         {noScopeQuantities ? (
           <Notice tone="warning">Er zijn geen hoeveelheden bekend, dus kosten kunnen niet worden ingeschat. Vul hoeveelheden aan bij de werkzaamheden.</Notice>
         ) : null}
-        {!p.province ? <Notice tone="warning">Er is geen provincie bekend: alle uitvoerders komen in aanmerking, ongeacht werkgebied.</Notice> : null}
+        {!p.province ? <Notice tone="warning">Er is geen provincie bekend. Alle vakmensen komen in aanmerking, waar ze ook werken.</Notice> : null}
       </div>
 
       {excluded.length ? (
@@ -100,8 +104,8 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
             <ShieldAlert className="size-4 text-danger-700" aria-hidden /> Niet meegenomen op basis van openbare registers
           </h2>
           <p className="mt-1 text-xs text-ink-600">
-            Deze uitvoerders hadden in aanmerking kunnen komen, maar een door BouwCheck gecontroleerd juridisch feit, gekoppeld op KvK-nummer, sluit ze uit. Andere
-            registersignalen sluiten niemand uit; die staan als waarschuwing bij het team.
+            Deze vakmensen passen bij het werk. Maar een juridisch feit op hun KvK-nummer sluit ze uit. Dat hebben wij gecontroleerd. Andere signalen sluiten niemand uit. Die
+            staan als waarschuwing bij het team.
           </p>
           <ul className="mt-3 divide-y divide-ink-100 text-sm">
             {excluded.map((e) => (
@@ -133,8 +137,9 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
           const o = prop.ranked[0];
           return (
             <a key={prop.priority} href={`#${prop.priority}`} className="group rounded-[var(--radius-card)] border border-ink-200 bg-white p-5 hover:border-ink-400">
-              <p className="flex items-center gap-2 text-sm font-semibold text-ink-950">
+              <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink-950">
                 <meta.icon className="size-4 text-brand-700" aria-hidden /> {meta.title}
+                {prop.priority === chosen ? <span className="rounded-md bg-ink-900 px-1.5 py-0.5 text-xs font-medium text-white">Jouw keuze</span> : null}
               </p>
               {o ? (
                 <>
@@ -204,8 +209,8 @@ export default async function ProposalsPage({ params }: { params: Promise<{ id: 
         );
       })}
       <p className="mt-10 text-xs text-ink-500">
-        Berekend op {formatDate(new Date())} met de actuele gegevens van {site.name}. Beschikbaarheid en tarieven zijn door uitvoerders zelf opgegeven; statistieken pas vanaf{" "}
-        {site.minSampleSize} waarnemingen.
+        Berekend op {formatDate(new Date())} met de actuele gegevens van {site.name}. Beschikbaarheid en tarieven vullen vakmensen zelf in. Cijfers tonen we pas vanaf{" "}
+        {site.minSampleSize} klussen.
       </p>
     </div>
   );

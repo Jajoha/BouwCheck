@@ -326,7 +326,7 @@ export function deadlineFor(submittedAt: string | Date): Date {
 export const POST_STATUS_LABELS: Record<PostStatus, string> = {
   geprijsd: "Geprijsd",
   inbegrepen: "Inbegrepen",
-  stelpost: "Stelpost",
+  stelpost: "Kan nog veranderen",
   uitgesloten: "Zit er niet in",
   ontbreekt: "Ontbreekt",
 };
