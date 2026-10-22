@@ -35,7 +35,7 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-ink-200 bg-ink-50">
+    <footer className="border-t border-sand-200 bg-sand-50">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div>
           <Logo />
@@ -43,7 +43,7 @@ export function SiteFooter() {
         </div>
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <h2 className="text-sm font-semibold text-ink-900">{col.title}</h2>
+            <h2 className="font-display text-sm font-semibold text-ink-950">{col.title}</h2>
             <ul className="mt-3 space-y-2">
               {col.links.map((l) => (
                 <li key={l.href + l.label}>
@@ -56,10 +56,10 @@ export function SiteFooter() {
           </div>
         ))}
       </div>
-      <div className="border-t border-ink-200">
+      <div className="border-t border-sand-200">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-xs text-ink-500 sm:flex-row sm:justify-between sm:px-6">
           <p>© {new Date().getFullYear()} {site.name}</p>
-          <p>Aannemers kunnen niet betalen om bovenaan te staan.</p>
+          <p className="font-medium text-ink-700">Aannemers kunnen niet betalen om bovenaan te staan.</p>
         </div>
       </div>
     </footer>

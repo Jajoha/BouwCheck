@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, Coins, Award, Users, AlertTriangle } from "lucide-react";
+import { CalendarClock, Coins, Award, Users, AlertTriangle, ShieldCheck, Timer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VerificationBadge } from "@/components/domain/badges";
 import { ChooseTeamButton } from "./choose-team-button";
@@ -87,15 +87,29 @@ export type TeamCardCompactText = {
 };
 
 /** Compacte teamkaart: kopje los van de bedrijfsnamen, met prijs, startdatum en betrouwbaarheid. Geen kiesknop. */
-function CompactTeamCard({ option, text }: { option: TeamOption; text: TeamCardCompactText }) {
+const COMPACT_ICON: Record<Priority, typeof Coins> = { budget: Coins, snelheid: Timer, kwaliteit: ShieldCheck };
+
+function CompactTeamCard({ option, priority, text }: { option: TeamOption; priority: Priority; text: TeamCardCompactText }) {
+  const Icon = COMPACT_ICON[priority];
   return (
-    <article className="rounded-[var(--radius-card)] border border-ink-200 bg-white p-4" data-testid="team-option-compact">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-brand-800">{text.title}</h3>
-      <p className="mt-2 text-sm font-medium text-ink-950">{option.members.map((m) => m.contractor.company_name).join(" + ")}</p>
-      <ul className="mt-2 space-y-0.5 text-sm text-ink-700">
-        <li className="tabular">{text.price(formatEuro(option.cost.min), formatEuro(option.cost.max))}</li>
-        <li>{option.start ? text.start(formatDate(option.start)) : text.startUnknown}</li>
-        <li>{option.qualitySufficient && option.weakest ? text.rating(formatNumber(option.weakest.quality.rating, 1)) : text.ratingUnknown}</li>
+    <article className="relative overflow-hidden rounded-2xl bg-white p-4 shadow-[var(--shadow-float)] ring-1 ring-ink-950/5 sm:p-5" data-testid="team-option-compact">
+      <div className="flex items-center gap-2.5">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent-100 text-ink-950" aria-hidden>
+          <Icon className="size-4" />
+        </span>
+        <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-ink-950">{text.title}</h3>
+      </div>
+      <p className="mt-3 truncate text-sm font-medium text-ink-600">{option.members.map((m) => m.contractor.company_name).join(" + ")}</p>
+      <ul className="mt-1 space-y-1 text-sm text-ink-700">
+        <li className="tabular font-display text-[15px] font-semibold leading-snug text-ink-950 sm:text-lg">{text.price(formatEuro(option.cost.min), formatEuro(option.cost.max))}</li>
+        <li className="flex items-center gap-1.5">
+          <CalendarClock className="size-3.5 shrink-0 text-brand-600" aria-hidden />
+          {option.start ? text.start(formatDate(option.start)) : text.startUnknown}
+        </li>
+        <li className="flex items-center gap-1.5">
+          <Award className="size-3.5 shrink-0 text-brand-600" aria-hidden />
+          {option.qualitySufficient && option.weakest ? text.rating(formatNumber(option.weakest.quality.rating, 1)) : text.ratingUnknown}
+        </li>
       </ul>
     </article>
   );
@@ -119,7 +133,7 @@ export function TeamCard({
   /** Compacte weergave voor de homepage, zonder kiesknop. */
   compact?: TeamCardCompactText;
 }) {
-  if (compact) return <CompactTeamCard option={option} text={compact} />;
+  if (compact) return <CompactTeamCard option={option} priority={priority} text={compact} />;
   const meta = PRIORITY_META[priority];
   const today = new Date().toISOString().slice(0, 10);
   return (

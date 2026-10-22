@@ -37,7 +37,7 @@ function splitFirstSentence(text: string): [string, string] {
 
 export function OfferCta({ className }: { className?: string }) {
   return (
-    <Button asChild size="lg" className={cn("w-full sm:w-auto", className)}>
+    <Button asChild size="lg" variant="accent" className={cn("h-13 w-full px-7 text-base sm:w-auto", className)}>
       <Link href={OFFER.ctaHref}>
         {OFFER.cta} <ArrowRight aria-hidden />
       </Link>
@@ -72,18 +72,24 @@ export function OfferBenefits({ className }: { className?: string }) {
 export function OfferIntro({ as: Heading = "h1" }: { as?: "h1" | "h2" }) {
   return (
     <>
-      <p className="mb-3 text-sm font-semibold text-brand-800 sm:text-base">{OFFER.eyebrow}</p>
-      <Heading className="text-3xl font-semibold leading-[1.15] tracking-tight text-ink-950 sm:text-5xl sm:leading-[1.1]">{OFFER.title}</Heading>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">{OFFER.intro}</p>
+      <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-700 sm:text-sm">
+        <span aria-hidden className="size-1.5 rounded-full bg-accent-500" />
+        {OFFER.eyebrow}
+      </p>
+      <Heading className="font-display text-[2.15rem] font-bold leading-[1.05] tracking-tight text-ink-950 sm:text-6xl">{OFFER.title}</Heading>
+      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-700">{OFFER.intro}</p>
     </>
   );
 }
 
 function OfferBlock({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[var(--radius-card)] border border-ink-200 bg-ink-50 p-4 sm:p-5">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-ink-950">
-        <Icon className="size-4 text-brand-700" aria-hidden /> {title}
+    <section className="rounded-2xl border border-ink-200 bg-white p-5">
+      <h2 className="flex items-center gap-2.5 font-display text-base font-semibold text-ink-950">
+        <span className="flex size-8 items-center justify-center rounded-lg bg-ink-950 text-accent-400" aria-hidden>
+          <Icon className="size-4" />
+        </span>
+        {title}
       </h2>
       <p className="mt-1.5 text-sm leading-relaxed text-ink-700">{children}</p>
     </section>

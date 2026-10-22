@@ -29,10 +29,13 @@ export default async function OffertecheckPage({ searchParams }: { searchParams:
   if (bron && BRONNEN.includes(bron)) await logEvent("offertecheck_link_geklikt", { metadata: { bron } });
   const capacity = await getWeeklyCapacity();
   return (
+    <div className="relative isolate bg-sand-50">
+      <div aria-hidden className="bg-blueprint-light absolute inset-x-0 top-0 -z-10 h-[32rem] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
     <div className="mx-auto max-w-3xl px-4 py-10 pb-28 sm:px-6 sm:py-14">
       <OfferFull capacity={capacity} />
-      <section id="upload" aria-labelledby="upload-titel" className="mt-12 scroll-mt-24 rounded-[var(--radius-card)] border border-ink-200 bg-white p-5 sm:p-8">
-        <h2 id="upload-titel" className="mb-5 text-xl font-semibold text-ink-950">
+      <section id="upload" aria-labelledby="upload-titel" className="relative mt-12 scroll-mt-24 overflow-hidden rounded-2xl bg-white p-5 shadow-[var(--shadow-float)] ring-1 ring-ink-950/5 sm:p-8">
+        <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-accent-400 via-accent-300 to-brand-500" />
+        <h2 id="upload-titel" className="mb-5 font-display text-2xl font-bold text-ink-950">
           Upload je offertes
         </h2>
         {capacity && capacity.remaining === 0 ? (
@@ -59,6 +62,7 @@ export default async function OffertecheckPage({ searchParams }: { searchParams:
         </a>
         .
       </p>
+    </div>
     </div>
   );
 }

@@ -1,5 +1,31 @@
 # Klantkant opnieuw opgebouwd: oplevering (ronde 2)
 
+## Designupdate (ronde 3)
+
+Teksten, volgorde en flows zijn ongewijzigd. Alleen de vormgeving is veranderd:
+- **Kleuren**:
+  - Antraciet met groen blijft de basis.
+  - Nieuw is bouwgeel (`accent`) voor de belangrijkste knoppen, altijd met donkere tekst.
+  - Nieuw is zand (`sand`) als warme achtergrond voor afwisselende secties.
+  - Tokens staan in `src/app/globals.css`.
+- **Lettertype**: Bricolage Grotesque voor koppen (`font-display`), Geist blijft voor lopende tekst.
+- **Homepage**:
+  - Donkere hero met een fijn bouwtekening-raster en een groene gloed. "vakmensen" in de kop is geel.
+  - Het formulier is een zwevende kaart met een gele knop. De prioriteitkeuzes hebben iconen.
+  - De voorbeeldteams staan getrapt naast het formulier.
+  - Een zwevende voordelenbalk over de rand van de hero.
+  - Kaarten met iconen.
+  - Een donkergroen blok voor "Waar kies jij op?".
+  - Genummerde stappen met een stippellijn.
+  - Het offertevoorbeeld staat op zand.
+  - De Pro-kaart is donker met een geel label.
+  - Een geel blok voor "Eerste klanten".
+  - Uitklapbare vragen als kaarten.
+  - Een donker slotblok.
+- **/prijzen**: een zandkleurige kop. De kaarten schuiven deels over de kop heen. Het aanvraagformulier staat in een donker blok.
+- **/offertecheck**: een zandkleurige achtergrond met raster, een gele hoofdknop, en het uploadformulier als zwevende kaart.
+- **Mobiel**: kaarten tonen het icoon naast de tekst, zodat ze niet te lang worden. De prijsregels in de voorbeeldteams breken niet meer af. Op 375 px scrolt niets horizontaal.
+
 Deze ronde vervangt de homepage uit ronde 1 (die draaide om de Offertecheck). De homepage draait nu om het Teamvoorstel.
 
 ## Eerst: drie punten om te beslissen
