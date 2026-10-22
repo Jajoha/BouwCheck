@@ -6,28 +6,20 @@ import { NavLink } from "./nav-link";
 import { UserMenu } from "./user-menu";
 import { FunnelHidden } from "./funnel-hidden";
 import { getCurrentUser, type SessionUser } from "@/lib/auth/session";
-import { env } from "@/lib/env";
+import { VIND_NAV_CTA } from "@/content/homepage";
 
 type NavItem = { href: string; label: string };
 
+/** Voor bezoekers; "Inloggen" en de knop rechtsboven staan ernaast. */
 const PUBLIC_NAV: NavItem[] = [
-  { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "/#voor-vastgoedondernemers", label: "Voor vastgoedondernemers en projectontwikkelaars" },
-  { href: "/transparantie", label: "Hoe wij selecteren" },
-  { href: "/prijzen", label: "Prijzen" },
-];
-
-/** Met de Offertecheck: de funnel staat centraal. */
-const FUNNEL_NAV: NavItem[] = [
-  { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "/offertecheck", label: "Offertecheck" },
-  { href: "/prijzen", label: "Prijzen" },
+  { href: "/#zo-werkt-het", label: "Hoe het werkt" },
+  { href: "/#prijzen", label: "Prijzen" },
   { href: "/#voor-vakmensen", label: "Voor vakmensen" },
 ];
 
-/** De primaire knop rechtsboven voor bezoekers. */
+/** De primaire knop rechtsboven voor bezoekers: naar het hero-formulier (/#start). */
 export function primaryCta() {
-  return env.features.offertecheck ? { href: "/offertecheck#upload", label: "Gratis Offertecheck" } : { href: "/projecten/nieuw", label: "Start je project" };
+  return { ...VIND_NAV_CTA };
 }
 
 function navFor(user: SessionUser): NavItem[] {
@@ -48,7 +40,7 @@ function navFor(user: SessionUser): NavItem[] {
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
-  const nav = user ? navFor(user) : env.features.offertecheck ? FUNNEL_NAV : PUBLIC_NAV;
+  const nav = user ? navFor(user) : PUBLIC_NAV;
   const cta = primaryCta();
   const secondary: NavItem[] = user
     ? user.role === "aannemer"

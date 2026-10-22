@@ -5,32 +5,28 @@ import type { WeeklyCapacity } from "@/lib/domain/offertecheck";
 import { cn } from "@/lib/utils";
 
 /**
- * Het Offertecheck-aanbod. Teksten letterlijk zoals aangeleverd door de opdrachtgever;
- * wijzig ze hier en nergens anders.
+ * Het Offertecheck-aanbod op /offertecheck. Wijzig de teksten hier en nergens anders.
+ * Korte zinnen, één boodschap per zin; geen vaktaal zonder uitleg.
  */
 export const OFFER = {
-  eyebrow: "Voor vastgoedondernemers en projectontwikkelaars die renoveren",
-  title: "Zie het meerwerk vóórdat het je marge opeet.",
-  intro:
-    "Je hebt het pand, nu moet de renovatie gegund worden. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Zo blijft je rendement op de bouwplaats overeind.",
+  eyebrow: "Voor vastgoedondernemers en projectontwikkelaars",
+  title: "Laat je offertes gratis checken.",
+  intro: "Binnen 48 uur weet je wat er mist, wat er niet in zit en waar je te veel betaalt.",
   benefitsTitle: "Wat je krijgt",
   benefits: [
-    "Alle offertes op één scope. Elke post naast elkaar, zodat je appels met appels vergelijkt.",
-    "Ontbrekende posten in euro's. Wat in de ene offerte zit en in de andere niet, met een indicatie van wat het je later kost.",
-    "Stelposten en uitsluitingen uitgelicht. De plekken waar meerwerk vandaan komt, met uitleg waarom.",
-    "Prijsverschillen per post. Waar je mogelijk te veel betaalt, en waar een lage prijs verdacht laag is.",
-    "Je onderhandelingslijst. De vragen die je aan elke aannemer stelt voordat je tekent.",
+    "Alle offertes naast elkaar. Je vergelijkt dan echt hetzelfde werk.",
+    "Wat er mist, in euro's. Je ziet wat een ander ervoor vraagt.",
+    "Bedragen die nog kunnen veranderen. Daar komt extra werk vaak vandaan.",
+    "Wat er niet in zit. Dat betaal je later alsnog.",
+    "Grote prijsverschillen per post. Zo zie je waar je te veel betaalt.",
+    "Je lijst met vragen. Die stel je voordat je tekent.",
   ],
-  bonus:
-    "Wil je teams die op deze ene scope offreren? Je krijgt binnen 72 uur een gratis teamvoorstel van aannemers, zzp-vakmensen en klussers, geordend op budget, kwaliteit of snelheid.",
-  promise: "Je rapport binnen 48 uur, anders krijg je je teamvoorstel met voorrang. Vinden we niets? Dan zeggen we dat eerlijk, en teken je met een gerust hart.",
-  privacy: "Je offertes worden niet gedeeld met aannemers. Je kunt ze op elk moment laten verwijderen.",
-  limited: (max: number) => `Elke check wordt door een mens nagekeken. Daarom nemen we er maximaal ${max} per week aan.`,
-  cta: "Gratis Offertecheck",
+  bonus: "Wil je vakmensen die een prijs geven voor hetzelfde werk? Vraag dan een gratis Teamvoorstel aan.",
+  promise: "Je rapport komt binnen 48 uur. Vinden we niets? Dan zeggen we dat eerlijk.",
+  privacy: "We delen je offertes niet met aannemers. Je kunt ze altijd laten verwijderen.",
+  limited: (max: number) => `Een medewerker kijkt elke check na. Daarom doen we er maximaal ${max} per week.`,
+  cta: "Check mijn offertes – gratis",
   ctaHref: "/offertecheck#upload",
-  proNote: "Werk je met meerdere panden per jaar?",
-  proLink: "Bekijk BouwCheck Pro.",
-  proHref: "/prijzen#pro",
 } as const;
 
 /** Splitst "Kop. Uitleg." zodat de eerste zin vet kan; de tekst zelf blijft ongewijzigd. */
@@ -41,23 +37,11 @@ function splitFirstSentence(text: string): [string, string] {
 
 export function OfferCta({ className }: { className?: string }) {
   return (
-    <Button asChild size="lg" className={cn("w-full sm:w-auto", className)}>
+    <Button asChild size="lg" variant="accent" className={cn("h-13 w-full px-7 text-base sm:w-auto", className)}>
       <Link href={OFFER.ctaHref}>
         {OFFER.cta} <ArrowRight aria-hidden />
       </Link>
     </Button>
-  );
-}
-
-/** Regel onder de knop op de homepage, voor wie meerdere panden per jaar doet. */
-export function OfferProNote({ className }: { className?: string }) {
-  return (
-    <p className={cn("text-sm text-ink-600", className)}>
-      {OFFER.proNote}{" "}
-      <Link href={OFFER.proHref} className="font-medium text-ink-900 underline underline-offset-2 hover:text-brand-800">
-        {OFFER.proLink}
-      </Link>
-    </p>
   );
 }
 
@@ -88,18 +72,24 @@ export function OfferBenefits({ className }: { className?: string }) {
 export function OfferIntro({ as: Heading = "h1" }: { as?: "h1" | "h2" }) {
   return (
     <>
-      <p className="mb-3 text-sm font-semibold text-brand-800 sm:text-base">{OFFER.eyebrow}</p>
-      <Heading className="text-3xl font-semibold leading-[1.15] tracking-tight text-ink-950 sm:text-5xl sm:leading-[1.1]">{OFFER.title}</Heading>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-600">{OFFER.intro}</p>
+      <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-ink-200 bg-white px-3 py-1 text-xs font-medium text-ink-700 sm:text-sm">
+        <span aria-hidden className="size-1.5 rounded-full bg-accent-500" />
+        {OFFER.eyebrow}
+      </p>
+      <Heading className="font-display text-[2.15rem] font-bold leading-[1.05] tracking-tight text-ink-950 sm:text-6xl">{OFFER.title}</Heading>
+      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-700">{OFFER.intro}</p>
     </>
   );
 }
 
 function OfferBlock({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[var(--radius-card)] border border-ink-200 bg-ink-50 p-4 sm:p-5">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-ink-950">
-        <Icon className="size-4 text-brand-700" aria-hidden /> {title}
+    <section className="rounded-2xl border border-ink-200 bg-white p-5">
+      <h2 className="flex items-center gap-2.5 font-display text-base font-semibold text-ink-950">
+        <span className="flex size-8 items-center justify-center rounded-lg bg-ink-950 text-accent-400" aria-hidden>
+          <Icon className="size-4" />
+        </span>
+        {title}
       </h2>
       <p className="mt-1.5 text-sm leading-relaxed text-ink-700">{children}</p>
     </section>
@@ -133,7 +123,7 @@ export function OfferFull({ capacity }: { capacity: WeeklyCapacity | null }) {
         <OfferBlock icon={Users} title="Bonus">
           {OFFER.bonus}
         </OfferBlock>
-        <OfferBlock icon={Gift} title="Onze belofte">
+        <OfferBlock icon={Gift} title="Binnen 48 uur">
           {OFFER.promise}
         </OfferBlock>
         <OfferBlock icon={EyeOff} title="Privé">

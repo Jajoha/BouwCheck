@@ -3,87 +3,86 @@ import { PageHeader, TableWrap, td, th } from "@/components/ui/misc";
 import { site } from "@/config/site";
 import { VERIFICATION_LEVELS } from "@/lib/domain/verification";
 
-export const metadata: Metadata = { title: "Hoe wij gegevens beoordelen" };
+export const metadata: Metadata = { title: "Zo controleren wij" };
 
 const METRICS = [
-  ["Op tijd opgeleverd", "Aandeel projecten met werkelijke opleverdatum ≤ geplande opleverdatum.", "Projecten met beide data"],
-  ["Gemiddelde vertraging", "Gemiddelde van (werkelijke − geplande opleverdatum) in kalenderdagen.", "Projecten met beide data"],
-  ["Budgetafwijking", "Gemiddelde van (definitieve kosten − begroot) / begroot × 100. Positief = duurder.", "Projecten met begroting én eindbedrag"],
-  ["Herstelwerk", "Aandeel projecten waarbij na oplevering herstelwerk nodig was.", "Projecten waarvan dit bekend is"],
-  ["Doorlooptijd", "Gemiddeld aantal kalenderdagen tussen start en werkelijke oplevering.", "Projecten met start- en opleverdatum"],
-  ["Beoordelingen", "Gemiddelde (1–5) van gepubliceerde beoordelingen die aan een project gekoppeld zijn.", "Gepubliceerde beoordelingen"],
+  ["Op tijd opgeleverd", "Hoe vaak het werk klaar was op of vóór de geplande datum.", "Projecten met beide datums"],
+  ["Gemiddelde vertraging", "Gemiddeld aantal dagen tussen de geplande en de echte opleverdatum.", "Projecten met beide datums"],
+  ["Budgetafwijking", "Hoeveel procent de eindprijs afweek van de begroting. Een plus betekent duurder.", "Projecten met begroting én eindprijs"],
+  ["Herstelwerk", "Hoe vaak er na oplevering nog iets hersteld moest worden.", "Projecten waarvan dit bekend is"],
+  ["Doorlooptijd", "Gemiddeld aantal dagen tussen start en oplevering.", "Projecten met start- en opleverdatum"],
+  ["Beoordelingen", "Gemiddeld cijfer van 1 tot 5. Alleen beoordelingen die bij een project horen.", "Gepubliceerde beoordelingen"],
 ];
 
 export default function TransparencyPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 pb-28 sm:px-6">
-      <PageHeader title="Hoe wij selecteren en beoordelen" description="Betrouwbaarheid gaat boven een mooie score. Zo komen teamvoorstellen en cijfers op BouwCheck tot stand." />
+      <PageHeader title="Zo controleren wij" description="Eerlijke cijfers gaan voor een mooie score. Hier lees je hoe een Teamvoorstel en de cijfers tot stand komen." />
       <div className="mt-8 space-y-10 text-[15px] leading-relaxed text-ink-800">
         <section>
-          <h2 className="text-lg font-semibold text-ink-950">Van projectomschrijving naar teamvoorstel</h2>
+          <h2 className="text-lg font-semibold text-ink-950">Van werkomschrijving naar Teamvoorstel</h2>
           <ol className="mt-3 list-decimal space-y-2 pl-5">
             <li>
-              <strong>Intake.</strong> Je beschrijft het project en voegt eventueel foto&apos;s toe. Een AI-model (Claude van Anthropic) stelt daaruit een lijst
-              werkzaamheden voor met vakgebied, hoeveelheid en zekerheid, plus risico&apos;s en open vragen. De AI noemt geen prijzen en kiest geen aannemers. Jij bevestigt
-              of corrigeert de werkzaamheden; zonder AI vul je ze zelf in.
+              <strong>Je beschrijft het werk.</strong> Je kunt foto&apos;s toevoegen. Een AI-model (Claude van Anthropic) maakt daar een lijst met werk van. Per
+              onderdeel staat erbij welk vak het is en hoeveel. De AI noemt geen prijzen. De AI kiest ook geen vakmensen. Jij controleert de lijst en past hem aan.
             </li>
             <li>
-              <strong>Kandidaten.</strong> Alleen actieve uitvoerders — aannemersbedrijven, zelfstandige vakmensen (zzp) en klussers — die in de provincie van je project
-              werken en het betreffende vakgebied uitvoeren. Kleine klussen kunnen naar een klusser gaan.
+              <strong>Wie komt in aanmerking?</strong> Alleen vakmensen die in de provincie van je project werken. En die het werk uit de lijst doen. Dat kunnen
+              aannemersbedrijven, zzp&apos;ers en klussers zijn. Kleine klussen kunnen naar een klusser gaan.
             </li>
             <li>
-              <strong>Teams.</strong> Een hoofdaannemer die alles aanneemt, of een team van losse vakspecialisten (per vakgebied één). Bij een team van specialisten ligt
-              de coördinatie bij jou; dat staat bij het voorstel.
+              <strong>Teams.</strong> Een hoofdaannemer die alles doet. Of een team met per vak één vakman. Bij zo&apos;n team regel jij zelf de afstemming. Dat staat
+              bij het voorstel.
             </li>
             <li>
-              <strong>Ordening per prioriteit</strong> — telkens één criterium, geen samengestelde score:
+              <strong>Volgorde.</strong> Jij kiest wat het zwaarst weegt. Per keuze sorteren we op één ding. Er is geen verborgen totaalscore.
               <ul className="mt-1 list-disc space-y-1 pl-5">
                 <li>
-                  <em>Budget:</em> laagste middenwaarde van de kostenbandbreedte = som van (hoeveelheid × minimum- en maximumtarief) uit de door aannemers opgegeven
-                  tarieven, of het all-in m²-tarief van een hoofdaannemer.
+                  <em>Budget:</em> de laagste geschatte prijs. Die rekenen we uit met de tarieven die vakmensen zelf opgeven, keer de hoeveelheden uit je lijst.
                 </li>
                 <li>
-                  <em>Kwaliteit:</em> de beoordeling van de zwakste schakel in het team (alleen aannemers met minimaal {site.minSampleSize} gepubliceerde beoordelingen);
-                  bij gelijke stand minder herstelwerk, daarna meer gecontroleerde projecten.
+                  <em>Betrouwbaarheid:</em> het cijfer van de zwakste schakel in het team. Alleen vakmensen met minstens {site.minSampleSize} beoordelingen tellen mee. Is het
+                  gelijk? Dan gaat minder herstelwerk voor. Daarna meer gecontroleerde projecten.
                 </li>
                 <li>
-                  <em>Snelheid:</em> de vroegste datum waarop het hele team beschikbaar is, volgens de opgegeven beschikbaarheid.
+                  <em>Snelheid:</em> de eerste datum waarop het hele team kan beginnen. Dat geven de vakmensen zelf op.
                 </li>
               </ul>
             </li>
             <li>
-              <strong>Onvoldoende gegevens</strong> (geen passend tarief, te weinig beoordelingen, onbekende beschikbaarheid of een vakgebied zonder aanbieder in de regio)?
-              Dan wordt een team niet tussen de anderen gerangschikt maar apart getoond, met de reden.
+              <strong>Te weinig gegevens?</strong> Bijvoorbeeld geen tarief, te weinig beoordelingen of geen vakman in de regio. Dan staat het team apart, als
+              &lsquo;niet gerangschikt&rsquo;. De reden staat erbij.
             </li>
           </ol>
         </section>
         <section>
           <h2 className="text-lg font-semibold text-ink-950">Openbare registers</h2>
           <p className="mt-3">
-            Een AI-agent zoekt per uitvoerder op KvK-nummer in officiële registers: het Centraal Insolventieregister, het KvK Handelsregister, Rechtspraak.nl en officiële
-            bekendmakingen. Alles wat de agent vindt is een voorstel; een medewerker controleert de bron en beslist. Er is geen score: een signaal is een feit met een bron.
+            We zoeken elk bedrijf op met zijn KvK-nummer. Dat doen we in officiële registers: het Centraal Insolventieregister, het Handelsregister van de KvK,
+            Rechtspraak.nl en officiële bekendmakingen. Een AI-agent zoekt. Een medewerker controleert de bron en beslist. Er is geen score. Een signaal is een feit met een
+            bron.
           </p>
           <ul className="mt-3 list-disc space-y-1 pl-5">
             <li>
-              <strong>Uitsluiten</strong> van teamvoorstellen gebeurt alleen bij een juridisch feit — faillissement, surseance van betaling of een opgeheven
-              KvK-inschrijving — dat in de bron op het <em>KvK-nummer</em> van de uitvoerder staat. De uitvoerder verschijnt dan apart, met reden en bron. De database
-              dwingt deze regel af.
+              <strong>Niet meenemen</strong> doen we alleen bij een juridisch feit op het KvK-nummer. Dat is een faillissement, uitstel van betaling of een opgeheven
+              inschrijving. Het bedrijf staat dan apart, met de reden en de bron.
             </li>
             <li>
-              <strong>Waarschuwen</strong> bij al het andere (een recente inschrijving, een mogelijke doorstart op hetzelfde adres, een rechterlijke uitspraak, of een
-              juridisch feit dat alleen op naam is gevonden). De uitvoerder blijft gerangschikt; de waarschuwing staat bij het team.
+              <strong>Waarschuwen</strong> doen we bij al het andere. Bijvoorbeeld een nieuwe inschrijving, een uitspraak van een rechter, of een feit dat we alleen op
+              naam vonden. Het bedrijf blijft dan in de lijst. De waarschuwing staat bij het team.
             </li>
             <li>
-              <strong>Niets gevonden</strong> tonen we ook, met de controledatum en de geraadpleegde registers. Dat is geen garantie: niet alles staat online. Controles
-              ouder dan 90 dagen gelden als verouderd en worden opnieuw ingepland.
+              <strong>Niets gevonden?</strong> Dat laten we ook zien, met de datum en de registers. Het is geen garantie: niet alles staat online. Na 90 dagen controleren we
+              opnieuw.
             </li>
             <li>
-              <strong>Reageren:</strong> de uitvoerder ziet elk zichtbaar signaal in het portaal en kan er openbaar op reageren; een onjuist signaal trekken we in.
+              <strong>Reageren:</strong> het bedrijf ziet elk signaal en kan erop reageren. Klopt een signaal niet? Dan halen we het weg.
             </li>
           </ul>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-ink-950">Vier soorten informatie</h2>
+          <h2 className="text-lg font-semibold text-ink-950">Vier verificatieniveaus</h2>
+          <p className="mt-3">Bij elk gegeven zie je hoe zeker het is. Heeft een bedrijf het zelf ingevuld, of hebben wij het gecontroleerd?</p>
           <ul className="mt-3 space-y-2">
             {Object.values(VERIFICATION_LEVELS).map((l) => (
               <li key={l.label}>
@@ -91,27 +90,27 @@ export default function TransparencyPage() {
               </li>
             ))}
             <li>
-              <strong>Ervaringen van opdrachtgevers:</strong> beoordelingen gekoppeld aan een geregistreerd project. Zonder projectkoppeling geen beoordeling.
+              <strong>Ervaringen van opdrachtgevers:</strong> beoordelingen die bij een project horen. Zonder project geen beoordeling.
             </li>
           </ul>
         </section>
         <section>
           <h2 className="text-lg font-semibold text-ink-950">Wanneer tonen we een cijfer?</h2>
           <p className="mt-2">
-            Pas vanaf <strong>{site.minSampleSize} geldige waarnemingen</strong>. Daaronder staat er &lsquo;Nog onvoldoende gegevens&rsquo; met het aantal waarnemingen. Bij
-            elk cijfer staat het aantal projecten (n). Gegevens ouder dan {site.staleAfterMonths} maanden worden als verouderd gemarkeerd.
+            Pas na <strong>{site.minSampleSize} projecten</strong>. Een cijfer over één klus zegt niets. Daaronder staat er &lsquo;Nog onvoldoende gegevens&rsquo;. Bij
+            elk cijfer staat op hoeveel projecten het is gebaseerd (n). Gegevens ouder dan {site.staleAfterMonths} maanden markeren we als verouderd.
           </p>
-          <p className="mt-2">Alleen projectresultaten die door beheer zijn goedgekeurd en niet betwist of afgewezen zijn, tellen mee.</p>
+          <p className="mt-2">Alleen goedgekeurde projectresultaten tellen mee. Een betwist of afgewezen resultaat telt niet mee.</p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-ink-950">Berekeningen</h2>
+          <h2 className="text-lg font-semibold text-ink-950">Zo rekenen we</h2>
           <TableWrap className="mt-3">
             <table className="w-full min-w-[560px]">
               <thead>
                 <tr>
-                  <th className={th}>Metriek</th>
+                  <th className={th}>Cijfer</th>
                   <th className={th}>Berekening</th>
-                  <th className={th}>Waarnemingen</th>
+                  <th className={th}>Telt mee</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,27 +126,27 @@ export default function TransparencyPage() {
           </TableWrap>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-ink-950">Wat we bewust niet doen</h2>
+          <h2 className="text-lg font-semibold text-ink-950">Wat we niet doen</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>Geen samengestelde betrouwbaarheidsscore met willekeurige gewichten.</li>
-            <li>Geen betaalde rankings: sortering gebeurt uitsluitend op het criterium dat je kiest.</li>
-            <li>Geen &lsquo;beste aannemer&rsquo;-label wanneer gegevens niet vergelijkbaar zijn.</li>
-            <li>Geen automatische &lsquo;onbetrouwbaar&rsquo;-markering op basis van een paar negatieve ervaringen.</li>
+            <li>Geen totaalscore met verzonnen gewichten.</li>
+            <li>Aannemers kunnen niet betalen om bovenaan te staan. We sorteren alleen op wat jij kiest.</li>
+            <li>Geen label &lsquo;beste aannemer&rsquo; als gegevens niet te vergelijken zijn.</li>
+            <li>Geen label &lsquo;onbetrouwbaar&rsquo; na een paar slechte ervaringen.</li>
           </ul>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-ink-950">Correctie en bezwaar</h2>
+          <h2 className="text-lg font-semibold text-ink-950">Iets klopt niet?</h2>
           <p className="mt-2">
-            Iedere ingelogde gebruiker kan onjuiste informatie melden. Aannemers kunnen reageren op beoordelingen en resultaten betwisten. Een betwist resultaat telt niet
-            mee totdat beheer de melding heeft afgehandeld. Alle beheeracties worden gelogd.
+            Iedereen met een account kan een fout melden. Aannemers mogen reageren op wat er over hen staat. Ze kunnen een resultaat ook betwisten. Een betwist resultaat telt
+            niet mee tot wij de melding hebben bekeken. We leggen elke actie van ons vast.
           </p>
         </section>
         <section>
-          <h2 className="text-lg font-semibold text-ink-950">Manipulatie voorkomen</h2>
+          <h2 className="text-lg font-semibold text-ink-950">Zo voorkomen we nep-beoordelingen</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>Eén projectresultaat en één beoordeling per aannemer per project.</li>
-            <li>Alleen voor eigen projecten, met een aannemer die aan het project gekoppeld is.</li>
-            <li>Nieuwe resultaten zijn &lsquo;in behandeling&rsquo; tot beheer ze beoordeelt.</li>
+            <li>Per project één resultaat en één beoordeling per aannemer.</li>
+            <li>Alleen voor je eigen project, met een aannemer die bij dat project hoort.</li>
+            <li>Een nieuw resultaat telt pas mee als wij het hebben bekeken.</li>
           </ul>
         </section>
       </div>

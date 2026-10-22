@@ -251,7 +251,7 @@ export const contractorResponseSchema = z.object({ review_id: uuid, response: te
 
 // ── Aannemersprofiel (portaal en beheer) ────────────────────
 export const contractorProfileSchema = z.object({
-  provider_type: z.preprocess((v) => empty(v) ?? "bedrijf", z.enum(PROVIDER_TYPE_IDS, { error: "Kies wat voor uitvoerder je bent." })),
+  provider_type: z.preprocess((v) => empty(v) ?? "bedrijf", z.enum(PROVIDER_TYPE_IDS, { error: "Kies wat voor vakman je bent." })),
   company_name: text(2, 120, "Bedrijfs- of handelsnaam"),
   description: text(20, 3000, "Omschrijving"),
   city: text(2, 80, "Vestigingsplaats"),

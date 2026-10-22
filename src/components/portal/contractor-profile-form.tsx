@@ -15,7 +15,7 @@ export function ContractorProfileForm({ action, initial, submitLabel, showStatus
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
       {result && !result.ok && result.message ? <Notice tone="danger">{result.message}</Notice> : null}
-      <Fieldset legend="Wat voor uitvoerder ben je?" error={errors("provider_type")}>
+      <Fieldset legend="Wat voor vakman ben je?" error={errors("provider_type")}>
         <div className="grid gap-2 sm:grid-cols-3">
           {Object.entries(PROVIDER_TYPES).map(([id, t]) => (
             <label key={id} className="flex cursor-pointer gap-2 rounded-lg border border-ink-200 p-3 text-sm has-[:checked]:border-ink-900 has-[:checked]:bg-ink-50">

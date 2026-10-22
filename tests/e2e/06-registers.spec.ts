@@ -9,7 +9,7 @@ test.describe.serial("Uitvoerders (klussers/zzp) en openbare registers", () => {
     await expect(register.getByRole("heading", { name: "Openbare registers" })).toBeVisible();
     await expect(register.getByText(/fictieve voorbeelden/)).toBeVisible();
     await expect(register.getByText(/Mogelijke doorstart op hetzelfde adres/)).toBeVisible();
-    await expect(register.getByText(/Reactie van de uitvoerder/)).toBeVisible();
+    await expect(register.getByText(/Reactie van de vakman/)).toBeVisible();
     await page.goto("/aannemers/timmerwerk-de-vries");
     await expect(page.getByText("Zelfstandig vakman (zzp)")).toBeVisible();
   });

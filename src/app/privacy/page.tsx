@@ -27,13 +27,13 @@ export default function PrivacyPage() {
         werkzaamheden in te schatten. Plaats daarom geen persoonsgegevens of herkenbare personen op foto&apos;s. Een verwerkersovereenkomst en de bewaartermijnen bij de
         AI-dienst worden vóór commercieel gebruik vastgelegd. Per account registreren wij het aantal analyses, tokens en de kosten.
       </p>
-      <h2>Controle van uitvoerders in openbare registers</h2>
+      <h2>Controle van vakmensen in openbare registers</h2>
       <p>
-        BouwCheck controleert uitvoerders (bedrijven, zzp&apos;ers en klussers) op hun KvK-nummer in officiële, openbare registers: het Centraal Insolventieregister,
+        BouwCheck controleert vakmensen (bedrijven, zzp&apos;ers en klussers) op hun KvK-nummer in officiële, openbare registers: het Centraal Insolventieregister,
         het KvK Handelsregister, Rechtspraak.nl en officiële bekendmakingen. Daarvoor sturen wij de naam, het KvK-nummer, de vestigingsplaats en de opgegeven website
         naar Anthropic (Claude), dat in die registers zoekt. Bij eenmanszaken en zzp&apos;ers is de ondernemer een natuurlijk persoon; wij leggen dan alleen feiten over
         de onderneming vast (zoals een faillissement of opgeheven inschrijving) en nooit schuldsanering (WSNP), persoonlijke schulden of privégegevens. Elke bevinding
-        wordt door een medewerker beoordeeld voordat die zichtbaar wordt, en de uitvoerder kan openbaar reageren of om intrekking vragen. Deze verwerking en de
+        wordt door een medewerker beoordeeld voordat die zichtbaar wordt, en de vakman kan openbaar reageren of om intrekking vragen. Deze verwerking en de
         grondslag (gerechtvaardigd belang) worden vóór commercieel gebruik juridisch getoetst.
       </p>
       <h2>Wie kan wat zien</h2>

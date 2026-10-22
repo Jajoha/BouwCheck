@@ -161,7 +161,7 @@ export default async function PortalPage() {
                             <span className="block text-xs text-ink-500">{r.specialty_name}</span>
                           </td>
                           <td className={`${td} tabular text-right`}>
-                            {formatEuro(r.price_min)} – {formatEuro(r.price_max)} <span className="text-xs text-ink-500">{r.vat_included ? "incl." : "excl."} btw</span>
+                            {formatEuro(r.price_min)} – {formatEuro(r.price_max)} <span className="text-xs text-ink-500">{r.vat_included ? "(met btw)" : "(zonder btw)"}</span>
                           </td>
                           <td className={td}>{RATE_UNITS[r.unit as keyof typeof RATE_UNITS]}</td>
                           <td className={`${td} text-right`}>

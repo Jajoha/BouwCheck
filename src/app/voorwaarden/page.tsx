@@ -7,8 +7,8 @@ export const metadata: Metadata = { title: "Gebruiksvoorwaarden (concept)" };
 export default function TermsPage() {
   return (
     <LegalPage title="Gebruiksvoorwaarden">
-      <h2>1. Bèta</h2>
-      <p>{site.name} is in een testfase. Functionaliteit kan wijzigen en er kunnen fouten optreden. Gebruik is tijdens de bèta kosteloos.</p>
+      <h2>1. De dienst</h2>
+      <p>{site.name} kan de dienst aanpassen. Er kunnen fouten in zitten. Bij elke dienst staat wat die kost.</p>
       <h2>2. Informatie over aannemers</h2>
       <p>
         {site.name} toont informatie van verschillende bronnen en vermeldt bij elk gegeven de bron en verificatiestatus. {site.name} garandeert niet dat informatie juist,

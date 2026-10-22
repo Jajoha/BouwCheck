@@ -33,7 +33,7 @@ export default async function ProjectsPage() {
           className="mt-8"
           icon={FolderKanban}
           title="Je hebt nog geen renovatieprojecten"
-          description="Beschrijf je project en voeg foto's toe; je krijgt teamvoorstellen op budget, kwaliteit en snelheid."
+          description="Beschrijf je project en voeg foto's toe; je krijgt teamvoorstellen op prijs, snelheid en betrouwbaarheid."
           action={
             <Button asChild>
               <Link href="/projecten/nieuw">Eerste project aanmaken</Link>

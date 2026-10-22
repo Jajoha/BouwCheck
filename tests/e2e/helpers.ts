@@ -26,14 +26,18 @@ export async function expectNoHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(1);
 }
 
-/** Teksten van het Offertecheck-aanbod, letterlijk zoals aangeleverd. */
-export const OFFER_INTRO =
-  "Je hebt het pand, nu moet de renovatie gegund worden. Upload je offertes en weet binnen 48 uur wat erin ontbreekt, wat er is uitgesloten en waar je te veel betaalt. Zo blijft je rendement op de bouwplaats overeind.";
-export const OFFER_EYEBROW = "Voor vastgoedondernemers en projectontwikkelaars die renoveren";
+/** Teksten van het Offertecheck-aanbod op /offertecheck (src/components/offertecheck/offer.tsx). */
+export const OFFER_INTRO = "Binnen 48 uur weet je wat er mist, wat er niet in zit en waar je te veel betaalt.";
+export const OFFER_EYEBROW = "Voor vastgoedondernemers en projectontwikkelaars";
 export const OFFER_BENEFITS = [
-  "Alle offertes op één scope. Elke post naast elkaar, zodat je appels met appels vergelijkt.",
-  "Ontbrekende posten in euro's. Wat in de ene offerte zit en in de andere niet, met een indicatie van wat het je later kost.",
-  "Stelposten en uitsluitingen uitgelicht. De plekken waar meerwerk vandaan komt, met uitleg waarom.",
-  "Prijsverschillen per post. Waar je mogelijk te veel betaalt, en waar een lage prijs verdacht laag is.",
-  "Je onderhandelingslijst. De vragen die je aan elke aannemer stelt voordat je tekent.",
+  "Alle offertes naast elkaar. Je vergelijkt dan echt hetzelfde werk.",
+  "Wat er mist, in euro's. Je ziet wat een ander ervoor vraagt.",
+  "Bedragen die nog kunnen veranderen. Daar komt extra werk vaak vandaan.",
+  "Wat er niet in zit. Dat betaal je later alsnog.",
+  "Grote prijsverschillen per post. Zo zie je waar je te veel betaalt.",
+  "Je lijst met vragen. Die stel je voordat je tekent.",
 ];
+
+/** Woorden die in geen enkele klanttekst mogen staan. */
+export const FORBIDDEN_CUSTOMER_WORDS =
+  /bèta|\bbeta\b|testfase|pilot|demo-database|tijdelijke opslag|werkelijke kosten|vervanger binnen 72 uur|scope|offreer|offreren|stelpost|meerwerk|excl\.? btw|uitvoerder/i;

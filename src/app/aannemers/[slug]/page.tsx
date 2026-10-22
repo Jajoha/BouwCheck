@@ -21,13 +21,14 @@ import { OUTCOME_VERIFICATION, PROVIDER_TYPES, RATE_UNITS, specialtyName, type O
 import { VERIFICATION_LEVELS } from "@/lib/domain/verification";
 import { formatDate, formatDays, formatEuro, formatMoney, formatPercent } from "@/lib/format";
 import { site } from "@/config/site";
+import { VERZONNEN_VAKMENSEN } from "@/content/homepage";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const c = await getContractorDetail(slug);
-  return { title: c ? c.company_name : "Uitvoerder niet gevonden" };
+  return { title: c ? c.company_name : "Vakman niet gevonden" };
 }
 
 export default async function ContractorPage({ params }: Props) {
@@ -82,9 +83,8 @@ export default async function ContractorPage({ params }: Props) {
       </div>
 
       {c.is_demo ? (
-        <Notice tone="demo" className="mt-6" title={site.demoLabel}>
-          Dit is een fictief profiel voor demonstratiedoeleinden. Bedrijfsnaam, KvK-nummer, contactgegevens, tarieven, projectresultaten, beoordelingen én
-          verificatiestatussen zijn verzonnen. Er heeft geen echte controle plaatsgevonden.
+        <Notice tone="demo" className="mt-6">
+          {VERZONNEN_VAKMENSEN}
         </Notice>
       ) : null}
 
@@ -400,7 +400,7 @@ export default async function ContractorPage({ params }: Props) {
                       {formatEuro(r.price_min)} – {formatEuro(r.price_max)}
                     </td>
                     <td className={td}>{RATE_UNITS[r.unit as keyof typeof RATE_UNITS]}</td>
-                    <td className={td}>{r.vat_included ? "incl. btw" : "excl. btw"}</td>
+                    <td className={td}>{r.vat_included ? "(met btw)" : "(zonder btw)"}</td>
                     <td className={td}>{r.materials_included === null ? "Onbekend" : r.materials_included ? "Inbegrepen" : "Niet inbegrepen"}</td>
                   </tr>
                 ))}
@@ -410,7 +410,7 @@ export default async function ContractorPage({ params }: Props) {
         )}
         <p className="mt-2 text-xs text-ink-500">
           Voorbeeld: {c.rates[0] ? `${c.rates[0].description} ${formatMoney(c.rates[0].price_min, c.rates[0].vat_included)} – ${formatMoney(c.rates[0].price_max, c.rates[0].vat_included)} ${RATE_UNITS[c.rates[0].unit as keyof typeof RATE_UNITS]}` : "—"}.
-          Vraag altijd een offerte op basis van je eigen scope.
+          Vraag altijd een offerte voor je eigen werk.
         </p>
       </section>
     </div>

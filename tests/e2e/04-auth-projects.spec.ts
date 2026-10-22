@@ -97,7 +97,7 @@ test.describe.serial("Registratie, onboarding, projecten en offerteaanvragen", (
 
     await expect(page).toHaveURL(/\/projecten\/[0-9a-f-]{36}\/voorstellen/);
     await expect(page.getByRole("heading", { name: "Teamvoorstellen" })).toBeVisible();
-    for (const t of ["Budgetoptie", "Kwalitatieve optie", "Snelste optie"]) await expect(page.getByRole("heading", { name: t })).toBeVisible();
+    for (const t of ["Budgetoptie", "Meest betrouwbare optie", "Snelste optie"]) await expect(page.getByRole("heading", { name: t })).toBeVisible();
     await expect(page.getByText("Aanbevolen voor budget")).toBeVisible();
 
     // team kiezen → offerteaanvraag met voorgeselecteerde aannemers
@@ -119,7 +119,7 @@ test.describe.serial("Registratie, onboarding, projecten en offerteaanvragen", (
     await page.getByLabel("Bedrag (€)").fill("82.500");
     await page.getByLabel("Omschrijving scope").fill("Complete renovatie volgens werkzaamheden");
     await page.getByRole("button", { name: "Bedrag vastleggen" }).click();
-    await expect(page.getByText("€ 82.500 excl. btw")).toBeVisible();
+    await expect(page.getByText(/€\s82.500 \(zonder btw\)/)).toBeVisible();
 
     // bewerken
     await page.getByRole("link", { name: "Bewerken" }).click();

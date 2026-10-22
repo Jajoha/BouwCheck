@@ -4,11 +4,11 @@ import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/form-c
 import { SubmitButton } from "@/components/ui/submit-button";
 import { submitLeadAction } from "@/actions/engagement";
 import { useServerForm } from "@/lib/forms/use-server-form";
-import { LEAD_TYPES, LEGACY_LEAD_TYPES, type LeadType } from "@/lib/domain/constants";
+import { LEAD_TYPES, PRICING_LEAD_TYPES, type LeadType } from "@/lib/domain/constants";
 
 export function LeadForm({
   type,
-  types = LEGACY_LEAD_TYPES,
+  types = PRICING_LEAD_TYPES,
   name = "",
   email = "",
   submitLabel = "Versturen",
@@ -46,10 +46,10 @@ export function LeadForm({
         <Input id="lead-phone" name="phone" type="tel" autoComplete="tel" />
       </Field>
       <Field label="Bericht" htmlFor="lead-message" error={errors("message")} className="sm:col-span-2">
-        <Textarea id="lead-message" name="message" rows={4} placeholder={messagePlaceholder ?? "Bijv. aantal projecten per jaar, regio, type renovaties"} />
+        <Textarea id="lead-message" name="message" rows={4} placeholder={messagePlaceholder ?? "Bijvoorbeeld: hoeveel verbouwingen per jaar, en in welke regio"} />
       </Field>
       <div className="sm:col-span-2">
-        <Checkbox name="consent" label="Ik geef BouwCheck toestemming om contact met mij op te nemen over deze aanvraag." />
+        <Checkbox name="consent" label="BouwCheck mag contact met mij opnemen over deze aanvraag." />
         {errors("consent") ? <p role="alert" className="mt-1 text-xs font-medium text-danger-700">{errors("consent")![0]}</p> : null}
       </div>
       <div className="sm:col-span-2">

@@ -8,10 +8,10 @@ export function formatEuro(amount: number | null | undefined, opts?: { cents?: b
   return (opts?.cents ? eur2 : eur0).format(amount);
 }
 
-/** Bedrag met expliciete btw-vermelding, bijv. "€ 78.500 excl. btw". */
+/** Bedrag met expliciete btw-vermelding, bijv. "€ 78.500 (zonder btw)". */
 export function formatMoney(amount: number | null | undefined, vatIncluded: boolean, opts?: { cents?: boolean }) {
   if (amount == null) return "Onbekend";
-  return `${formatEuro(amount, opts)} ${vatIncluded ? "incl." : "excl."} btw`;
+  return `${formatEuro(amount, opts)} ${vatIncluded ? "(met btw)" : "(zonder btw)"}`;
 }
 
 export function formatNumber(n: number | null | undefined, decimals: 0 | 1 = 0) {

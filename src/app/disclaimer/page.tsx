@@ -8,9 +8,9 @@ export default function DisclaimerPage() {
   return (
     <LegalPage title="Disclaimer">
       <p>
-        <strong>Demo-data.</strong> In deze bèta zijn alle aannemersprofielen, KvK-nummers, contactgegevens, tarieven, projectresultaten, beoordelingen en
-        verificatiestatussen fictief. Ze zijn gemarkeerd als &lsquo;{site.demoLabel}&rsquo; en zeggen niets over bestaande ondernemingen. Overeenkomsten met bestaande
-        bedrijfsnamen berusten op toeval.
+        <strong>Verzonnen voorbeeldprofielen.</strong> Op {site.name} staan nog verzonnen profielen van vakmensen. Alles in zo&apos;n profiel is verzonnen: de naam, het
+        KvK-nummer, de contactgegevens, tarieven, projectresultaten, beoordelingen en verificatieniveaus. Ze zijn gemarkeerd als &lsquo;{site.demoLabel}&rsquo;. Ze zeggen
+        niets over bestaande bedrijven. Lijkt een naam op een echt bedrijf? Dan is dat toeval.
       </p>
       <p>
         <strong>Geen advies.</strong> Statistieken zijn beschrijvend en gebaseerd op een beperkt aantal geregistreerde projecten. Ze voorspellen niet hoe een volgend

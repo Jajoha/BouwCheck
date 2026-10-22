@@ -10,12 +10,13 @@ test.describe("Aannemersprofielen (geen zelf zoeken of vergelijken)", () => {
     }
   });
 
-  test("profiel toont bronnen, demolabels en onvoldoende-gegevens", async ({ page }) => {
+  test("profiel toont bronnen, voorbeeldlabels en onvoldoende-gegevens", async ({ page }) => {
     await page.goto("/aannemers/nieuwe-hoek");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Klusbedrijf De Nieuwe Hoek");
-    await expect(page.getByText("Demo-data — niet geverifieerd").first()).toBeVisible();
+    await expect(page.getByText("Voorbeeld — verzonnen gegevens").first()).toBeVisible();
+    await expect(page.getByText("Dit voorbeeld bevat nog verzonnen vakmensen.", { exact: true })).toHaveCount(1);
     await expect(page.getByText("Onvoldoende gegevens voor een betrouwbare vergelijking")).toBeVisible();
-    await expect(page.getByText("Bron: Zelf opgegeven door uitvoerder").first()).toBeVisible();
+    await expect(page.getByText("Bron: Zelf ingevuld door de vakman").first()).toBeVisible();
     await expect(page.getByText("Bron: Ervaringen van opdrachtgevers")).toBeVisible();
 
     await page.goto("/aannemers/lindewaard");

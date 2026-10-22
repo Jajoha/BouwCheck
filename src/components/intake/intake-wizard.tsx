@@ -29,18 +29,29 @@ export type IntakePrefill = {
   scope: { specialty_id: string; description: string; quantity: number | null; unit: string | null }[];
 };
 
+/** Keuzes uit het hero-formulier op de homepage. */
+export type IntakeStart = {
+  province?: string;
+  renovationType?: string;
+  description?: string;
+  /** Interne prioriteit (budget, snelheid of kwaliteit) en het label dat de klant koos. */
+  priority?: { value: string; label: string };
+};
+
 export function IntakeWizard({
   aiEnabled,
   maxPhotos,
   defaultProvince,
   usage,
   prefill,
+  start,
 }: {
   aiEnabled: boolean;
   maxPhotos: number;
   defaultProvince: string;
   usage: { costUsd: number; limitUsd: number };
   prefill?: IntakePrefill;
+  start?: IntakeStart;
 }) {
   const formRef = React.useRef<HTMLFormElement>(null);
   const [step, setStep] = React.useState<1 | 2>(1);
@@ -200,9 +211,17 @@ export function IntakeWizard({
       {prefill ? (
         <>
           <input type="hidden" name="offertecheck_token" value={prefill.offertecheckToken} />
-          <Notice tone="info" title="Scope uit je Offertecheck">
-            De {prefill.scope.length} werkzaamheden uit je Offertecheck staan klaar. Vul hieronder de locatie en het type woning en renovatie in en controleer in de volgende stap de
-            werkzaamheden. Teams offreren dan op deze ene scope.
+          <Notice tone="info" title="Het werk uit je Offertecheck">
+            De {prefill.scope.length} werkzaamheden uit je Offertecheck staan klaar. Vul hieronder de plaats en het soort woning in. Controleer daarna de werkzaamheden.
+            Vakmensen geven dan een prijs voor hetzelfde werk.
+          </Notice>
+        </>
+      ) : null}
+      {start?.priority ? (
+        <>
+          <input type="hidden" name="prioriteit" value={start.priority.value} />
+          <Notice tone="info" title={`Je koos: ${start.priority.label}`}>
+            Vul hieronder je project aan. Daarna zie je de teams, met jouw keuze bovenaan.
           </Notice>
         </>
       ) : null}
@@ -220,7 +239,7 @@ export function IntakeWizard({
             id="description"
             name="description"
             rows={7}
-            defaultValue={prefill?.description}
+            defaultValue={prefill?.description ?? start?.description}
             placeholder="Bijv.: Jaren-30 tussenwoning van ca. 110 m². Badkamer en keuken volledig vervangen, nieuwe groepenkast, alle wanden opnieuw stucen en schilderen, nieuwe PVC-vloer beneden. Dak lekt bij de dakkapel."
             aria-invalid={Boolean(err("description"))}
           />
@@ -236,7 +255,7 @@ export function IntakeWizard({
             <Input id="location" name="location" autoComplete="address-level2" aria-invalid={Boolean(err("location"))} />
           </Field>
           <Field label="Provincie" htmlFor="province" required error={err("province")} hint="Alleen aannemers die in deze provincie werken komen in aanmerking.">
-            <Select id="province" name="province" defaultValue={prefill?.province ?? defaultProvince} aria-invalid={Boolean(err("province"))}>
+            <Select id="province" name="province" defaultValue={prefill?.province ?? start?.province ?? defaultProvince} aria-invalid={Boolean(err("province"))}>
               <option value="">Kies provincie</option>
               {PROVINCES.map((p) => (
                 <option key={p}>{p}</option>
@@ -252,7 +271,7 @@ export function IntakeWizard({
             </Select>
           </Field>
           <Field label="Type renovatie" htmlFor="renovation_type" required error={err("renovation_type")}>
-            <Select id="renovation_type" name="renovation_type" defaultValue="" aria-invalid={Boolean(err("renovation_type"))}>
+            <Select id="renovation_type" name="renovation_type" defaultValue={start?.renovationType ?? ""} aria-invalid={Boolean(err("renovation_type"))}>
               <option value="">Kies type</option>
               {RENOVATION_TYPES.map((p) => (
                 <option key={p}>{p}</option>
@@ -299,7 +318,7 @@ export function IntakeWizard({
               </Button>
             ) : null}
             <Button type="button" variant={aiEnabled && !prefill ? "outline" : "primary"} onClick={manual} disabled={pending !== null}>
-              <PencilLine aria-hidden /> {prefill ? "Verder met de scope uit je check" : "Werkzaamheden zelf invullen"}
+              <PencilLine aria-hidden /> {prefill ? "Verder met het werk uit je check" : "Werkzaamheden zelf invullen"}
             </Button>
           </div>
           {limitReached ? <p className="text-xs text-warn-700">Je AI-tegoed voor deze maand is op. Vul de werkzaamheden zelf in.</p> : null}

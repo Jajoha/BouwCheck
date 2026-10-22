@@ -313,7 +313,7 @@ export async function approveAndSend(id: string, adminId: string): Promise<{ ok:
     content: {
       heading: `${check.naam ? `${check.naam.split(" ")[0]}, je` : "Je"} Offertecheck staat klaar`,
       paragraphs: [
-        `We hebben ${report.offertes.length === 1 ? "je offerte" : `je ${report.offertes.length} offertes`} op één scope gezet. De belangrijkste bevindingen:`,
+        `We hebben ${report.offertes.length === 1 ? "je offerte" : `je ${report.offertes.length} offertes`} naast elkaar gezet. Dit valt het meest op:`,
         ...report.bevindingen.map((b) => `• ${b}`),
         "In het rapport zie je per post wat elke offerte wel en niet bevat, en welke vragen je aan de aannemers kunt stellen.",
       ],

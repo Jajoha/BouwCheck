@@ -18,7 +18,7 @@ export default async function ProfilePage() {
       <PageHeader title="Profiel" description="Je accountgegevens en voorkeuren." />
       {user.is_demo ? (
         <Notice tone="demo" className="mt-6">
-          Je bent ingelogd met een fictief demo-account. Wijzigingen worden opgeslagen in de lokale demo-database.
+          Je bent ingelogd met een voorbeeldaccount. Dit account is verzonnen.
         </Notice>
       ) : null}
       <Card className="mt-6">
